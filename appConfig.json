@@ -1,0 +1,20 @@
+{
+  "USE_ADMIN_SEED": true,
+  "USE_SMTP": true,
+  "USE_MAILJET": false,
+  "USE_MAILGUN": false,
+  "USE_SOCKETS": true,
+  "USE_AUTH_SESSIONS": false,
+  "USE_REFRESH_TOKEN": true,
+  "USE_MULTER": false,
+  "USE_S3": false,
+  "USE_DIGITALOCEAN_SPACE": false,
+  "USE_MULTER_DISK_STORAGE": false,
+  "USE_OAUTH_GOOGLE": false,
+  "USE_OAUTH_FACEBOOK": false,
+  "USE_OAUTH_APPLE": false,
+  "USE_PAYSTACK": true,
+  "USE_ANALYTICS": false,
+  "USE_REDIS": false,
+  "USE_DATABASE": "mongodb"
+}

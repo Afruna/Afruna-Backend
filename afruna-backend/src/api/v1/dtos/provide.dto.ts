@@ -1,0 +1,42 @@
+import { body, check, param } from 'express-validator';
+
+export const provideRequestDTO = {
+  id: [param('serviceId').exists()],
+  providerId: [param('providerId').exists()],
+  customerId: [param('customerId').exists()],
+  categoryId: [param('categoryId').exists()],
+  create: [
+    body('name').exists().withMessage('name is required'),
+    body('categoryId').exists().withMessage('category is required'),
+    body('state').optional(),
+    body('country').optional(),
+    body('desc').exists().withMessage('desc is required'),
+    body('price').exists().withMessage('price is required'),
+    body('additionalService').optional().isArray().withMessage('additionalService must be an array'),
+    body('additionalService.*.service').optional().isString(),
+    body('additionalService.*.price').optional().isNumeric(),
+    body('photos').optional(),
+    body('licenseAndCertification').optional(),
+    body('insuranceCoverage').optional(),
+    body('availability.days')
+      .optional(),
+    body('availability.hours.to').optional(),
+    body('availability.hours.from').optional(),
+  ],
+  update: [
+    body('categoryId').not().exists().withMessage('category is forbidden'),
+    body('state').optional(),
+    body('country').optional(),
+    body('desc').optional(),
+    body('price').optional(),
+    body('additionalService').optional().isArray().withMessage('additionalService must be an array'),
+    body('additionalService.*.service').optional().isString(),
+    body('additionalService.*.price').optional().isNumeric(),
+    body('photos').optional(),
+    body('licenseAndCertification').optional(),
+    body('insuranceCoverage').optional(),
+    body('availability.days').optional().isArray().withMessage('availability.days must be an array'),
+    body('availability.hours.to').optional(),
+    body('availability.hours.from').optional(),
+  ],
+};

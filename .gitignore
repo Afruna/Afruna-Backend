@@ -1,0 +1,9 @@
+node_modules
+dist
+logs
+coverage
+/.vscode/*
+docker-compose.yml
+
+.env.development
+.env.production
