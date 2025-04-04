@@ -4,17 +4,20 @@ import MessageService from '@services/message.service';
 import { MessageInterface } from '@interfaces/Messages.Interface';
 import Controller from '@controllers/controller';
 import { OPTIONS } from '@config';
+import { ConversationService } from '@services/ConversationService';
 // import { MessageResponseDTO } from '@dtos/Message.dto';
 
 class MessageController extends Controller<MessageInterface> {
   service = new MessageService();
+  conversationService = new ConversationService();
+
   responseDTO = undefined; // MessageResponseDTO.Message;
   create = this.control(async (req: Request) => {
     this.processFile(req);
     const data = <MessageInterface>req.body;
     
     data.from = (req.user || req.vendor)?._id.toString();
-    const result = await this.service.createMessage(data);
+    const result = await this.conversationService.sendMessage(data);
 
     if (OPTIONS.USE_SOCKETS) {
       // req.io.to(<string>result.convo.toString()).emit('message', result);
@@ -24,8 +27,7 @@ class MessageController extends Controller<MessageInterface> {
 
   get = this.control((req: Request) => {
     return this.service.find({
-      conversation: req.params.conversationId,
-      userId: <string>req.user?._id,
+      conversationId: req.params.conversationId as string,
     });
   });
 
@@ -36,6 +38,7 @@ class MessageController extends Controller<MessageInterface> {
 
 
   getUserMessage = this.control((req: Request) => {
+
     return this.service.getMessages(<string>req.user?._id);
   });
 

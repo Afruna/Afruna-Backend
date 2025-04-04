@@ -4,12 +4,12 @@ import { Server, Socket } from 'socket.io';
 import ConversationService from '@services/conversation.service';
 import { logger } from '@utils/logger';
 import UserService from '@services/user.service';
-import { ChatInterface } from '@interfaces/Chat.Interface';
+import { ChatInterface, MESSAGE_TYPE } from '@interfaces/Chat.Interface';
 import { Types } from 'mongoose';
 import ChatService from '@services/chat.service';
 import MessageService from '@services/message.service';
 import MessageRepository from '@repositories/Message.repo';
-
+import QuoteService from '@services/quote.service';
 export class SocketEvents {
   io: Server;
   //   socket;
@@ -19,6 +19,7 @@ export class SocketEvents {
   users = {};
 
   _conversationService = new ConversationService();
+  _quoteService = new QuoteService();
   _messageService = new MessageService();
   _chatService = new ChatService();
   _userService = new UserService();
@@ -174,13 +175,21 @@ export class SocketEvents {
 
     socket.on('user_provider', async (chat: ChatInterface) => {
       try {
+        
         const parsedChat = JSON.parse(chat);
         const recipientSocketId = this.users[parsedChat.to.id];
-    
+        
+        if(chat.messageType == MESSAGE_TYPE.QUOTE)
+        {
+          const quote = await this._quoteService.createQuote(parsedChat);
+        }
+        else{
+            const messageData = await this._messageService.createMessage(parsedChat);
+        }
         console.log("Message", JSON.stringify(parsedChat));
     
         // Save the message in MongoDB
-        const messageData = await this._messageService.createMessage(parsedChat);
+      
     
         if (recipientSocketId) {
           this.io.to(recipientSocketId).emit('receive_message', parsedChat);

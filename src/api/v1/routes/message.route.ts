@@ -20,6 +20,10 @@ export default class MessageRoute extends Route<MessageInterface> {
       );
 
     this.router
+      .route('/:conversationId')
+      .get(authenticateUserOrVendor(), this.controller.get);
+
+    this.router
       .route('/user-message/:conversationId')
       .get(this.authorize(), this.controller.getUserMessage);
 

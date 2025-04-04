@@ -13,6 +13,7 @@ import { UserInterface } from '@interfaces/User.Interface';
 import MessageService from './message.service';
 import ChatService from './chat.service';
 import { ChatInterface, MESSAGE_TYPE, USER_TYPE } from '@interfaces/Chat.Interface';
+import { ConversationService } from './ConversationService';
 // import ProductService from './product.service';
 // import { logger } from '@utils/logger';
 // import s3 from '@helpers/multer';
@@ -28,83 +29,81 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
   private static _instance: BookingService;
   protected readonly _messageService = new MessageService();
   protected readonly _chatService = new ChatService();
+  protected readonly _conversationService = new ConversationService();
 
   async createBooking(user: Partial<UserInterface>, data: Partial<BookingInterface>) {
-
     const service = await this.provideRepo.findOne({ _id: data.serviceId.toString() });
 
-    if(!service)
-      throw new HttpError("Service does not exist");
+    if (!service) throw new HttpError('Service does not exist');
 
     const vendor = await this.vendorRepo.findOne({ _id: data.vendorId.toString() });
 
-    if(!vendor)
-      throw new HttpError("Vendor does not exist");
+    if (!vendor) throw new HttpError('Vendor does not exist');
 
-    if(vendor.vendorType == VendorType.MARKET_SELLER as VendorType)
-      throw new HttpError("Vendor must be of Service Provider");
+    if (vendor.vendorType == (VendorType.MARKET_SELLER as VendorType))
+      throw new HttpError('Vendor must be of Service Provider');
 
     let messageObj = null;
     let messageId = null;
 
-    let message = await this._messageRepo.custom().findOne({
-      $or: [
-          {
-            $and: [
-                { fromId: user._id },
-                { toId: vendor._id } 
-              ]
-          },
-          {
-            $and: [
-                { toId: user._id } ,
-                { fromId: vendor._id }
-            ]
-        }
-      ]
-     });
+    const conversation = await this._conversationService.createConversation([
+      { id: user._id as string, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER },
+      { id: vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR },
+    ]);
 
-     const from = {id: <string>user._id, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER }; 
+    // let message = await this._messageRepo.custom().findOne({
+    //   $or: [
+    //     {
+    //       $and: [{ fromId: user._id }, { toId: vendor._id }],
+    //     },
+    //     {
+    //       $and: [{ toId: user._id }, { fromId: vendor._id }],
+    //     },
+    //   ],
+    // });
 
-     const to = {id: vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR }; 
+    // const from = { id: <string>user._id, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER };
 
-     const chat: ChatInterface = {
-      from,
-      to,
-      message: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
-      messageType: MESSAGE_TYPE.NORMAL
-    }
+    // const to = { id: vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR };
 
-     const chatMessage = await this._chatService.create({ ...chat });
+    // const chat: ChatInterface = {
+    //   from,
+    //   to,
+    //   message: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
+    //   messageType: MESSAGE_TYPE.NORMAL,
+    // };
 
-    if(!message)
-      {
-        messageObj =  await this._messageService.create({fromId: <string>user._id, toId: vendor._id, from, to, chats: [chatMessage]});
-        messageId = messageObj._id
-      }
-      else
-      {
-        messageObj = await this._messageRepo.update(
-          { _id : message._id },
-          {
-            load: { key: 'chats', value: chatMessage }
-          },
-        );
-      }
-        
+    // const chatMessage = await this._chatService.create({ ...chat });
 
-      
-      
+    // if (!message) {
+    //   messageObj = await this._messageService.create({
+    //     fromId: <string>user._id,
+    //     toId: vendor._id,
+    //     from,
+    //     to,
+    //     chats: [chatMessage],
+    //   });
+    //   messageId = messageObj._id;
+    // } else {
+    //   messageObj = await this._messageRepo.update(
+    //     { _id: message._id },
+    //     {
+    //       load: { key: 'chats', value: chatMessage },
+    //     },
+    //   );
+    // }
 
-      
+    const message = await this._conversationService.sendMessage({
+      conversationId: conversation._id,
+      content: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
+      from: user._id
+    });
 
     return this.repository.create({ userId: <string>user._id, ...data });
   }
 
-
   async changeBookingStatus(_id: string, status: BookingStatus) {
-
-    return await this.repository.update({ _id }, { status})
+    return await this.repository.update({ _id }, { status });
   }
 
   static instance() {
@@ -139,7 +138,7 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
         {
           path: 'serviceId',
           model: 'Service',
-        }
+        },
       ],
     });
   }
@@ -162,7 +161,7 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
         {
           path: 'serviceId',
           model: 'Service',
-        }
+        },
       ],
     });
   }
