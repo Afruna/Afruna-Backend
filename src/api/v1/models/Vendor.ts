@@ -10,7 +10,7 @@ const VendorSchema = new Schema<VendorInterface>(
     shopName: String,
     password: String,
     blocked: { type: Boolean, default: false },
-    verifiedEmail: { type: Boolean, default: false },
+    verifiedEmail: { type: Boolean, default: true },
     followers: { type: Schema.Types.Mixed, default: [] },
     following: { type: Schema.Types.Mixed, default: [] },
     isFollowing: { type: Schema.Types.Mixed, default: null },
