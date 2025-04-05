@@ -28,7 +28,7 @@ const VendorSchema = new Schema<VendorInterface>(
     meansOfIdentification: { type: Schema.Types.ObjectId, ref: 'MeansIdentification' },
     additionalInfo: { type: Schema.Types.ObjectId, ref: 'AdditionalInfo' },
     storeFront: { type: Schema.Types.ObjectId, ref: 'StoreFront' },
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.ACTIVE },
+    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.PENDING },
   },
   { timestamps: true },
 );

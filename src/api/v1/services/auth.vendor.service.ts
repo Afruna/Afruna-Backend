@@ -31,7 +31,8 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
  async login(data: { email: string; password: string }) {
     try {
       const verifiedEmail = true;
-      const vendor = await this._vendorService().findOne({ emailAddress: <string>data.email, verifiedEmail });
+      // check if the vendor is verified
+      const vendor = await this._vendorService().findOne({ emailAddress: <string>data.email });
       if (!vendor) throw new HttpError(Config.MESSAGES.INVALID_VENDOR_ACCOUNT, 401);
       const isMatch = await this.comparePasswords(data.password, vendor);
       if (!isMatch) throw new HttpError(Config.MESSAGES.INVALID_CREDENTIALS, 401);
@@ -90,8 +91,7 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
         vendor: vendor._id,
         type: TokenTypeEnum.VERIFY_EMAIL,
       });
-
-      vendor.code = code;
+      
       
 
       this._emailing
