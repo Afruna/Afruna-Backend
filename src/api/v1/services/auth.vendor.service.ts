@@ -91,6 +91,7 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
         type: TokenTypeEnum.VERIFY_EMAIL,
       });
 
+      vendor.code = code;
       
 
       this._emailing
