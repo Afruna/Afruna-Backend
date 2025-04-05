@@ -10,7 +10,7 @@ const VendorSchema = new Schema<VendorInterface>(
     shopName: String,
     password: String,
     blocked: { type: Boolean, default: false },
-    verifiedEmail: { type: Boolean, default: true },
+    verifiedEmail: { type: Boolean, default: false },
     followers: { type: Schema.Types.Mixed, default: [] },
     following: { type: Schema.Types.Mixed, default: [] },
     isFollowing: { type: Schema.Types.Mixed, default: null },
@@ -28,7 +28,7 @@ const VendorSchema = new Schema<VendorInterface>(
     meansOfIdentification: { type: Schema.Types.ObjectId, ref: 'MeansIdentification' },
     additionalInfo: { type: Schema.Types.ObjectId, ref: 'AdditionalInfo' },
     storeFront: { type: Schema.Types.ObjectId, ref: 'StoreFront' },
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.PENDING },
+    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.ACTIVE },
   },
   { timestamps: true },
 );
