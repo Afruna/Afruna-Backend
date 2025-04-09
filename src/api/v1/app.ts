@@ -84,7 +84,7 @@ class App {
     transactions: new TransactionRoute(),
     wallets: new WalletRoute(),
     wishlists: new WishlistRoute(),
-    admin: new AdminRoute(true, UserRole.ADMIN),
+    admin: new AdminRoute(),
     services: new ProvideRoute(),
     chats: new ChatRoute(),
     vendors: new VendorRoute(),

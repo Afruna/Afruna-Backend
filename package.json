@@ -23,6 +23,7 @@
     "apple-signin-auth": "^1.7.6",
     "aws-sdk": "^2.1626.0",
     "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "chance": "^1.1.12",
     "class-transformer": "^0.5.1",

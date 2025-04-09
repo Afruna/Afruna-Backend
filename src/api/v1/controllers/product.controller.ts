@@ -27,20 +27,8 @@ class ProductController extends Controller<ProductInterface> {
 
   getOne = this.control((req: Request) => {
     this.service.update({_id: req.params.productId }, { viewed: new Date() })
-    return this.service.find(
-      { _id: req.params.productId },
-      {
-        multiPopulate: [
-          {
-          path: 'vendor',
-          model: 'Vendor'
-        },
-        {
-          path: 'categoryId',
-          model: 'Category'
-        }
-      ],
-      },
+    return this.service.findOne(
+      { _id: req.params.productId }
     );
   });
 

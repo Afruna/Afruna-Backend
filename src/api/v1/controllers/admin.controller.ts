@@ -4,10 +4,16 @@ import { UserInterface } from '@interfaces/User.Interface';
 import Controller from '@controllers/controller';
 import { UserResponseDTO } from '@dtos/user.dto';
 import AdminService from '@services/admin.service';
+import { AuthResponseDTO } from '@dtos/auth.dto';
 
 class AdminController extends Controller<UserInterface> {
   service = new AdminService();
   responseDTO = UserResponseDTO.User;
+
+  login = this.control(async (req: Request) => {
+    return this.service.signIn(req.body);
+  }, AuthResponseDTO.adminLogin);
+
   adminRevenueOrderTable = this.control(async (req: Request) => {
     const result = await this.service.adminRevenueOrderTable(<any>req.query.time);
 
@@ -15,7 +21,6 @@ class AdminController extends Controller<UserInterface> {
   });
   adminDashboardCards = this.control(async (req: Request) => {
     const result = await this.service.adminDashboardCards();
-
     return result;
   });
   salesByCategory = this.control(async (req: Request) => {
@@ -94,8 +99,18 @@ class AdminController extends Controller<UserInterface> {
     return result;
   });
 
+  getVendors = this.control(async (req: Request) => {
+    const result = await this.service.getVendors();
+    return result;
+  });
+
   getCustomers = this.control(async (req: Request) => {
     const result = await this.service.getCustomers(this.safeQuery(req));
+    return result;
+  });
+
+  getCustomerById = this.control(async (req: Request) => {
+    const result = await this.service.getCustomerById(req.params.userId);
     return result;
   });
 

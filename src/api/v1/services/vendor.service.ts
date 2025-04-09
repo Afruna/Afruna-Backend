@@ -35,6 +35,10 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
   private readonly bookingRepo = new BookingRepository();
   private readonly orderRepo = new OrderRepository();
 
+  async find(){
+    return await this.repository.find();
+  }
+
   async block(vendorId: string) {
     const vendor = await this.findOne(vendorId);
     if (!vendor) throw new HttpError('invalid vendor', 404);

@@ -2,11 +2,13 @@
 /* eslint-disable no-unused-vars */
 import { UserInterface } from '@interfaces/User.Interface';
 import { VendorInterface } from '@interfaces/Vendor.Interface';
+import { IAdmin } from '@models/Admin';
 import { Server } from 'socket.io';
 
 declare global {
   namespace Express {
     interface Request {
+      admin?: IAdmin & { _id: string | Types.ObjectId };
       user?: UserInterface & { _id: string | Types.ObjectId };
       vendor?: VendorInterface & { _id: string | Types.ObjectId };
       file?: Express.Multer.File & Express.MulterS3.File;

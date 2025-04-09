@@ -4,9 +4,14 @@ import ProductService from './product.service';
 import OrderService from './order.service';
 import ReviewService from './review.service';
 import ProvideService from './provide.service';
+import VendorService from "./vendor.service";
 import BookingService from './booking.service';
 import { ServiceStatusEnum } from '@interfaces/Provide.Interface';
-
+import Admin, { IAdmin } from '@models/Admin';
+import { sign } from 'jsonwebtoken';
+import HttpError from '@helpers/HttpError';
+import * as Config from '@config';
+import jwt from 'jsonwebtoken';
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
   private _userService = UserService.instance;
@@ -14,6 +19,47 @@ class AdminService extends UserService {
   private _productService = ProductService.instance;
   private __provideService = ProvideService.instance;
   private _bookingService = BookingService.instance;
+  private _vendorService = VendorService.instance;
+  private _orderService = OrderService.instance;   
+
+  async signIn({ email, password }) {
+    const admin = await Admin.findOne({ email });
+    console.log('admin', admin);
+    if (!admin) {
+      throw new HttpError(Config.MESSAGES.INVALID_CREDENTIALS, 401);
+    }
+
+    if (!admin.isActive) {
+      throw new HttpError(Config.MESSAGES.INVALID_CREDENTIALS, 401);
+    }
+
+    const isPasswordValid = await admin.comparePassword(password);
+    if (!isPasswordValid) {
+      throw new HttpError(Config.MESSAGES.INVALID_CREDENTIALS, 403);
+    }
+
+    // Update last login
+    await Admin.findByIdAndUpdate(admin._id, {
+      lastLogin: new Date()
+    });
+
+    // Generate JWT token
+    const token = this.getSignedToken(admin);
+
+    return {
+      token,
+      admin: {
+        id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role
+      }
+    };
+  }
+  getSignedToken(admin: IAdmin) {
+    return jwt.sign({ id: admin._id }, Config.JWT_KEY, { expiresIn: Config.JWT_TIMEOUT });
+  }
 
   adminRevenueOrderTable(time: 'daily' | 'weekly' | 'monthly' | 'yearly') {
     return this._analytics.revenueOrderTable(time);
@@ -31,6 +77,7 @@ class AdminService extends UserService {
     return this._analytics.bookingSummary(startDate, endDate);
   }
 
+  
   bookingStatistics() {
     return this._analytics.bookingStatistics();
   }
@@ -103,9 +150,17 @@ class AdminService extends UserService {
     return this._userService().paginatedFind({ ...query, isProvider: true });
   }
 
+  getVendors(){
+    return this._vendorService.find()
+  }
+
   getCustomers(query: Record<string, any>) {
     const q = { $gte: 1 } as any;
-    return this._userService().paginatedFind({ ...query, bookings: q });
+    return this._userService().paginatedFind();
+  }
+
+  getCustomerById(id: string) {
+    return this._userService().findOne({_id: id})
   }
 
   getBookings(query: Record<string, any>, userId: string, isProvider = true) {

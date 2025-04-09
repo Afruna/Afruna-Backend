@@ -8,6 +8,7 @@ import SessionRepository from '@repositories/AuthSession.repo';
 import { logger } from '@utils/logger';
 import VendorRepository from '@repositories/Vendor.repo';
 import AuthVendorSessionRepository from '@repositories/AuthVendorSession.repo';
+import Admin from '@models/Admin';
 
 const sessionService = new SessionRepository();
 const userService = new UserRepository();
@@ -212,3 +213,39 @@ export const getUserIfExist =
         return next(new HttpError(`${error}`, 401));
       }
     };
+
+    export const authenticateAdmin =
+  () => async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token =
+        req.headers.authorization && req.headers.authorization.startsWith('Bearer')
+          ? req.headers.authorization.split(' ')[1]
+          : null;
+
+      if (!token) {
+        return next(new HttpError(MESSAGES.UNAUTHORIZED, 401));
+      }
+
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, JWT_KEY);
+      } catch (error) {
+        return next(new HttpError(MESSAGES.UNAUTHORIZED, 401));
+      }
+
+      const admin = await Admin.findById(decoded.id);
+      if (!admin || !admin.isActive) {
+        return next(new HttpError(MESSAGES.UNAUTHORIZED, 401));
+      }
+
+      // Optional: restrict to certain roles
+      if (!['admin', 'super-admin'].includes(admin.role)) {
+        return next(new HttpError(MESSAGES.FORBIDDEN, 403));
+      }
+
+      req.admin = admin; // attach to request object
+      return next();
+    } catch (error) {
+      return next(new HttpError(`${error}`, 401));
+    }
+  };

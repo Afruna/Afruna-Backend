@@ -2,6 +2,7 @@ import { body, check, param, query } from 'express-validator';
 import { MESSAGES } from '@config';
 import { UserResponseDTO } from './user.dto';
 import { UserInterface } from '@interfaces/User.Interface';
+import { IAdmin } from '@models/Admin';
 
 export const authRequestDTO = {
   login: [
@@ -45,6 +46,16 @@ export class AuthResponseDTO {
     };
     return result;
   };
+
+  static adminLogin = (data: { token: string, admin: IAdmin }) => {
+    const result = {
+      token: data.token,
+      admin: data.admin
+    };
+    return result;
+  };
+
+
 
   static signUp = UserResponseDTO.User;
   static User = UserResponseDTO.User;
