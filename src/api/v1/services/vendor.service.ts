@@ -211,27 +211,7 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
 
   getOne(vendorId: string) {
     return this.findOne(
-      { _id: vendorId },
-      {
-        multiPopulate: [
-          {
-            path: 'businessInfoId',
-            model: 'BusinessInfo'
-          },
-          {
-            path: 'businessAddressId',
-            model: 'BusinessAddress',
-          },
-          {
-            path: 'shippingInfoId',
-            model: 'ShippingInfo',
-          },
-          {
-            path: 'paymentInfoId',
-            model: 'PaymentInfo',
-          },
-        ],
-      },);
+      { _id: vendorId });
   }
 
   static instance() {

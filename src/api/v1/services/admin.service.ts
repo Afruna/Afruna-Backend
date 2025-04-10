@@ -12,6 +12,7 @@ import { sign } from 'jsonwebtoken';
 import HttpError from '@helpers/HttpError';
 import * as Config from '@config';
 import jwt from 'jsonwebtoken';
+import Provide from '@models/Provide';
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
   private _userService = UserService.instance;
@@ -21,6 +22,11 @@ class AdminService extends UserService {
   private _bookingService = BookingService.instance;
   private _vendorService = VendorService.instance;
   private _orderService = OrderService.instance;   
+
+  async findAllProvider(){
+    let providers = await Provide.find();
+    return providers;
+  }
 
   async signIn({ email, password }) {
     const admin = await Admin.findOne({ email });

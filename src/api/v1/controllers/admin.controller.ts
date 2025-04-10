@@ -153,6 +153,12 @@ class AdminController extends Controller<UserInterface> {
 
     return result;
   });
+
+  getAllProviders = this.control(async (req: Request) => {
+    const result = await this.service.findAllProvider();
+
+    return result;
+  });
 }
 
 export default AdminController;
