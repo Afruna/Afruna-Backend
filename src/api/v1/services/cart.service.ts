@@ -35,7 +35,7 @@ class CartService extends Service<CartInterface, CartRepository> {
 
       const product = await this._productService().findOne(productId);
       if (!product) throw new HttpError('invalid product', 404);
-      if (product.isOutOfStock) throw new HttpError('this product is out of stock', 400);
+      // if (product.isOutOfStock) throw new HttpError('this product is out of stock', 400);
 
       const discountedPrice = this._productService().discountedPrice(product);
 

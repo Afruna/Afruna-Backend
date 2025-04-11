@@ -151,7 +151,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
     }
 
     if (product && data.sold && data.sold + product?.sold === product?.quantity) {
-      data.isOutOfStock = true;
+      // data.isOutOfStock = true;
     }
 
     if (product && data.sold && data.sold + product?.sold > product?.quantity) {
