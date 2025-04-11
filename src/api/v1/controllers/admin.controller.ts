@@ -159,6 +159,67 @@ class AdminController extends Controller<UserInterface> {
 
     return result;
   });
+
+  getAllOrders = this.control(async (req: Request) => {
+    const result = await this.service.findAllOrders();
+
+    return result;
+  });
+
+  getOrdersByUserId = this.control(async (req: Request) => {
+    const result = await this.service.findOrdersByUserId(req.params.userId);
+
+    return result;
+  });
+
+  getOrdersByVendorId = this.control(async (req: Request) => {
+    const result = await this.service.findOrdersByVendorId(req.params.vendorId);
+
+    return result;
+  });
+
+  getVendorBusinessInformation = this.control(async (req: Request) => {
+    const result = await this.service.getVendorBusinessInformation(req.params.vendorId);
+
+    return result;
+  });
+
+  getVendorBusinessDetails = this.control(async (req: Request) => {
+    const result = await this.service.getVendorBusinessDetails(req.params.vendorId);
+
+    return result;
+  });
+
+  getVendorCustomerCareInformation = this.control(async (req: Request) => {
+    const result = await this.service.getVendorCustomerCareInformation(req.params.vendorId);
+
+    return result;
+  });
+
+  getVendorAddressInformation = this.control(async (req: Request) => {
+    const result = await this.service.getVendorAddressInformation(req.params.vendorId);
+
+    return result;
+  });
+
+  getVendorPaymentInformation = this.control(async (req: Request) => {
+    const result = await this.service.getVendorPaymentInformation(req.params.vendorId);
+
+    return result;
+  });
+
+  getAdditionalInformation = this.control(async (req: Request) => {
+    const result = await this.service.getAdditionalInformation(req.params.vendorId);
+
+    return result;
+  }); 
+
+  getProviderLegalInformation = this.control(async (req: Request) => {
+    const result = await this.service.getProviderLegalInformation(req.params.vendorId);
+
+    return result;
+  });
+  
 }
 
 export default AdminController;

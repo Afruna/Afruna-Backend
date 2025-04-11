@@ -13,6 +13,14 @@ import HttpError from '@helpers/HttpError';
 import * as Config from '@config';
 import jwt from 'jsonwebtoken';
 import Provide from '@models/Provide';
+import Order from '@models/Order';
+import BusinessInfo from '@models/BusinessInfo';
+import ShippingInfo from '@models/ShippingInfo';
+import PaymentInfo from '@models/PaymentInfo';
+import AdditionalInfo from '@models/AdditionalInfo';
+import LegalRep from '@models/LegalRep';
+import BusinessDetail from '@models/BusinessDetail';
+import CustomerCareDetail from '@models/CustomerCareDetail';
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
   private _userService = UserService.instance;
@@ -21,11 +29,61 @@ class AdminService extends UserService {
   private __provideService = ProvideService.instance;
   private _bookingService = BookingService.instance;
   private _vendorService = VendorService.instance;
-  private _orderService = OrderService.instance;   
+  private _orderService = OrderService.instance;
+  
+  async findAllOrders(){
+    let orders = await Order.find().populate("userId").populate("addressId");
+    return orders;
+  }
+
+  async findOrdersByUserId(userId: string){
+    let orders = await Order.find({userId: userId}).populate("userId").populate("addressId");
+    return orders;
+  }
+
+  async findOrdersByVendorId(vendorId : string){
+    let orders = await Order.find({vendorId}).populate("userId").populate("addressId");
+    return orders;
+  }
 
   async findAllProvider(){
     let providers = await Provide.find();
     return providers;
+  }
+
+  async getVendorBusinessInformation(vendorId: string){
+    let response = await BusinessInfo.findOne({vendorId});
+    return response;
+  }
+
+  async getVendorBusinessDetails(vendorId: string){
+    let response = await BusinessDetail.findOne({vendorId});
+    return response;
+  }
+
+  async getVendorCustomerCareInformation(vendorId: string){
+    let response = await CustomerCareDetail.findOne({vendorId});
+    return response;
+  }
+
+  async getVendorAddressInformation(vendorId: string){
+    let response = await ShippingInfo.findOne({vendorId});
+    return response;
+  }
+
+  async getVendorPaymentInformation(vendorId: string){
+    let response = await PaymentInfo.findOne({vendorId});
+    return response;
+  }
+
+  async getAdditionalInformation(vendorId: string){
+    let response = await AdditionalInfo.findOne({vendorId});
+    return response;
+  }
+  
+  async getProviderLegalInformation(vendorId: string){
+    let response = await LegalRep.findOne({vendorId});
+    return response;
   }
 
   async signIn({ email, password }) {
