@@ -217,7 +217,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
                 .custom()
                 .findByIdAndUpdate(<string>orderItem.productId, {
                   $inc: { frequency: 1, sold: orderItem.quantity },
-                  // isOutOfStock,
+                  isOutOfStock,
                   options,
                 });
             }

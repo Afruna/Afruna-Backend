@@ -269,7 +269,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
         },
 
         {
-          path: 'vendorId',
+          path: 'vendor',
           model: 'Vendor',
           select: 'firstname lastname city country',
         },

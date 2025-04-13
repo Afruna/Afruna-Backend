@@ -28,14 +28,14 @@ class CartService extends Service<CartInterface, CartRepository> {
     const dbSession = await this.repository.RepositorySession();
     
     try {
-      dbSession.startTransaction();
+      // dbSession.startTransaction();
       let session = userId
         ? await this._cartSession.findOne({ userId })
         : await this._cartSession.findOne({ sessionId });
 
       const product = await this._productService().findOne(productId);
       if (!product) throw new HttpError('invalid product', 404);
-      // if (product.isOutOfStock) throw new HttpError('this product is out of stock', 400);
+      if (product.isOutOfStock) throw new HttpError('this product is out of stock', 400);
 
       const discountedPrice = this._productService().discountedPrice(product);
 
@@ -106,10 +106,10 @@ class CartService extends Service<CartInterface, CartRepository> {
           dbSession,
         );
       }
-      await dbSession.commitTransaction();
+      // await dbSession.commitTransaction();
       return session!;
     } catch (error) {
-      await dbSession.abortTransaction();
+      // await dbSession.abortTransaction();
       throw error;
     } finally {
       dbSession.endSession();
@@ -170,7 +170,7 @@ class CartService extends Service<CartInterface, CartRepository> {
     const dbSession = await this.repository.RepositorySession();
 
     try {
-      dbSession.startTransaction();
+      // dbSession.startTransaction();
 
       let session;
 
@@ -213,13 +213,13 @@ class CartService extends Service<CartInterface, CartRepository> {
         },
       );
 
-      await dbSession.commitTransaction();
+      // await dbSession.commitTransaction();
       return { ...session, items: data };
     } catch (error) {
-      await dbSession.abortTransaction();
+      // await dbSession.abortTransaction();
       throw error;
     } finally {
-      dbSession.endSession();
+      // dbSession.endSession();
     }
   }
 
