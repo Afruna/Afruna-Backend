@@ -1,4 +1,4 @@
-import { VendorStatus } from "./Vendor.Interface";
+import { KYCStatus } from "./Vendor.Interface";
 import { Types } from 'mongoose';
 
 export interface ShippingInfoInterface {
@@ -6,7 +6,8 @@ export interface ShippingInfoInterface {
     vendorId?: string | Types.ObjectId;
     shippingAddress: ShippingAddressInterface;
     returnAddress: ReturnAddressInterface;
-    status: VendorStatus;
+    status: KYCStatus;
+    rejectionMessage?: string;
 }
 
 export interface ReturnAddressInterface {

@@ -39,6 +39,14 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
     return await this.repository.find();
   }
 
+    async getVendors(){
+      return await this.repository.find({status: VendorStatus.ACTIVE, vendorType: VendorType.MARKET_SELLER});
+    }
+
+    async getServiceProvider(){
+      return await this.repository.find({status: VendorStatus.ACTIVE, vendorType: VendorType.SERVICE_PROVIDER});
+    }
+
   async block(vendorId: string) {
     const vendor = await this.findOne(vendorId);
     if (!vendor) throw new HttpError('invalid vendor', 404);

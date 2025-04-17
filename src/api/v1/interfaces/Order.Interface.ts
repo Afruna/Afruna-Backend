@@ -36,12 +36,14 @@ export enum DeliveryStatus {
   PENDING = 'Pending',
   CANCELED = 'Canceled',
   SHIPPED = 'Shipped',
+  RETURNED = 'Returned',
 }
 
 export enum OrderStatus {
   PENDING = 'Pending',
   PAID = 'PAID',
   CANCELLED = 'Cancelled',
+  RETURNED = 'Returned',
 }
 
 

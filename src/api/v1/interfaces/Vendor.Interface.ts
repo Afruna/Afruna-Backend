@@ -13,7 +13,14 @@ export enum VendorType {
   SERVICE_PROVIDER = 'service_provider'
 }
 
+export enum KYCStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+
 export interface VendorInterface {
+  kycStatus: KYCStatus;
   _id: string;
   businessDetail: string | Types.ObjectId;
   businessAddress: string | Types.ObjectId;

@@ -1,4 +1,4 @@
-import { VendorInterface, VendorStatus, VendorType } from '@interfaces/Vendor.Interface';
+import { VendorInterface, VendorStatus, VendorType, KYCStatus } from '@interfaces/Vendor.Interface';
 import mongoose, { Schema, model } from 'mongoose';
 
 const VendorSchema = new Schema<VendorInterface>(
@@ -7,6 +7,7 @@ const VendorSchema = new Schema<VendorInterface>(
     lastname: String,
     phoneNumber: String,
     emailAddress: String,
+    kycStatus: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
     shopName: String,
     password: String,
     blocked: { type: Boolean, default: false },

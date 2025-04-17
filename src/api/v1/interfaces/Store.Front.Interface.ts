@@ -1,4 +1,4 @@
-import { VendorStatus } from "./Vendor.Interface";
+import { KYCStatus } from "./Vendor.Interface";
 import { Types } from 'mongoose';
 
 
@@ -9,5 +9,6 @@ export interface StoreFrontInterface {
     link: string;
     logo: string;
     favIcon: string;
-    status: VendorStatus;
+    status: KYCStatus;
+    rejectionMessage?: string;
 }

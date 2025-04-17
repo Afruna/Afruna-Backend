@@ -1,5 +1,5 @@
 import { BusinessDetailInterface } from '@interfaces/Business.Detail.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 export enum BusinessType {
@@ -15,7 +15,8 @@ const BusinessDetailSchema = new Schema<BusinessDetailInterface>({
     taxId: String,
     registrationId: String,
     certImage: String,
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.DRAFT },    
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

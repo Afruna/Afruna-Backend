@@ -6,6 +6,9 @@ import UserService from './user.service';
 import { UserRole } from '@interfaces/User.Interface';
 import ProvideService from './provide.service';
 import BookingService from './booking.service';
+import Vendor from '@models/Vendor';
+import { VendorType } from '@interfaces/Vendor.Interface';
+import TransactionService from './transaction.service';
 
 export default class AnalyticsService {
   /**
@@ -17,6 +20,7 @@ export default class AnalyticsService {
     private _userService = UserService.instance,
     private _provideService = ProvideService.instance,
     private _bookingService = BookingService.instance,
+    private _txnService = TransactionService.instance,
   ) {}
 
   get x() {
@@ -166,25 +170,58 @@ export default class AnalyticsService {
     const totalEarnings = await this.getAllSuccessfulTransactions();
     const totalUsers = await this._userService().count();
     const totalProducts = await this._productService().count();
+    const totalVendors =( await Vendor.find({ vendorType: VendorType.MARKET_SELLER })).length;
+    const totalServiceProviders = (await Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER })).length;
+    const totalServices = await this._provideService().count();
+    const totalTransactions = await this._txnService().count();
+
     return {
       totalEarnings,
       totalOrders,
       totalUsers,
       totalProducts,
+      totalVendors,
+      totalServiceProviders,
+      totalServices,
+      totalTransactions,
     };
+  }
+
+  async getTransactionMetrics() {
+    const transactions = await this._txnService().find();
+    
+    const metrics = transactions.reduce((acc, txn) => {
+      acc.transactionVolume++;
+      acc.totalRevenue += txn.amount;
+      
+      if (txn.success) {
+        acc.successfulTransactions++;
+      } else if (!txn.success) {
+        acc.pendingTransactions++; 
+      }
+      
+      return acc;
+    }, {
+      transactionVolume: 0,
+      totalRevenue: 0,
+      successfulTransactions: 0,
+      pendingTransactions: 0
+    });
+
+    return metrics;
   }
 
   async adminDashboardServiceCards() {
     // TODO:
-    const totalProviders = await this._userService().count({ isVendor: true });
+    const totalVendors =( await Vendor.find({ vendorType: VendorType.MARKET_SELLER })).length;
     const totalEarnings = await this.getAllSuccessfulTransactions();
     const totalUsers = await this._userService().count();
-    const totalServices = await this._provideService().count();
+    const totalServiceProviders = (await Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER })).length;
     return {
       totalEarnings,
-      totalProviders,
+      totalVendors,
       totalUsers,
-      totalServices,
+      totalServiceProviders,
     };
   }
 

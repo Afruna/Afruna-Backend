@@ -1,5 +1,5 @@
 import { ReturnAddressInterface, ShippingAddressInterface, ShippingInfoInterface } from '@interfaces/Shipping.Info.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 export enum BusinessType {
@@ -29,12 +29,12 @@ const ReturnAddressSchema = new Schema<ReturnAddressInterface>({
 { timestamps: true }
 );
 
-
 const ShippingInfoSchema = new Schema<ShippingInfoInterface>({
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
     shippingAddress: ShippingAddressSchema,
     returnAddress: ReturnAddressSchema,
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.DRAFT },
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

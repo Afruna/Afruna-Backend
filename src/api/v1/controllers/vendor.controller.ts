@@ -9,6 +9,18 @@ class VendorController extends Controller<VendorInterface> {
   service = new VendorService();
   responseDTO = VendorResponseDTO;
 
+  getVendors = this.control(async (req: Request) => {
+    const result = await this.service.getVendors();
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
+  getServiceProvider = this.control(async (req: Request) => {
+    const result = await this.service.getServiceProvider();
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
   getFeatured = this.control(async (req: Request) => {
     const result = await this.service.getFeatured(stringToEnum(<string>req.query.type));
 

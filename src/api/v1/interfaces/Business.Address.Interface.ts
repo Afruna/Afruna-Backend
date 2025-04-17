@@ -1,9 +1,14 @@
 import { Types } from 'mongoose';
-import { VendorStatus } from './Vendor.Interface';
+import { KYCStatus } from './Vendor.Interface';
+
+export enum DocumentType {
+    UTILITY = 'utility',
+    LEASE = 'lease',
+    OWNERSHIP = 'ownership'
+}
 
 export interface BusinessAddressInterface {
-    _id?: string | Types.ObjectId;
-    vendorId?: string | Types.ObjectId;
+    vendorId: Types.ObjectId;
     addressLine1: string;
     addressLine2: string;
     city: string;
@@ -12,12 +17,7 @@ export interface BusinessAddressInterface {
     postalCode: string;
     image: string;
     docType: DocumentType;
-    status: VendorStatus;
-}
-
-
-export enum DocumentType {
-    UTILITY = "UTILITY",
-    BANK_STATEMENT = "BANK_STATEMENT"
+    status: KYCStatus;
+    rejectionMessage?: string;
 }
 

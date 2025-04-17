@@ -142,6 +142,18 @@ class AdminController extends Controller<UserInterface> {
     return result;
   });
 
+  adminTransactionMetrics = this.control(async (req: Request) => {
+    const result = await this.service.adminTransactionMetrics();
+
+    return result;
+  });
+
+  getAllTransactions = this.control(async (req: Request) => {
+    const result = await this.service.getAllTransactions();
+
+    return result;
+  });
+
   topService = this.control(async (req: Request) => {
     const result = await this.service.topService();
 
@@ -162,6 +174,12 @@ class AdminController extends Controller<UserInterface> {
 
   getAllOrders = this.control(async (req: Request) => {
     const result = await this.service.findAllOrders();
+
+    return result;
+  });
+
+  getOrderById = this.control(async (req: Request) => {
+    const result = await this.service.findOrderById(req.params.orderId);
 
     return result;
   });
@@ -219,7 +237,133 @@ class AdminController extends Controller<UserInterface> {
 
     return result;
   });
+
+  getProviderMeansOfIdentification = this.control(async (req: Request) => {
+    const result = await this.service.getProviderMeansOfIdentification(req.params.vendorId);
+
+    return result;
+  });
+
+  getStoreFront = this.control(async (req: Request) => {
+    const result = await this.service.getStoreFront(req.params.vendorId);
+
+    return result;
+  });
+
+  getKYCLogs = this.control(async (req: Request) => {
+    const result = await this.service.getKYCLogs(req.params.vendorId);
+
+    return result;
+  });
   
+  getKYCLogById = this.control(async (req: Request) => {
+    const result = await this.service.getKYCLogById(req.params.logId);
+
+    return result;
+  });
+
+  createKYCLog = this.control(async (req: Request) => {
+    const result = await this.service.createKYCLog(req.body);
+
+    return result;
+  });
+
+  updateKYCLog = this.control(async (req: Request) => {
+    const result = await this.service.updateKYCLog(req.params.logId, req.body);
+
+    return result;
+  });
+
+  getAllKYCLogs = this.control(async (req: Request) => {
+    const result = await this.service.getAllKYCLogs();
+
+    return result;
+  });
+
+  getAllSubmittedKYC = this.control(async (req: Request) => {
+    const result = await this.service.getAllSubmittedKYC();
+
+    return result;
+  });
+
+  getAllVendorKYCDetails = this.control(async (req: Request) => {
+    const result = await this.service.getAllVendorKYCDetails(req.params.vendorId);
+
+    return result;
+  });
+
+  
+  updateKYCStatus = this.control(async (req: Request) => {
+    const result = await this.service.updateKYCStatus(req.body.type, req.body.vendorId, req.body.status, req.body.rejectionMessage);
+
+    return result;
+  });
+
+  createSpecialOffer = this.control(async (req: Request) => {
+    const result = await this.service.createSpecialOffer(req.body);
+
+    return result;
+  });
+
+  getAllSpecialOffers = this.control(async (req: Request) => {
+    const result = await this.service.getAllSpecialOffers();
+
+    return result;
+  });
+
+  getSpecialOfferById = this.control(async (req: Request) => {
+    const result = await this.service.getSpecialOfferById(req.params.id);
+
+    return result;
+  });
+
+  updateSpecialOffer = this.control(async (req: Request) => {
+    const result = await this.service.updateSpecialOffer(req.params.id, req.body);
+
+    return result;
+  });
+
+  deleteSpecialOffer = this.control(async (req: Request) => {
+    const result = await this.service.deleteSpecialOffer(req.params.id);
+
+    return result;
+  });
+
+  getKYCStats = this.control(async (req: Request) => {
+    const result = await this.service.getKYCStats();
+
+    return result;
+  });
+
+  getProductStats = this.control(async (req: Request) => {
+    const result = await this.service.getProductStats();
+
+    return result;
+  });
+
+  getOrderStats = this.control(async (req: Request) => {
+    const result = await this.service.getOrderStats();
+
+    return result;
+  });
+
+  getCustomerStats = this.control(async (req: Request) => {
+    const result = await this.service.getCustomerStats();
+
+    return result;
+  });
+
+  getVendorStats = this.control(async (req: Request) => {
+    const result = await this.service.getVendorStats();
+
+    return result;
+  });
+
+  getServiceProviderStats = this.control(async (req: Request) => {
+    const result = await this.service.getServiceProviderStats();
+
+    return result;
+  });
 }
 
 export default AdminController;

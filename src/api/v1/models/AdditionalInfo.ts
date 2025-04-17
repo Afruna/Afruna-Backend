@@ -10,6 +10,7 @@ const AdditionalInfoSchema = new Schema<AdditionalInfoInterface>({
     isOfflineSeller: Boolean,
     useOtherChannels: Boolean,
     status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.SUBMITTED },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

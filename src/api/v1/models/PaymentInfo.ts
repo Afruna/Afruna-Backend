@@ -1,7 +1,6 @@
-
 import { Schema, model } from 'mongoose';
 import { PaymentInfoInterface } from '@interfaces/PaymentInfo.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 
 const PaymentInfoSchema = new Schema<PaymentInfoInterface>({
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
@@ -9,7 +8,8 @@ const PaymentInfoSchema = new Schema<PaymentInfoInterface>({
     accountNumber: String,
     accountName: String,
     image: String,
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.DRAFT },
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

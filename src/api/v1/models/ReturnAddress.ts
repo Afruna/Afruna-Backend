@@ -1,5 +1,5 @@
 import { ReturnAddressInterface, DocumentType } from '@interfaces/Return.Address.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 const ReturnAddressSchema = new Schema<ReturnAddressInterface>({
@@ -12,7 +12,8 @@ const ReturnAddressSchema = new Schema<ReturnAddressInterface>({
     postalCode: String,
     image: String,
     docType: { type: String, enum: Object.values(DocumentType), default: DocumentType.UTILITY },
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.SUBMITTED },
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

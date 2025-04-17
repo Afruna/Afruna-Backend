@@ -1,4 +1,5 @@
 import { CustomerCareDetailInterface } from '@interfaces/CustomerCare.Detail.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 export enum BusinessType {
@@ -16,7 +17,9 @@ const CustomerCareDetailSchema = new Schema<CustomerCareDetailInterface>({
     city: String,
     state: String,
     country: String,
-    postalCode: String
+    postalCode: String,
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

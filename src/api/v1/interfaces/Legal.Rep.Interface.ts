@@ -1,6 +1,6 @@
 import { BusinessType } from "@models/BusinessInfo";
 import { Types } from 'mongoose';
-import { VendorStatus } from "./Vendor.Interface";
+import { KYCStatus } from "./Vendor.Interface";
 
 export interface LegalRepInterface {
     _id?: string | Types.ObjectId;
@@ -9,5 +9,6 @@ export interface LegalRepInterface {
     lastname: string;
     phoneNumber: string;
     emailAddress: string;
-    status: VendorStatus;
+    status: KYCStatus;
+    rejectionMessage?: string;
 }

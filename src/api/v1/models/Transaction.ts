@@ -5,7 +5,7 @@ import { customIdPlugin } from './IdPlugin';
 const transactionSchema = new Schema<TransactionInterface>(
   {
     success: Boolean,
-    userId: String,
+    userId: {type: Schema.Types.ObjectId, ref: 'User'},
     amount: Number,
     date: Date,
     description: String,

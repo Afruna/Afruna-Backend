@@ -1,5 +1,5 @@
 import { LegalRepInterface } from '@interfaces/Legal.Rep.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 const LegalRepSchema = new Schema<LegalRepInterface>({
@@ -8,7 +8,8 @@ const LegalRepSchema = new Schema<LegalRepInterface>({
     lastname: String,
     phoneNumber: String,
     emailAddress: String,
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.SUBMITTED },    
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );

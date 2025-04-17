@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { VendorStatus } from './Vendor.Interface';
+import { KYCStatus } from './Vendor.Interface';
 
 export interface AdditionalInfoInterface {
     _id?: string | Types.ObjectId;
@@ -9,7 +9,8 @@ export interface AdditionalInfoInterface {
     productSource: string;
     isOfflineSeller: boolean;
     useOtherChannels: boolean;
-    status: VendorStatus;
+    status: KYCStatus;
+    rejectionMessage?: string;
 }
 
 export enum SELLER_TYPE {

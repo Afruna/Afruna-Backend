@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { VendorStatus } from "./Vendor.Interface";
+import { KYCStatus } from "./Vendor.Interface";
 
 export interface PaymentInfoInterface {
   _id?: string | Types.ObjectId;
@@ -8,5 +8,6 @@ export interface PaymentInfoInterface {
   accountNumber: string;
   accountName: string;
   image: string;
-  status: VendorStatus;
+  status: KYCStatus;
+  rejectionMessage?: string;
 }

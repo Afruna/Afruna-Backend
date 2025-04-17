@@ -1,5 +1,5 @@
 import { StoreFrontInterface } from '@interfaces/Store.Front.Interface';
-import { VendorStatus } from '@interfaces/Vendor.Interface';
+import { KYCStatus } from '@interfaces/Vendor.Interface';
 import { Schema, model } from 'mongoose';
 
 export enum BusinessType {
@@ -13,12 +13,11 @@ const StoreFrontSchema = new Schema<StoreFrontInterface>({
     link: String,
     logo: String,
     favIcon: String,
-    status: { type: String, enum: Object.values(VendorStatus), default: VendorStatus.DRAFT },
+    status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
+    rejectionMessage: String
 },
 { timestamps: true }
 );
-
-
 
 const StoreFront = model('StoreFront', StoreFrontSchema);
 

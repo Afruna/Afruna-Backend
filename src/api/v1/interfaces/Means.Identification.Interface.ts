@@ -1,17 +1,18 @@
 import { Types } from 'mongoose';
-import { VendorStatus } from "./Vendor.Interface";
-
-export interface MeansIdentificationInterface {
-    _id?: string | Types.ObjectId;
-    vendorId?: string | Types.ObjectId;
-    docType: DocumentType;
-    identificationNumber: string;
-    docImage: string;
-    status: VendorStatus;
-}
+import { KYCStatus } from "./Vendor.Interface";
 
 export enum DocType {
-    PASSPORT = "PASSPORT",
-    NIN = "NIN",
-    VOTERS_CARD = "VOTERS_CARD"
+    NIN = 'nin',
+    DRIVERS_LICENSE = 'drivers_license',
+    VOTERS_CARD = 'voters_card',
+    INTERNATIONAL_PASSPORT = 'international_passport'
+}
+
+export interface MeansIdentificationInterface {
+    vendorId: Types.ObjectId;
+    docType: DocType;
+    identificationNumber: string;
+    docImage: string;
+    status: KYCStatus;
+    rejectionMessage?: string;
 }
