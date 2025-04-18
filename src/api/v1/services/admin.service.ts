@@ -7,7 +7,7 @@ import ProvideService from './provide.service';
 import VendorService from "./vendor.service";
 import BookingService from './booking.service';
 import { ServiceStatusEnum } from '@interfaces/Provide.Interface';
-import Admin, { IAdmin } from '@models/Admin';
+import Admin, { AdminRole, IAdmin } from '@models/Admin';
 import { sign } from 'jsonwebtoken';
 import HttpError from '@helpers/HttpError';
 import * as Config from '@config';
@@ -35,6 +35,7 @@ import { DeliveryStatus, OrderStatus } from '@interfaces/Order.Interface';
 import User from '@models/User';
 import Vendor from '@models/Vendor';
 import Booking from '@models/Booking';
+import axios from 'axios';
 
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
@@ -442,7 +443,28 @@ class AdminService extends UserService {
     };
   }
 
-  async getKYCStats() {
+    async getKYCStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
+      const now = new Date();
+      let previous;
+      
+      switch(filter) {
+        case 'daily':
+          previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+          break;
+        case 'weekly':
+          previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+          break;
+        case 'monthly':
+          previous = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+          break;
+      }
+      
+      return { current: now, previous };
+    };
+      
+    const { current, previous } = getDateRange(dateFilter);
+
     const [
       businessInfos,
       businessDetails,
@@ -454,15 +476,15 @@ class AdminService extends UserService {
       identifications,
       storefronts
     ] = await Promise.all([
-      BusinessInfo.find(),
-      BusinessDetail.find(),
-      CustomerCareDetail.find(),
-      ShippingInfo.find(),
-      PaymentInfo.find(),
-      AdditionalInfo.find(),
-      LegalRep.find(),
-      MeansIdentification.find(),
-      StoreFront.find()
+      BusinessInfo.find({createdAt: { $gte: previous, $lte: current }}),
+      BusinessDetail.find({createdAt: { $gte: previous, $lte: current }}),
+      CustomerCareDetail.find({createdAt: { $gte: previous, $lte: current }}),
+      ShippingInfo.find({createdAt: { $gte: previous, $lte: current }}),
+      PaymentInfo.find({createdAt: { $gte: previous, $lte: current }}),
+      AdditionalInfo.find({createdAt: { $gte: previous, $lte: current }}),
+      LegalRep.find({createdAt: { $gte: previous, $lte: current }}),
+      MeansIdentification.find({createdAt: { $gte: previous, $lte: current }}),
+      StoreFront.find({createdAt: { $gte: previous, $lte: current }})
     ]);
 
     const allSubmissions = [
@@ -477,16 +499,61 @@ class AdminService extends UserService {
       ...storefronts
     ];
 
+    // Get previous period counts for comparison
+    const previousSubmissions = await Promise.all([
+      BusinessInfo.find({createdAt: { $lt: previous }}),
+      BusinessDetail.find({createdAt: { $lt: previous }}), 
+      CustomerCareDetail.find({createdAt: { $lt: previous }}),
+      ShippingInfo.find({createdAt: { $lt: previous }}),
+      PaymentInfo.find({createdAt: { $lt: previous }}),
+      AdditionalInfo.find({createdAt: { $lt: previous }}),
+      LegalRep.find({createdAt: { $lt: previous }}),
+      MeansIdentification.find({createdAt: { $lt: previous }}),
+      StoreFront.find({createdAt: { $lt: previous }})
+    ]);
+
+    const allPreviousSubmissions = previousSubmissions.flat();
+
+    // Calculate current period metrics
     const totalSubmitted = allSubmissions.length;
     const pendingKYC = allSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
     const approvedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
     const rejectedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
 
+    // Calculate previous period metrics
+    const previousTotal = allPreviousSubmissions.length;
+    const previousPending = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
+    const previousApproved = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
+    const previousRejected = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
+
+    // Calculate percentages and trends
+    const calculateMetrics = (current: number, previous: number) => {
+      const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
+      return {
+        value: current,
+        percentage: Math.abs(Math.round(percentage * 10) / 10),
+        trend: current >= previous ? 'up' : 'down',
+        period: dateFilter
+      };
+    };
+
     return {
-      totalSubmitted,
-      pendingKYC,
-      approvedKYC,
-      rejectedKYC
+      totalSubmitted: {
+        ...calculateMetrics(totalSubmitted, previousTotal),
+        title: 'Total Submitted'
+      },
+      pendingKYC: {
+        ...calculateMetrics(pendingKYC, previousPending),
+        title: 'Pending KYC'
+      },
+      approvedKYC: {
+        ...calculateMetrics(approvedKYC, previousApproved),
+        title: 'Approved KYC'
+      },
+      rejectedKYC: {
+        ...calculateMetrics(rejectedKYC, previousRejected),
+        title: 'Rejected KYC'
+      }
     };
   }
 
@@ -627,6 +694,175 @@ class AdminService extends UserService {
     return typeTextMap[type] || type;
   }
 
+  async createAdmin(adminData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: AdminRole;
+  }) {
+    // Generate a random password (12 characters)
+    const generatePassword = () => {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+      const length = 12;
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return password;
+    };
+
+    const password = generatePassword();
+
+    // Create new admin
+    const admin = new Admin({
+      ...adminData,
+      password,
+      isActive: true
+    });
+
+    await admin.save();
+
+    //send email to admin
+    const email = admin.email;
+    const subject = 'Admin Account Created';
+    const html = `
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+          <h1 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">Welcome to Admin Portal</h1>
+          <p style="color: #34495e; font-size: 16px; line-height: 1.5;">Dear ${admin.firstName} ${admin.lastName},</p>
+          <p style="color: #34495e; font-size: 16px; line-height: 1.5;">Your admin account has been created successfully. Below are your login credentials:</p>
+          
+          <div style="background-color: #ffffff; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #e0e0e0;">
+            <p style="margin: 5px 0; color:rgb(229, 136, 21);"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 5px 0; color:rgb(229, 136, 21);"><strong>Password:</strong> ${password}</p>
+            <p style="margin: 5px 0; color:rgb(229, 136, 21);"><strong>Role:</strong> ${admin.role}</p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="http://localhost:3000/login" 
+               style="background-color:rgb(219, 149, 52); 
+                      color: white; 
+                      padding: 12px 25px; 
+                      text-decoration: none; 
+                      border-radius: 5px; 
+                      font-weight: bold;">
+              Login to Admin Portal
+            </a>
+          </div>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+            <p style="color: #7f8c8d; font-size: 14px;">For security reasons, we recommend changing your password after your first login.</p>
+            <p style="color: #7f8c8d; font-size: 14px;">If you have any questions or need assistance, please contact the system administrator.</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    axios
+      .post("https://email-server-z0fz.onrender.com/send-email", {
+        subject: "Admin Account Created",
+        content: html,
+        to: email,
+      })
+      .then(response => {
+        console.log('Email sent successfully');
+      })
+      .catch(error => {
+        console.error('Error sending email:', error);
+      });
+
+    // Return admin data with the generated password
+    // Password should be sent to admin's email and not stored in plain text
+    return {
+      admin: {
+        id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role
+      },
+      generatedPassword: password // This should be sent via email to the admin
+    };
+  }
+
+  async getAllAdmins() {
+    const admins = await Admin.find({}, {
+      password: 0 // Exclude password field
+    });
+
+    return admins.map(admin => ({
+      id: admin._id,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
+      email: admin.email,
+      role: admin.role,
+      isActive: admin.isActive,
+      lastLogin: admin.lastLogin,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt
+    }));
+  }
+
+  async updateAdmin(adminId: string, updateData: Partial<IAdmin>) {
+    // Remove sensitive fields that shouldn't be updated directly
+    const { password, ...safeUpdateData } = updateData;
+
+    const admin = await Admin.findById(adminId);
+    if (!admin) {
+      throw new HttpError('Admin not found', 404);
+    }
+
+    // Update the admin document
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      adminId,
+      { $set: safeUpdateData },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedAdmin) {
+      throw new HttpError('Failed to update admin', 400);
+    }
+
+    return {
+      id: updatedAdmin._id,
+      firstName: updatedAdmin.firstName,
+      lastName: updatedAdmin.lastName,
+      email: updatedAdmin.email,
+      role: updatedAdmin.role,
+      isActive: updatedAdmin.isActive,
+      lastLogin: updatedAdmin.lastLogin,
+      createdAt: updatedAdmin.createdAt,
+      updatedAt: updatedAdmin.updatedAt
+    };
+  }
+
+  async deleteAdmin(adminId: string) {
+    const admin = await Admin.findById(adminId);
+    if (!admin) {
+      throw new HttpError('Admin not found', 404);
+    }
+
+    // Prevent deletion of the last super admin
+    if (admin.role === AdminRole.SUPER_ADMIN) {
+      const superAdminCount = await Admin.countDocuments({ 
+        role: AdminRole.SUPER_ADMIN 
+      });
+      
+      if (superAdminCount <= 1) {
+        throw new HttpError(
+          'Cannot delete the last super admin account', 
+          400
+        );
+      }
+    }
+
+    await Admin.findByIdAndDelete(adminId);
+
+    return {
+      message: 'Admin deleted successfully'
+    };
+  }
+
   async signIn({ email, password }) {
     const admin = await Admin.findOne({ email });
     console.log('admin', admin);
@@ -670,16 +906,16 @@ class AdminService extends UserService {
     return this._analytics.revenueOrderTable(time);
   }
 
-  adminDashboardCards() {
-    return this._analytics.adminDashboardCards();
+  adminDashboardCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    return this._analytics.adminDashboardCards(dateFilter);
   }
 
-  adminDashboardServiceCards() {
-    return this._analytics.adminDashboardServiceCards();
+  adminDashboardServiceCards(dateFilter: 'daily' | 'weekly' | 'monthly') {
+    return this._analytics.adminDashboardServiceCards(dateFilter);
   }
 
-  adminTransactionMetrics() {
-    return this._analytics.getTransactionMetrics();
+  adminTransactionMetrics(dateFilter: 'daily' | 'weekly' | 'monthly') {
+    return this._analytics.getTransactionMetrics(dateFilter);
   }
 
   async getAllTransactions() {

@@ -16,7 +16,7 @@ import generateToken from '@utils/generateToken';
 import { VendorTokenInterface } from '@interfaces/VendorToken.Interface';
 import { AuthVendorSessionInterface } from '@interfaces/AuthVendorSession.Interface';
 import VendorService from './vendor.service';
-import { SendMail } from 'src/config/email.config';
+import axios from 'axios';
 
 class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSessionRepository> {
   protected repository = new AuthVendorSessionRepository();
@@ -91,8 +91,21 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
         vendor: vendor._id,
         type: TokenTypeEnum.VERIFY_EMAIL,
       });
-      
-      
+
+
+      axios
+      .post("https://email-server-z0fz.onrender.com/send-email", {
+        subject: "Vendor Account Created",
+        content: `<p>Your account has been created successfully. Please copy your code below to verify your email</p>
+        <p>
+          <a href="${process.env.FRONTEND_URL}/verify-email?emailAddress=${vendor.emailAddress}"></a>
+          <p>${code}</p>
+        </p>`,
+        to: vendor.emailAddress,
+      })
+      .then(response => {
+        console.log('Email sent successfully');
+      })
 
       this._emailing
         ? this._emailing.verifyEmail(<DocType<VendorTokenInterface & { vendor: DocType<VendorInterface> }>>token)

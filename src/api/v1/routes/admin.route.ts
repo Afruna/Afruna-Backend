@@ -54,6 +54,11 @@ export default class AdminRoute extends Route<UserInterface> {
     this.router.route('/vendor-stats').get(this.controller.getVendorStats);
     this.router.route('/service-provider-stats').get(this.controller.getServiceProviderStats);
 
+    this.router.route('/admins').get(this.controller.getAllAdmins);
+    this.router.route('/admins').post(this.controller.createAdmin);
+    this.router.route('/admins/:adminId').put(this.controller.updateAdmin);
+    this.router.route('/admins/:adminId').delete(this.controller.deleteAdmin);
+
     this.router.route('/providers').get(this.controller.getAllProviders);
     this.router.route('/vendors').get(this.controller.getVendors);
     this.router.route('/customers').get(this.controller.getCustomers);

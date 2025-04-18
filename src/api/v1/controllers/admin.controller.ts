@@ -20,7 +20,7 @@ class AdminController extends Controller<UserInterface> {
     return result;
   });
   adminDashboardCards = this.control(async (req: Request) => {
-    const result = await this.service.adminDashboardCards();
+    const result = await this.service.adminDashboardCards(<any>req.query.dateFilter);
     return result;
   });
   salesByCategory = this.control(async (req: Request) => {
@@ -137,13 +137,13 @@ class AdminController extends Controller<UserInterface> {
   });
 
   adminDashboardServiceCards = this.control(async (req: Request) => {
-    const result = await this.service.adminDashboardServiceCards();
+    const result = await this.service.adminDashboardServiceCards(<any>req.query.dateFilter);
 
     return result;
   });
 
   adminTransactionMetrics = this.control(async (req: Request) => {
-    const result = await this.service.adminTransactionMetrics();
+    const result = await this.service.adminTransactionMetrics(<any>req.query.dateFilter);
 
     return result;
   });
@@ -330,7 +330,7 @@ class AdminController extends Controller<UserInterface> {
   });
 
   getKYCStats = this.control(async (req: Request) => {
-    const result = await this.service.getKYCStats();
+    const result = await this.service.getKYCStats(<any>req.query.dateFilter);
 
     return result;
   });
@@ -364,6 +364,34 @@ class AdminController extends Controller<UserInterface> {
 
     return result;
   });
+
+  createAdmin = this.control(async (req: Request) => {
+    const result = await this.service.createAdmin(req.body);
+
+    return result;
+  });
+
+  getAllAdmins = this.control(async (req: Request) => {
+    const result = await this.service.getAllAdmins();
+
+    return result;
+  });   
+
+  updateAdmin = this.control(async (req: Request) => {
+    const result = await this.service.updateAdmin(req.params.adminId, req.body);
+
+    return result;
+  });
+
+  deleteAdmin = this.control(async (req: Request) => {
+    const result = await this.service.deleteAdmin(req.params.adminId);
+
+    return result;
+  }); 
+  
+  
+  
+  
 }
 
 export default AdminController;
