@@ -6,9 +6,9 @@ export const meansIdentificationRequestDTO = {
   vendorId: [param('vendorId').exists()],
   create: [
     check('vendorId').optional(),
-    check('docType').exists().withMessage('Document Type is required'),
+    // check('docType').exists().withMessage('Document Type is required'),
     check('identificationNumber').exists().withMessage('Identification Number is required'),
     check('docImage').exists().withMessage('Document Image is required')
   ],
-  update: [check('vendorId').optional(), check('docType').optional(), check('identificationNumber').optional(), check('docImage').optional()]
+  update: [check('vendorId').optional(), check('identificationNumber').optional(), check('docImage').optional()]
 };
