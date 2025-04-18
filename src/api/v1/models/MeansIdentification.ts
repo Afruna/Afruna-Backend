@@ -4,7 +4,7 @@ import { Schema, model } from 'mongoose';
 
 const MeansIdentificationSchema = new Schema<MeansIdentificationInterface>({
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
-    docType: { type: String, enum: Object.values(DocType), default: DocType.NIN },
+    docType: { type: String},
     identificationNumber: String,
     docImage: String,
     status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
