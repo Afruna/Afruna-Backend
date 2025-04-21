@@ -26,11 +26,11 @@ class MessageController extends Controller<MessageInterface> {
     return result;
   });
 
-  get = this.control((req: Request) => {
-    let messages = this.service.find({
+  get =  this.control(async (req: Request) => {
+    let messages = await this.service.find({
       conversationId: req.params.conversationId as string  || req.query.conversationId as string,
     })
-    let conversation = Conversation.findOne({
+    let conversation = await Conversation.findOne({
       _id: req.params.conversationId as string  || req.query.conversationId as string});
 
     return {messages, conversation};
