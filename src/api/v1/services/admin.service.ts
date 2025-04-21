@@ -48,65 +48,233 @@ class AdminService extends UserService {
   private _orderService = OrderService.instance;
   private _specialOffersService = SpecialOffersService.instance;
 
-  async getProductStats() {
-    const products = await Product.find();
+  getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
+    const now = new Date();
+    const start = new Date();
     
-    const stats = {
-      totalProducts: 0,
-      inStock: 0, 
-      lowStock: 0,
-      outOfStock: 0
+    switch(filter) {
+      case 'daily':
+        start.setDate(now.getDate() - 1);
+        break;
+      case 'weekly': 
+        start.setDate(now.getDate() - 7);
+        break;
+      case 'monthly':
+        start.setMonth(now.getMonth() - 1);
+        break;
+    }
+    return { start, end: now };
+  };
+
+
+  async getProductStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
+      const now = new Date();
+      const start = new Date();
+      
+      switch(filter) {
+        case 'daily':
+          start.setDate(now.getDate() - 1);
+          break;
+        case 'weekly': 
+          start.setDate(now.getDate() - 7);
+          break;
+        case 'monthly':
+          start.setMonth(now.getMonth() - 1);
+          break;
+      }
+      return { start, end: now };
     };
 
-    stats.totalProducts = products.length;
+    const { start, end } = getDateRange(dateFilter);
 
-    products.forEach(product => {
-      if (product.quantity === 0) {
-        stats.outOfStock++;
-      } else if (product.quantity <= 10) { // Assuming low stock threshold is 10
-        stats.lowStock++;
-      } else {
-        stats.inStock++;
-      }
+    // Get current period products
+    const currentProducts = await Product.find({
+      createdAt: { $gte: start, $lte: end }
     });
 
-    return stats;
+    // Get previous period products for comparison
+    const prevStart = new Date(start);
+    const prevEnd = new Date(end);
+    switch(dateFilter) {
+      case 'daily':
+        prevStart.setDate(prevStart.getDate() - 1);
+        prevEnd.setDate(prevEnd.getDate() - 1);
+        break;
+      case 'weekly':
+        prevStart.setDate(prevStart.getDate() - 7);
+        prevEnd.setDate(prevEnd.getDate() - 7);
+        break;
+      case 'monthly':
+        prevStart.setMonth(prevStart.getMonth() - 1);
+        prevEnd.setMonth(prevEnd.getMonth() - 1);
+        break;
+    }
+
+    const previousProducts = await Product.find({
+      createdAt: { $gte: prevStart, $lte: prevEnd }
+    });
+
+    const calculateStats = (products: any[]) => {
+      const stats = {
+        total: products.length,
+        inStock: 0,
+        lowStock: 0,
+        outOfStock: 0
+      };
+
+      products.forEach(product => {
+        if (product.quantity === 0) {
+          stats.outOfStock++;
+        } else if (product.quantity <= 10) {
+          stats.lowStock++;
+        } else {
+          stats.inStock++;
+        }
+      });
+
+      return stats;
+    };
+
+    const currentStats = calculateStats(currentProducts);
+    const previousStats = calculateStats(previousProducts);
+
+    const calculatePercentageChange = (current: number, previous: number) => {
+      if (previous === 0) return 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    const formatStat = (title: string, current: number, previous: number) => {
+      const percentageChange = calculatePercentageChange(current, previous);
+      return {
+        title,
+        value: current,
+        percentage: Math.abs(percentageChange).toFixed(1),
+        trend: percentageChange >= 0 ? 'up' : 'down',
+        period: dateFilter
+      };
+    };
+
+    return {
+      totalProducts: formatStat('Total Products', currentStats.total, previousStats.total),
+      inStock: formatStat('In Stock', currentStats.inStock, previousStats.inStock),
+      lowStock: formatStat('Low Stock', currentStats.lowStock, previousStats.lowStock),
+      outOfStock: formatStat('Out of Stock', currentStats.outOfStock, previousStats.outOfStock)
+    };
   }
-  async getOrderStats() {
-    const orders = await Order.find();
-    
-    const stats = {
-      totalOrders: 0,
-      allTimeOrders: 0,
-      pendingOrders: 0,
-      paidOrders: 0,
-      cancelledOrders: 0,
-      returnedOrders: 0,
-      allTimeFulfilledOrders: 0
-    };
-
-    stats.totalOrders = orders.length;
-    stats.allTimeOrders = orders.length;
-
-    orders.forEach(order => {
-      switch(order.orderStatus) {
-        case OrderStatus.CANCELLED:
-          stats.cancelledOrders++;
+  async getOrderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
+      const now = new Date();
+      const startDate = new Date();
+      
+      // Set current period start date
+      switch(filter) {
+        case 'daily':
+          startDate.setDate(now.getDate() - 1);
           break;
-        case OrderStatus.PAID:
-          stats.paidOrders++;
-          stats.allTimeFulfilledOrders++;
+        case 'weekly':
+          startDate.setDate(now.getDate() - 7);
           break;
-        case OrderStatus.PENDING:
-          stats.pendingOrders++;
-          break;
-        case OrderStatus.RETURNED:
-          stats.returnedOrders++;
+        case 'monthly':
+          startDate.setMonth(now.getMonth() - 1);
           break;
       }
+
+      // Set previous period dates
+      const previousStartDate = new Date(startDate);
+      const previousEndDate = new Date(now);
+
+      switch(filter) {
+        case 'daily':
+          previousStartDate.setDate(previousStartDate.getDate() - 1);
+          previousEndDate.setDate(previousEndDate.getDate() - 1);
+          break;
+        case 'weekly':
+          previousStartDate.setDate(previousStartDate.getDate() - 7);
+          previousEndDate.setDate(previousEndDate.getDate() - 7);
+          break;
+        case 'monthly':
+          previousStartDate.setMonth(previousStartDate.getMonth() - 1);
+          previousEndDate.setMonth(previousEndDate.getMonth() - 1);
+          break;
+      }
+
+      return {
+        startDate,
+        endDate: now,
+        previousStartDate,
+        previousEndDate
+      };
+    };
+
+
+    const { startDate, endDate, previousStartDate, previousEndDate } = getDateRanges(dateFilter);
+
+    // Get current period orders
+    const currentOrders = await Order.find({
+      createdAt: { $gte: startDate, $lte: endDate }
     });
 
-    return stats;
+    // Get previous period orders
+    const previousOrders = await Order.find({
+      createdAt: { $gte: previousStartDate, $lte: previousEndDate }
+    });
+
+    const calculateStats = (orders: any[]) => {
+      const stats = {
+        total: orders.length,
+        returned: 0,
+        pending: 0,
+        fulfilled: 0,
+        failed: 0
+      };
+
+      orders.forEach(order => {
+        switch(order.orderStatus) {
+          case OrderStatus.RETURNED:
+            stats.returned++;
+            break;
+          case OrderStatus.PENDING:
+            stats.pending++;
+            break;
+          case OrderStatus.PAID:
+            stats.fulfilled++;
+            break;
+          case OrderStatus.CANCELLED:
+            stats.failed++;
+            break;
+        }
+      });
+
+      return stats;
+    };
+
+    const currentStats = calculateStats(currentOrders);
+    const previousStats = calculateStats(previousOrders);
+
+    const calculatePercentageChange = (current: number, previous: number) => {
+      if (previous === 0) return 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    const formatStat = (title: string, current: number, previous: number) => {
+      const percentageChange = calculatePercentageChange(current, previous);
+      return {
+        title,
+        value: current,
+        percentage: Math.abs(percentageChange).toFixed(1),
+        trend: percentageChange >= 0 ? 'up' : 'down',
+        period: dateFilter
+      };
+    };
+
+    return {
+      totalOrders: formatStat('Total Orders', currentStats.total, previousStats.total),
+      // returnedOrders: formatStat('Returned Orders', currentStats.returned, previousStats.returned),
+      pendingOrders: formatStat('Pending Orders', currentStats.pending, previousStats.pending),
+      fulfilledOrders: formatStat('Fulfilled Orders', currentStats.fulfilled, previousStats.fulfilled),
+      failedOrders: formatStat('Failed Orders', currentStats.failed, previousStats.failed)
+    };
   }
 
   // async getOrderStats() {
@@ -150,156 +318,370 @@ class AdminService extends UserService {
   //   return stats;
   // }
 
-  async getCustomerStats() {
+  async getCustomerStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
     const users = await User.find();
-    const orders = await Order.find().populate('userId');
-
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const stats = {
-      totalCustomers: 0,
-      newCustomersThisMonth: 0,
-      returningCustomers: 0,
-      activeCustomersLast30Days: 0,
-      averageOrdersPerCustomer: 0
-    };
-
-    // Total customers
-    stats.totalCustomers = users.length;
-
-    // New customers this month
-    stats.newCustomersThisMonth = users.filter(user => {
-      const createdAt = new Date(user.createdAt);
-      return createdAt >= firstDayOfMonth;
-    }).length;
-
-    // Get unique customer IDs who have made orders
-    const customerOrders = new Map();
-    orders.forEach(order => {
-      const userId = order.userId ? order.userId.toString() : '';
-      if (!customerOrders.has(userId)) {
-        customerOrders.set(userId, []);
-      }
-      customerOrders.get(userId).push(order);
-    });
-
-    // Returning customers (made more than 1 order)
-    stats.returningCustomers = Array.from(customerOrders.values())
-      .filter(customerOrderList => customerOrderList.length > 1).length;
-
-    // Active customers in last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    stats.activeCustomersLast30Days = Array.from(customerOrders.values())
-      .filter(customerOrderList => 
-        customerOrderList.some(order => new Date(order.createdAt) >= thirtyDaysAgo)
-      ).length;
-
-    // Average orders per customer
-    stats.averageOrdersPerCustomer = customerOrders.size > 0 ? 
-      (orders.length / customerOrders.size).toFixed(2) : 0;
-
-    return stats;
-  }
-
-  async getVendorStats() {
-    const vendors = await Vendor.find({ vendorType: VendorType.MARKET_SELLER });
     const orders = await Order.find();
-
+    // Get date ranges based on filter
     const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const stats = {
-      totalVendors: 0,
-      newVendorsThisMonth: 0,
-      returningVendors: 0,
-      activeVendorsLast30Days: 0
+    const ranges = {
+      current: {
+        start: new Date(),
+        end: new Date()
+      },
+      previous: {
+        start: new Date(),
+        end: new Date() 
+      }
     };
 
-    // Total vendors
-    stats.totalVendors = vendors.length;
+    switch(dateFilter) {
+      case 'daily':
+        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        ranges.previous.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        ranges.previous.end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+        break;
+      case 'weekly':
+        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        ranges.previous.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() - 7);
+        ranges.previous.end = new Date(ranges.current.start.getTime() - 1);
+        break;
+      case 'monthly':
+        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), 1);
+        ranges.previous.start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        ranges.previous.end = new Date(now.getFullYear(), now.getMonth(), 0);
+        break;
+    }
 
-    // New vendors this month
-    stats.newVendorsThisMonth = vendors.filter(vendor => {
-      const createdAt = new Date(vendor.createdAt);
-      return createdAt >= firstDayOfMonth;
-    }).length;
+    // Get current and previous period stats
+    const getCurrentStats = (startDate: Date, endDate: Date) => {
+      const periodUsers = users.filter(user => {
+        const createdAt = new Date(user.createdAt);
+        return createdAt >= startDate && createdAt <= endDate;
+      });
 
-    // Get unique vendor IDs who have received orders
-    const vendorOrders = new Map();
-    orders.forEach(order => {
-      const vendorId = order.vendorId ? order.vendorId.toString() : '';
-      if (!vendorOrders.has(vendorId)) {
-        vendorOrders.set(vendorId, []);
+      const periodOrders = orders.filter(order => {
+        const createdAt = new Date(order.createdAt);
+        return createdAt >= startDate && createdAt <= endDate;
+      });
+
+      const customerOrders = new Map();
+      periodOrders.forEach(order => {
+        const userId = order.userId ? order.userId.toString() : '';
+        if (!customerOrders.has(userId)) {
+          customerOrders.set(userId, []);
+        }
+        customerOrders.get(userId).push(order);
+      });
+
+      return {
+        totalCustomers: periodUsers.length,
+        returningCustomers: Array.from(customerOrders.values()).filter(orders => orders.length > 1).length,
+        activeCustomers: customerOrders.size,
+        averageOrdersPerCustomer: customerOrders.size > 0 ? 
+          Number((periodOrders.length / customerOrders.size).toFixed(2)) : 0
+      };
+    };
+
+    const currentStats = getCurrentStats(ranges.current.start, ranges.current.end);
+    const previousStats = getCurrentStats(ranges.previous.start, ranges.previous.end);
+
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return { percentage: 0, trend: 'up' };
+      const change = ((current - previous) / previous) * 100;
+      return {
+        percentage: Math.abs(Number(change.toFixed(1))),
+        trend: change >= 0 ? 'up' : 'down'
+      };
+    };
+
+    const stats = {
+      totalCustomers: {
+        title: 'Total Customers',
+        value: currentStats.totalCustomers,
+        period: dateFilter,
+        ...calculateChange(currentStats.totalCustomers, previousStats.totalCustomers)
+      },
+      returningCustomers: {
+        title: 'Returning Customers',
+        value: currentStats.returningCustomers,
+        period: dateFilter,
+        ...calculateChange(currentStats.returningCustomers, previousStats.returningCustomers)
+      },
+      activeCustomers: {
+        title: 'Active Customers',
+        value: currentStats.activeCustomers,
+        period: dateFilter,
+        ...calculateChange(currentStats.activeCustomers, previousStats.activeCustomers)
+      },
+      averageOrdersPerCustomer: {
+        title: 'Average Orders Per Customer',
+        value: currentStats.averageOrdersPerCustomer,
+        period: dateFilter,
+        ...calculateChange(currentStats.averageOrdersPerCustomer, previousStats.averageOrdersPerCustomer)
       }
-      vendorOrders.get(vendorId).push(order);
-    });
-
-    // Returning vendors (received more than 1 order)
-    stats.returningVendors = Array.from(vendorOrders.values())
-      .filter(vendorOrderList => vendorOrderList.length > 1).length;
-
-    // Active vendors in last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    stats.activeVendorsLast30Days = Array.from(vendorOrders.values())
-      .filter(vendorOrderList => 
-        vendorOrderList.some(order => new Date(order.createdAt) >= thirtyDaysAgo)
-      ).length;
-
+    };
+   
     return stats;
   }
 
-  async getServiceProviderStats() {
-    const providers = await Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER });
-    const bookings = await Booking.find();
+  async getVendorStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
+      const now = new Date();
+      const current = {
+        start: new Date(),
+        end: now
+      };
+      const previous = {
+        start: new Date(),
+        end: new Date()
+      };
 
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      switch(filter) {
+        case 'daily':
+          current.start.setDate(now.getDate() - 1);
+          previous.start.setDate(now.getDate() - 2);
+          previous.end.setDate(now.getDate() - 1);
+          break;
+        case 'weekly':
+          current.start.setDate(now.getDate() - 7);
+          previous.start.setDate(now.getDate() - 14);
+          previous.end.setDate(now.getDate() - 7);
+          break;
+        case 'monthly':
+          current.start.setMonth(now.getMonth() - 1);
+          previous.start.setMonth(now.getMonth() - 2);
+          previous.end.setMonth(now.getMonth() - 1);
+          break;
+      }
 
-    const stats = {
-      totalServiceProviders: 0,
-      newProvidersThisMonth: 0,
-      returningProviders: 0,
-      activeProvidersLast30Days: 0
+      return { current, previous };
     };
 
-    // Total service providers
-    stats.totalServiceProviders = providers.length;
+    const ranges = getDateRanges(dateFilter);
 
-    // New providers this month
-    stats.newProvidersThisMonth = providers.filter(provider => {
-      const createdAt = new Date(provider.createdAt);
-      return createdAt >= firstDayOfMonth;
-    }).length;
+    const calculateStats = async (startDate: Date, endDate: Date) => {
+      const vendors = await Vendor.find({
+        createdAt: { $gte: startDate, $lte: endDate },
+        vendorType: VendorType.MARKET_SELLER
+      });
 
-    // Get unique provider IDs who have received bookings
-    const providerBookings = new Map();
-    bookings.forEach(booking => {
-      const providerId = booking.providerId ? booking.providerId.toString() : '';
-      if (!providerBookings.has(providerId)) {
-        providerBookings.set(providerId, []);
+      const orders = await Order.find({
+        createdAt: { $gte: startDate, $lte: endDate }
+      });
+
+      // Get unique vendor IDs who have received orders
+      const vendorOrders = new Map();
+      orders.forEach(order => {
+        const vendorId = order.vendorId ? order.vendorId.toString() : '';
+        if (!vendorOrders.has(vendorId)) {
+          vendorOrders.set(vendorId, []);
+        }
+        vendorOrders.get(vendorId).push(order);
+      });
+
+      return {
+        totalVendors: vendors.length,
+        newVendors: vendors.length,
+        returningVendors: Array.from(vendorOrders.values())
+          .filter(vendorOrderList => vendorOrderList.length > 1).length,
+        activeVendors: vendorOrders.size
+      };
+    };
+
+    const currentStats = await calculateStats(ranges.current.start, ranges.current.end);
+    const previousStats = await calculateStats(ranges.previous.start, ranges.previous.end);
+
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return { percentage: 0, trend: 'up' };
+      const change = ((current - previous) / previous) * 100;
+      return {
+        percentage: Math.abs(Number(change.toFixed(1))),
+        trend: change >= 0 ? 'up' : 'down'
+      };
+    };
+
+    return {
+      totalVendors: {
+        title: 'Total Vendors',
+        value: currentStats.totalVendors,
+        period: dateFilter,
+        ...calculateChange(currentStats.totalVendors, previousStats.totalVendors)
+      },
+      newVendors: {
+        title: 'New Vendors',
+        value: currentStats.newVendors,
+        period: dateFilter,
+        ...calculateChange(currentStats.newVendors, previousStats.newVendors)
+      },
+      returningVendors: {
+        title: 'Returning Vendors',
+        value: currentStats.returningVendors,
+        period: dateFilter,
+        ...calculateChange(currentStats.returningVendors, previousStats.returningVendors)
+      },
+      activeVendors: {
+        title: 'Active Vendors',
+        value: currentStats.activeVendors,
+        period: dateFilter,
+        ...calculateChange(currentStats.activeVendors, previousStats.activeVendors)
       }
-      providerBookings.get(providerId).push(booking);
-    });
+    };
+  }
 
-    // Returning providers (received more than 1 booking)
-    stats.returningProviders = Array.from(providerBookings.values())
-      .filter(providerBookingList => providerBookingList.length > 1).length;
+  
 
-    // Active providers in last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  // async getServiceProviderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
     
-    stats.activeProvidersLast30Days = Array.from(providerBookings.values())
-      .filter(providerBookingList => 
-        providerBookingList.some(booking => new Date(booking.createdAt) >= thirtyDaysAgo)
-      ).length;
+  //   const providers = await Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER });
+  //   const bookings = await Booking.find();
 
-    return stats;
+  //   const now = new Date();
+  //   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  //   const stats = {
+  //     totalServiceProviders: 0,
+  //     newProvidersThisMonth: 0,
+  //     returningProviders: 0,
+  //     activeProvidersLast30Days: 0
+  //   };
+
+  //   // Total service providers
+  //   stats.totalServiceProviders = providers.length;
+
+  //   // New providers this month
+  //   stats.newProvidersThisMonth = providers.filter(provider => {
+  //     const createdAt = new Date(provider.createdAt);
+  //     return createdAt >= firstDayOfMonth;
+  //   }).length;
+
+  //   // Get unique provider IDs who have received bookings
+  //   const providerBookings = new Map();
+  //   bookings.forEach(booking => {
+  //     const providerId = booking.providerId ? booking.providerId.toString() : '';
+  //     if (!providerBookings.has(providerId)) {
+  //       providerBookings.set(providerId, []);
+  //     }
+  //     providerBookings.get(providerId).push(booking);
+  //   });
+
+  //   // Returning providers (received more than 1 booking)
+  //   stats.returningProviders = Array.from(providerBookings.values())
+  //     .filter(providerBookingList => providerBookingList.length > 1).length;
+
+  //   // Active providers in last 30 days
+  //   const thirtyDaysAgo = new Date();
+  //   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+  //   stats.activeProvidersLast30Days = Array.from(providerBookings.values())
+  //     .filter(providerBookingList => 
+  //       providerBookingList.some(booking => new Date(booking.createdAt) >= thirtyDaysAgo)
+  //     ).length;
+
+  //   return stats;
+  // }
+
+  async getServiceProviderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
+      const now = new Date();
+      const current = {
+        start: new Date(),
+        end: now
+      };
+      const previous = {
+        start: new Date(),
+        end: new Date()
+      };
+  
+      switch(filter) {
+        case 'daily':
+          current.start.setDate(now.getDate() - 1);
+          previous.start.setDate(now.getDate() - 2);
+          previous.end.setDate(now.getDate() - 1);
+          break;
+        case 'weekly':
+          current.start.setDate(now.getDate() - 7);
+          previous.start.setDate(now.getDate() - 14);
+          previous.end.setDate(now.getDate() - 7);
+          break;
+        case 'monthly':
+          current.start.setMonth(now.getMonth() - 1);
+          previous.start.setMonth(now.getMonth() - 2);
+          previous.end.setMonth(now.getMonth() - 1);
+          break;
+      }
+  
+      return { current, previous };
+    };
+  
+    const ranges = getDateRanges(dateFilter);
+  
+    const calculateStats = async (startDate: Date, endDate: Date) => {
+      const providers = await Vendor.find({
+        vendorType: VendorType.SERVICE_PROVIDER,
+        createdAt: { $gte: startDate, $lte: endDate }
+      });
+  
+      const bookings = await Booking.find({
+        createdAt: { $gte: startDate, $lte: endDate }
+      });
+  
+      // Get unique provider IDs who have received bookings
+      const providerBookings = new Map();
+      bookings.forEach(booking => {
+        const providerId = booking.providerId ? booking.providerId.toString() : '';
+        if (!providerBookings.has(providerId)) {
+          providerBookings.set(providerId, []);
+        }
+        providerBookings.get(providerId).push(booking);
+      });
+  
+      return {
+        totalProviders: providers.length,
+        newProviders: providers.length,
+        returningProviders: Array.from(providerBookings.values())
+          .filter(providerBookingList => providerBookingList.length > 1).length,
+        activeProviders: providerBookings.size
+      };
+    };
+  
+    const currentStats = await calculateStats(ranges.current.start, ranges.current.end);
+    const previousStats = await calculateStats(ranges.previous.start, ranges.previous.end);
+  
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return { percentage: 0, trend: 'up' };
+      const change = ((current - previous) / previous) * 100;
+      return {
+        percentage: Math.abs(Number(change.toFixed(1))),
+        trend: change >= 0 ? 'up' : 'down'
+      };
+    };
+  
+    return {
+      totalServiceProviders: {
+        title: 'Total Service Providers',
+        value: currentStats.totalProviders,
+        period: dateFilter,
+        ...calculateChange(currentStats.totalProviders, previousStats.totalProviders)
+      },
+      newProviders: {
+        title: 'New Providers',
+        value: currentStats.newProviders,
+        period: dateFilter,
+        ...calculateChange(currentStats.newProviders, previousStats.newProviders)
+      },
+      returningProviders: {
+        title: 'Returning Providers',
+        value: currentStats.returningProviders,
+        period: dateFilter,
+        ...calculateChange(currentStats.returningProviders, previousStats.returningProviders)
+      },
+      activeProviders: {
+        title: 'Active Providers',
+        value: currentStats.activeProviders,
+        period: dateFilter,
+        ...calculateChange(currentStats.activeProviders, previousStats.activeProviders)
+      }
+    };
   }
 
   async createSpecialOffer(data: {product: string, discount: number, startDate?: Date, endDate?: Date}) {
@@ -1045,7 +1427,49 @@ class AdminService extends UserService {
     let response = await KYClogs.create(data);
     return response;
   }
-  
+
+
+  async getMonthlyRevenueAndOrders() {
+    // Initialize data structure for all months
+    const months = [...Array(12)].map((_, i) => ({
+      month: new Date(2023, i).toLocaleString('default', { month: 'short' }),
+      revenue: 0,
+      orders: 0
+    }));
+
+    // Get all orders for the current year
+    const currentYear = new Date().getFullYear();
+
+    const orders = await Order.find({
+      createdAt: {
+        $gte: new Date(currentYear, 0, 1),
+        $lte: new Date(currentYear, 11, 31)
+      }
+    });
+
+    // Aggregate data by month
+    orders.forEach(order => {
+      const monthIndex = new Date(order.createdAt).getMonth();
+      months[monthIndex].orders++;
+      months[monthIndex].revenue += order.total || 0;
+    });
+
+    return {
+      labels: months.map(m => m.month),
+      datasets: [
+        {
+          label: 'Revenue',
+          data: months.map(m => m.revenue),
+          borderColor: "#496FA8"
+        },
+        {
+          label: 'Orders',
+          data: months.map(m => m.orders),
+          borderColor: "#EF8D1A"
+        }
+      ]
+    };
+  }
 
 }
 

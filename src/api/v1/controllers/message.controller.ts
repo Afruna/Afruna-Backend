@@ -27,7 +27,7 @@ class MessageController extends Controller<MessageInterface> {
 
   get = this.control((req: Request) => {
     return this.service.find({
-      conversationId: req.params.conversationId as string,
+      conversationId: req.params.conversationId as string  || req.query.conversationId as string,
     });
   });
 

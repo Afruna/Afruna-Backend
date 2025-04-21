@@ -57,6 +57,7 @@ export default class MessageService extends Service<MessageInterface, MessageRep
     //  if(!message)
     //   {
         messageObj =  await this.create({from: data.from, conversationId: data.conversationId, content: data.content});
+        let conversation = await this._conversationService.update({_id: data.conversationId}, {lastMessage: {content: messageObj.content, timestamp: messageObj.createdAt}});
         console.log(messageObj)
         messageId = messageObj._id
       // }
@@ -66,7 +67,7 @@ export default class MessageService extends Service<MessageInterface, MessageRep
     return messageId;
   }
 
- getMessages = async(userId, conversationId) => {
+ getMessages = async(conversationId) => {
     // const messages = await this.repository.custom().find({
     //   $or: [
     //     { fromId: userId },

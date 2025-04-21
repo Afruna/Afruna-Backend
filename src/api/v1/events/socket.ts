@@ -39,7 +39,7 @@ export class SocketEvents {
     // Register user with username
     socket.on('register', (userId) => {
       this.users[userId] = socket.id;
-      console.log(`User registered: ${userId} -> ${socket.id}`);
+      console.log(`User registered v3: ${userId} -> ${socket.id}`);
     });
 
 
@@ -177,7 +177,7 @@ export class SocketEvents {
       try {
         
         const parsedChat = JSON.parse(chat);
-        const recipientSocketId = this.users[parsedChat.to.id];
+        const recipientSocketId = this.users[parsedChat.to];
         
         if(chat.messageType == MESSAGE_TYPE.QUOTE)
         {

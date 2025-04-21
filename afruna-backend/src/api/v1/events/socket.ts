@@ -38,13 +38,13 @@ export class SocketEvents {
     // Register user with username
     socket.on('register', (userId) => {
       this.users[userId] = socket.id;
-      console.log(`User registered: ${userId} -> ${socket.id}`);
+      console.log(`User registered v1: ${userId} -> ${socket.id}`);
     });
 
 
     // Listen for private messages
     socket.on('user_provider', async(chat: ChatInterface) => {
-      const recipientSocketId = this.users[chat.to.id];
+      const recipientSocketId = this.users[chat.to];
 
       console.log("Message", JSON.stringify(chat))
 

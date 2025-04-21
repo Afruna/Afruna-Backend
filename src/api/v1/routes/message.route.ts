@@ -11,7 +11,7 @@ export default class MessageRoute extends Route<MessageInterface> {
   initRoutes() {
     this.router
       .route('/')
-      .get(authenticateUserOrVendor(), this.controller.getMessage)
+      .get(authenticateUserOrVendor(), this.controller.get)
       .post(
         authenticateUserOrVendor(),
         this.fileProcessor.uploadArray('attachment'),

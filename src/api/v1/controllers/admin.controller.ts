@@ -336,31 +336,31 @@ class AdminController extends Controller<UserInterface> {
   });
 
   getProductStats = this.control(async (req: Request) => {
-    const result = await this.service.getProductStats();
+    const result = await this.service.getProductStats(<any>req.query.dateFilter);
 
     return result;
   });
 
   getOrderStats = this.control(async (req: Request) => {
-    const result = await this.service.getOrderStats();
+    const result = await this.service.getOrderStats(<any>req.query.dateFilter);
 
     return result;
   });
 
   getCustomerStats = this.control(async (req: Request) => {
-    const result = await this.service.getCustomerStats();
+    const result = await this.service.getCustomerStats(<any>req.query.dateFilter);
 
     return result;
   });
 
   getVendorStats = this.control(async (req: Request) => {
-    const result = await this.service.getVendorStats();
+    const result = await this.service.getVendorStats(<any>req.query.dateFilter);
 
     return result;
   });
 
   getServiceProviderStats = this.control(async (req: Request) => {
-    const result = await this.service.getServiceProviderStats();
+    const result = await this.service.getServiceProviderStats(<any>req.query.dateFilter);
 
     return result;
   });
@@ -389,6 +389,12 @@ class AdminController extends Controller<UserInterface> {
     return result;
   }); 
   
+  getMonthlyRevenueAndOrders = this.control(async (req: Request) => {
+    const result = await this.service.getMonthlyRevenueAndOrders();
+
+    return result;
+  }
+);
   
   
   

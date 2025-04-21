@@ -81,6 +81,8 @@ export default class AdminRoute extends Route<UserInterface> {
     this.router.route('/table/topService').get(this.controller.topService);
     this.router.route('/table/topProvider').get(this.controller.topProvider);
 
+    this.router.route('/chart').get(this.controller.getMonthlyRevenueAndOrders);
+
     return this.router;
   }
 }
