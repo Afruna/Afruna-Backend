@@ -5,6 +5,7 @@ import { MessageInterface } from '@interfaces/Messages.Interface';
 import Controller from '@controllers/controller';
 import { OPTIONS } from '@config';
 import { ConversationService } from '@services/ConversationService';
+import Conversation from '@models/Conversation';
 // import { MessageResponseDTO } from '@dtos/Message.dto';
 
 class MessageController extends Controller<MessageInterface> {
@@ -29,9 +30,9 @@ class MessageController extends Controller<MessageInterface> {
     let messages = this.service.find({
       conversationId: req.params.conversationId as string  || req.query.conversationId as string,
     })
-    let conversation = this.conversationService.find({
+    let conversation = Conversation.findOne({
       _id: req.params.conversationId as string  || req.query.conversationId as string});
-      
+
     return {messages, conversation};
   });
 
