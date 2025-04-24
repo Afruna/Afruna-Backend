@@ -11,11 +11,7 @@ const MessageSchema = new Schema<MessageInterface>(
       userId: String,
       readAt: { type: Date, default: Date.now }
     }],
-    attachments: [{
-      type: String,
-      url: String,
-      name: String
-    }],
+    attachment: String,
     quote: {type:  Schema.Types.ObjectId, ref: 'Quote', required: false  },
     quoteData: {type: Object, required: false},
   },
