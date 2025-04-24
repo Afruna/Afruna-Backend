@@ -36,7 +36,6 @@ class MessageController extends Controller<MessageInterface> {
     return {messages, conversation};
   });
 
-
   getMessage = this.control((req: Request) => {
     return this.service.getMessages(<string>req.vendor?._id);
   });

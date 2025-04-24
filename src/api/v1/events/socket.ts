@@ -176,7 +176,7 @@ export class SocketEvents {
     socket.on('user_provider', async (chat: ChatInterface) => {
       try {
         
-        const parsedChat = JSON.parse(chat);
+        const parsedChat = chat;
         const recipientSocketId = this.users[parsedChat.to];
         
         if(chat.messageType == MESSAGE_TYPE.QUOTE)
