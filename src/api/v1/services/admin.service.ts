@@ -36,6 +36,9 @@ import User from '@models/User';
 import Vendor from '@models/Vendor';
 import Booking from '@models/Booking';
 import axios from 'axios';
+import { DateFilter, getDateRange } from '@utils/dateRange';
+import { calculateMetrics } from '@utils/metrics';
+import Tags, { ITags } from '@models/Tags';
 
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
@@ -67,213 +70,183 @@ class AdminService extends UserService {
   };
 
 
-  async getProductStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
-      const now = new Date();
-      const start = new Date();
+  // async getProductStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
+  //     const now = new Date();
+  //     const start = new Date();
       
-      switch(filter) {
-        case 'daily':
-          start.setDate(now.getDate() - 1);
-          break;
-        case 'weekly': 
-          start.setDate(now.getDate() - 7);
-          break;
-        case 'monthly':
-          start.setMonth(now.getMonth() - 1);
-          break;
-      }
-      return { start, end: now };
-    };
+  //     switch(filter) {
+  //       case 'daily':
+  //         start.setDate(now.getDate() - 1);
+  //         break;
+  //       case 'weekly': 
+  //         start.setDate(now.getDate() - 7);
+  //         break;
+  //       case 'monthly':
+  //         start.setMonth(now.getMonth() - 1);
+  //         break;
+  //     }
+  //     return { start, end: now };
+  //   };
 
-    const { start, end } = getDateRange(dateFilter);
+  //   const { start, end } = getDateRange(dateFilter);
 
-    // Get current period products
-    const currentProducts = await Product.find({
-      createdAt: { $gte: start, $lte: end }
+  //   // Get current period products
+  //   const currentProducts = await Product.find({
+  //     createdAt: { $gte: start, $lte: end }
+  //   });
+
+  //   // Get previous period products for comparison
+  //   const prevStart = new Date(start);
+  //   const prevEnd = new Date(end);
+  //   switch(dateFilter) {
+  //     case 'daily':
+  //       prevStart.setDate(prevStart.getDate() - 1);
+  //       prevEnd.setDate(prevEnd.getDate() - 1);
+  //       break;
+  //     case 'weekly':
+  //       prevStart.setDate(prevStart.getDate() - 7);
+  //       prevEnd.setDate(prevEnd.getDate() - 7);
+  //       break;
+  //     case 'monthly':
+  //       prevStart.setMonth(prevStart.getMonth() - 1);
+  //       prevEnd.setMonth(prevEnd.getMonth() - 1);
+  //       break;
+  //   }
+
+  //   const previousProducts = await Product.find({
+  //     createdAt: { $gte: prevStart, $lte: prevEnd }
+  //   });
+
+  //   const calculateStats = (products: any[]) => {
+  //     const stats = {
+  //       total: products.length,
+  //       inStock: 0,
+  //       lowStock: 0,
+  //       outOfStock: 0
+  //     };
+
+  //     products.forEach(product => {
+  //       if (product.quantity === 0) {
+  //         stats.outOfStock++;
+  //       } else if (product.quantity <= 10) {
+  //         stats.lowStock++;
+  //       } else {
+  //         stats.inStock++;
+  //       }
+  //     });
+
+  //     return stats;
+  //   };
+
+  //   const currentStats = calculateStats(currentProducts);
+  //   const previousStats = calculateStats(previousProducts);
+
+  //   const calculatePercentageChange = (current: number, previous: number) => {
+  //     if (previous === 0) return 0;
+  //     return ((current - previous) / previous) * 100;
+  //   };
+
+  //   const formatStat = (title: string, current: number, previous: number) => {
+  //     const percentageChange = calculatePercentageChange(current, previous);
+  //     return {
+  //       title,
+  //       value: current,
+  //       percentage: Math.abs(percentageChange).toFixed(1),
+  //       trend: percentageChange >= 0 ? 'up' : 'down',
+  //       period: dateFilter
+  //     };
+  //   };
+
+  //   return {
+  //     totalProducts: formatStat('Total Products', currentStats.total, previousStats.total),
+  //     inStock: formatStat('In Stock', currentStats.inStock, previousStats.inStock),
+  //     lowStock: formatStat('Low Stock', currentStats.lowStock, previousStats.lowStock),
+  //     outOfStock: formatStat('Out of Stock', currentStats.outOfStock, previousStats.outOfStock)
+  //   };
+  // }
+
+  async getProductStats(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+  
+    // Get current and previous period metrics in parallel
+    const [
+      currentProducts,
+      previousProducts
+    ] = await Promise.all([
+      Product.find({ createdAt: { $lte: current } }),
+      Product.find({ createdAt: { $lte: previous } })
+    ]);
+  
+    const calculateStats = (products: any[]) => ({
+      total: products.length,
+      inStock: products.filter(p => p.quantity > 10).length,
+      lowStock: products.filter(p => p.quantity > 0 && p.quantity <= 10).length,
+      outOfStock: products.filter(p => p.quantity === 0).length
     });
-
-    // Get previous period products for comparison
-    const prevStart = new Date(start);
-    const prevEnd = new Date(end);
-    switch(dateFilter) {
-      case 'daily':
-        prevStart.setDate(prevStart.getDate() - 1);
-        prevEnd.setDate(prevEnd.getDate() - 1);
-        break;
-      case 'weekly':
-        prevStart.setDate(prevStart.getDate() - 7);
-        prevEnd.setDate(prevEnd.getDate() - 7);
-        break;
-      case 'monthly':
-        prevStart.setMonth(prevStart.getMonth() - 1);
-        prevEnd.setMonth(prevEnd.getMonth() - 1);
-        break;
-    }
-
-    const previousProducts = await Product.find({
-      createdAt: { $gte: prevStart, $lte: prevEnd }
-    });
-
-    const calculateStats = (products: any[]) => {
-      const stats = {
-        total: products.length,
-        inStock: 0,
-        lowStock: 0,
-        outOfStock: 0
-      };
-
-      products.forEach(product => {
-        if (product.quantity === 0) {
-          stats.outOfStock++;
-        } else if (product.quantity <= 10) {
-          stats.lowStock++;
-        } else {
-          stats.inStock++;
-        }
-      });
-
-      return stats;
-    };
-
+  
     const currentStats = calculateStats(currentProducts);
     const previousStats = calculateStats(previousProducts);
-
-    const calculatePercentageChange = (current: number, previous: number) => {
-      if (previous === 0) return 0;
-      return ((current - previous) / previous) * 100;
-    };
-
-    const formatStat = (title: string, current: number, previous: number) => {
-      const percentageChange = calculatePercentageChange(current, previous);
-      return {
-        title,
-        value: current,
-        percentage: Math.abs(percentageChange).toFixed(1),
-        trend: percentageChange >= 0 ? 'up' : 'down',
-        period: dateFilter
-      };
-    };
-
+  
     return {
-      totalProducts: formatStat('Total Products', currentStats.total, previousStats.total),
-      inStock: formatStat('In Stock', currentStats.inStock, previousStats.inStock),
-      lowStock: formatStat('Low Stock', currentStats.lowStock, previousStats.lowStock),
-      outOfStock: formatStat('Out of Stock', currentStats.outOfStock, previousStats.outOfStock)
+      totalProducts: {
+        ...calculateMetrics(currentStats.total, previousStats.total, dateFilter),
+        title: 'Total Products'
+      },
+      inStock: {
+        ...calculateMetrics(currentStats.inStock, previousStats.inStock, dateFilter),
+        title: 'In Stock'
+      },
+      lowStock: {
+        ...calculateMetrics(currentStats.lowStock, previousStats.lowStock, dateFilter),
+        title: 'Low Stock'
+      },
+      outOfStock: {
+        ...calculateMetrics(currentStats.outOfStock, previousStats.outOfStock, dateFilter),
+        title: 'Out of Stock'
+      }
     };
   }
-  async getOrderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
-      const now = new Date();
-      const startDate = new Date();
-      
-      // Set current period start date
-      switch(filter) {
-        case 'daily':
-          startDate.setDate(now.getDate() - 1);
-          break;
-        case 'weekly':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case 'monthly':
-          startDate.setMonth(now.getMonth() - 1);
-          break;
-      }
 
-      // Set previous period dates
-      const previousStartDate = new Date(startDate);
-      const previousEndDate = new Date(now);
-
-      switch(filter) {
-        case 'daily':
-          previousStartDate.setDate(previousStartDate.getDate() - 1);
-          previousEndDate.setDate(previousEndDate.getDate() - 1);
-          break;
-        case 'weekly':
-          previousStartDate.setDate(previousStartDate.getDate() - 7);
-          previousEndDate.setDate(previousEndDate.getDate() - 7);
-          break;
-        case 'monthly':
-          previousStartDate.setMonth(previousStartDate.getMonth() - 1);
-          previousEndDate.setMonth(previousEndDate.getMonth() - 1);
-          break;
-      }
-
-      return {
-        startDate,
-        endDate: now,
-        previousStartDate,
-        previousEndDate
-      };
-    };
-
-
-    const { startDate, endDate, previousStartDate, previousEndDate } = getDateRanges(dateFilter);
-
-    // Get current period orders
-    const currentOrders = await Order.find({
-      createdAt: { $gte: startDate, $lte: endDate }
+  async getOrderStats(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+  
+    // Get current and previous period metrics in parallel
+    const [
+      currentOrders,
+      previousOrders
+    ] = await Promise.all([
+      Order.find({ createdAt: { $lte: current } }),
+      Order.find({ createdAt: { $lte: previous } })
+    ]);
+  
+    const calculateStats = (orders: any[]) => ({
+      total: orders.length,
+      pending: orders.filter(order => order.orderStatus === OrderStatus.PENDING).length,
+      fulfilled: orders.filter(order => order.orderStatus === OrderStatus.PAID).length,
+      failed: orders.filter(order => order.orderStatus === OrderStatus.CANCELLED).length
     });
-
-    // Get previous period orders
-    const previousOrders = await Order.find({
-      createdAt: { $gte: previousStartDate, $lte: previousEndDate }
-    });
-
-    const calculateStats = (orders: any[]) => {
-      const stats = {
-        total: orders.length,
-        returned: 0,
-        pending: 0,
-        fulfilled: 0,
-        failed: 0
-      };
-
-      orders.forEach(order => {
-        switch(order.orderStatus) {
-          case OrderStatus.RETURNED:
-            stats.returned++;
-            break;
-          case OrderStatus.PENDING:
-            stats.pending++;
-            break;
-          case OrderStatus.PAID:
-            stats.fulfilled++;
-            break;
-          case OrderStatus.CANCELLED:
-            stats.failed++;
-            break;
-        }
-      });
-
-      return stats;
-    };
-
+  
     const currentStats = calculateStats(currentOrders);
     const previousStats = calculateStats(previousOrders);
-
-    const calculatePercentageChange = (current: number, previous: number) => {
-      if (previous === 0) return 0;
-      return ((current - previous) / previous) * 100;
-    };
-
-    const formatStat = (title: string, current: number, previous: number) => {
-      const percentageChange = calculatePercentageChange(current, previous);
-      return {
-        title,
-        value: current,
-        percentage: Math.abs(percentageChange).toFixed(1),
-        trend: percentageChange >= 0 ? 'up' : 'down',
-        period: dateFilter
-      };
-    };
-
+  
     return {
-      totalOrders: formatStat('Total Orders', currentStats.total, previousStats.total),
-      // returnedOrders: formatStat('Returned Orders', currentStats.returned, previousStats.returned),
-      pendingOrders: formatStat('Pending Orders', currentStats.pending, previousStats.pending),
-      fulfilledOrders: formatStat('Fulfilled Orders', currentStats.fulfilled, previousStats.fulfilled),
-      failedOrders: formatStat('Failed Orders', currentStats.failed, previousStats.failed)
+      totalOrders: {
+        ...calculateMetrics(currentStats.total, previousStats.total, dateFilter),
+        title: 'Total Orders'
+      },
+      pendingOrders: {
+        ...calculateMetrics(currentStats.pending, previousStats.pending, dateFilter),
+        title: 'Pending Orders'
+      },
+      fulfilledOrders: {
+        ...calculateMetrics(currentStats.fulfilled, previousStats.fulfilled, dateFilter),
+        title: 'Fulfilled Orders'
+      },
+      failedOrders: {
+        ...calculateMetrics(currentStats.failed, previousStats.failed, dateFilter),
+        title: 'Failed Orders'
+      }
     };
   }
 
@@ -318,158 +291,88 @@ class AdminService extends UserService {
   //   return stats;
   // }
 
-  async getCustomerStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const users = await User.find();
-    const orders = await Order.find();
-    // Get date ranges based on filter
-    const now = new Date();
-    const ranges = {
-      current: {
-        start: new Date(),
-        end: new Date()
-      },
-      previous: {
-        start: new Date(),
-        end: new Date() 
-      }
-    };
-
-    switch(dateFilter) {
-      case 'daily':
-        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        ranges.previous.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-        ranges.previous.end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
-        break;
-      case 'weekly':
-        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-        ranges.previous.start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() - 7);
-        ranges.previous.end = new Date(ranges.current.start.getTime() - 1);
-        break;
-      case 'monthly':
-        ranges.current.start = new Date(now.getFullYear(), now.getMonth(), 1);
-        ranges.previous.start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        ranges.previous.end = new Date(now.getFullYear(), now.getMonth(), 0);
-        break;
-    }
-
-    // Get current and previous period stats
-    const getCurrentStats = (startDate: Date, endDate: Date) => {
-      const periodUsers = users.filter(user => {
-        const createdAt = new Date(user.createdAt);
-        return createdAt >= startDate && createdAt <= endDate;
-      });
-
-      const periodOrders = orders.filter(order => {
-        const createdAt = new Date(order.createdAt);
-        return createdAt >= startDate && createdAt <= endDate;
-      });
-
+  async getCustomerStats(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+  
+    // Get current and previous period metrics in parallel
+    const [
+      currentUsers,
+      previousUsers,
+      currentOrders,
+      previousOrders
+    ] = await Promise.all([
+      User.find({ createdAt: { $lte: current } }),
+      User.find({ createdAt: { $lte: previous } }),
+      Order.find({ createdAt: { $lte: current } }),
+      Order.find({ createdAt: { $lte: previous } })
+    ]);
+  
+    const calculateStats = (users: any[], orders: any[]) => {
       const customerOrders = new Map();
-      periodOrders.forEach(order => {
+      orders.forEach(order => {
         const userId = order.userId ? order.userId.toString() : '';
         if (!customerOrders.has(userId)) {
           customerOrders.set(userId, []);
         }
         customerOrders.get(userId).push(order);
       });
-
+  
       return {
-        totalCustomers: periodUsers.length,
-        returningCustomers: Array.from(customerOrders.values()).filter(orders => orders.length > 1).length,
+        totalCustomers: users.length,
+        returningCustomers: Array.from(customerOrders.values())
+          .filter(orders => orders.length > 1).length,
         activeCustomers: customerOrders.size,
         averageOrdersPerCustomer: customerOrders.size > 0 ? 
-          Number((periodOrders.length / customerOrders.size).toFixed(2)) : 0
+          Number((orders.length / customerOrders.size).toFixed(2)) : 0
       };
     };
-
-    const currentStats = getCurrentStats(ranges.current.start, ranges.current.end);
-    const previousStats = getCurrentStats(ranges.previous.start, ranges.previous.end);
-
-    const calculateChange = (current: number, previous: number) => {
-      if (previous === 0) return { percentage: 0, trend: 'up' };
-      const change = ((current - previous) / previous) * 100;
-      return {
-        percentage: Math.abs(Number(change.toFixed(1))),
-        trend: change >= 0 ? 'up' : 'down'
-      };
-    };
-
-    const stats = {
+  
+    const currentStats = calculateStats(currentUsers, currentOrders);
+    const previousStats = calculateStats(previousUsers, previousOrders);
+  
+    return {
       totalCustomers: {
-        title: 'Total Customers',
-        value: currentStats.totalCustomers,
-        period: dateFilter,
-        ...calculateChange(currentStats.totalCustomers, previousStats.totalCustomers)
+        ...calculateMetrics(currentStats.totalCustomers, previousStats.totalCustomers, dateFilter),
+        title: 'Total Customers'
       },
       returningCustomers: {
-        title: 'Returning Customers',
-        value: currentStats.returningCustomers,
-        period: dateFilter,
-        ...calculateChange(currentStats.returningCustomers, previousStats.returningCustomers)
+        ...calculateMetrics(currentStats.returningCustomers, previousStats.returningCustomers, dateFilter),
+        title: 'Returning Customers'
       },
       activeCustomers: {
-        title: 'Active Customers',
-        value: currentStats.activeCustomers,
-        period: dateFilter,
-        ...calculateChange(currentStats.activeCustomers, previousStats.activeCustomers)
+        ...calculateMetrics(currentStats.activeCustomers, previousStats.activeCustomers, dateFilter),
+        title: 'Active Customers'
       },
       averageOrdersPerCustomer: {
-        title: 'Average Orders Per Customer',
-        value: currentStats.averageOrdersPerCustomer,
-        period: dateFilter,
-        ...calculateChange(currentStats.averageOrdersPerCustomer, previousStats.averageOrdersPerCustomer)
+        ...calculateMetrics(currentStats.averageOrdersPerCustomer, previousStats.averageOrdersPerCustomer, dateFilter),
+        title: 'Average Orders Per Customer'
       }
     };
-   
-    return stats;
   }
 
-  async getVendorStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
-      const now = new Date();
-      const current = {
-        start: new Date(),
-        end: now
-      };
-      const previous = {
-        start: new Date(),
-        end: new Date()
-      };
-
-      switch(filter) {
-        case 'daily':
-          current.start.setDate(now.getDate() - 1);
-          previous.start.setDate(now.getDate() - 2);
-          previous.end.setDate(now.getDate() - 1);
-          break;
-        case 'weekly':
-          current.start.setDate(now.getDate() - 7);
-          previous.start.setDate(now.getDate() - 14);
-          previous.end.setDate(now.getDate() - 7);
-          break;
-        case 'monthly':
-          current.start.setMonth(now.getMonth() - 1);
-          previous.start.setMonth(now.getMonth() - 2);
-          previous.end.setMonth(now.getMonth() - 1);
-          break;
-      }
-
-      return { current, previous };
-    };
-
-    const ranges = getDateRanges(dateFilter);
-
-    const calculateStats = async (startDate: Date, endDate: Date) => {
-      const vendors = await Vendor.find({
-        createdAt: { $gte: startDate, $lte: endDate },
-        vendorType: VendorType.MARKET_SELLER
-      });
-
-      const orders = await Order.find({
-        createdAt: { $gte: startDate, $lte: endDate }
-      });
-
-      // Get unique vendor IDs who have received orders
+  async getVendorStats(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+  
+    // Get current and previous period metrics in parallel
+    const [
+      currentVendors,
+      previousVendors,
+      currentOrders,
+      previousOrders
+    ] = await Promise.all([
+      Vendor.find({
+        vendorType: VendorType.MARKET_SELLER,
+        createdAt: { $lte: current }
+      }),
+      Vendor.find({
+        vendorType: VendorType.MARKET_SELLER,
+        createdAt: { $lte: previous }
+      }),
+      Order.find({ createdAt: { $lte: current } }),
+      Order.find({ createdAt: { $lte: previous } })
+    ]);
+  
+    const calculateStats = (vendors: any[], orders: any[]) => {
       const vendorOrders = new Map();
       orders.forEach(order => {
         const vendorId = order.vendorId ? order.vendorId.toString() : '';
@@ -478,52 +381,37 @@ class AdminService extends UserService {
         }
         vendorOrders.get(vendorId).push(order);
       });
-
+  
       return {
         totalVendors: vendors.length,
-        newVendors: vendors.length,
+        newVendors: vendors.filter(v => 
+          v.createdAt >= previous && v.createdAt <= current
+        ).length,
         returningVendors: Array.from(vendorOrders.values())
-          .filter(vendorOrderList => vendorOrderList.length > 1).length,
+          .filter(vendorOrders => vendorOrders.length > 1).length,
         activeVendors: vendorOrders.size
       };
     };
-
-    const currentStats = await calculateStats(ranges.current.start, ranges.current.end);
-    const previousStats = await calculateStats(ranges.previous.start, ranges.previous.end);
-
-    const calculateChange = (current: number, previous: number) => {
-      if (previous === 0) return { percentage: 0, trend: 'up' };
-      const change = ((current - previous) / previous) * 100;
-      return {
-        percentage: Math.abs(Number(change.toFixed(1))),
-        trend: change >= 0 ? 'up' : 'down'
-      };
-    };
-
+  
+    const currentStats = calculateStats(currentVendors, currentOrders);
+    const previousStats = calculateStats(previousVendors, previousOrders);
+  
     return {
       totalVendors: {
-        title: 'Total Vendors',
-        value: currentStats.totalVendors,
-        period: dateFilter,
-        ...calculateChange(currentStats.totalVendors, previousStats.totalVendors)
+        ...calculateMetrics(currentStats.totalVendors, previousStats.totalVendors, dateFilter),
+        title: 'Total Vendors'
       },
       newVendors: {
-        title: 'New Vendors',
-        value: currentStats.newVendors,
-        period: dateFilter,
-        ...calculateChange(currentStats.newVendors, previousStats.newVendors)
+        ...calculateMetrics(currentStats.newVendors, previousStats.newVendors, dateFilter),
+        title: 'New Vendors'
       },
       returningVendors: {
-        title: 'Returning Vendors',
-        value: currentStats.returningVendors,
-        period: dateFilter,
-        ...calculateChange(currentStats.returningVendors, previousStats.returningVendors)
+        ...calculateMetrics(currentStats.returningVendors, previousStats.returningVendors, dateFilter),
+        title: 'Returning Vendors'
       },
       activeVendors: {
-        title: 'Active Vendors',
-        value: currentStats.activeVendors,
-        period: dateFilter,
-        ...calculateChange(currentStats.activeVendors, previousStats.activeVendors)
+        ...calculateMetrics(currentStats.activeVendors, previousStats.activeVendors, dateFilter),
+        title: 'Active Vendors'
       }
     };
   }
@@ -580,52 +468,29 @@ class AdminService extends UserService {
   //   return stats;
   // }
 
-  async getServiceProviderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRanges = (filter: 'daily' | 'weekly' | 'monthly') => {
-      const now = new Date();
-      const current = {
-        start: new Date(),
-        end: now
-      };
-      const previous = {
-        start: new Date(),
-        end: new Date()
-      };
+  async getServiceProviderStats(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
   
-      switch(filter) {
-        case 'daily':
-          current.start.setDate(now.getDate() - 1);
-          previous.start.setDate(now.getDate() - 2);
-          previous.end.setDate(now.getDate() - 1);
-          break;
-        case 'weekly':
-          current.start.setDate(now.getDate() - 7);
-          previous.start.setDate(now.getDate() - 14);
-          previous.end.setDate(now.getDate() - 7);
-          break;
-        case 'monthly':
-          current.start.setMonth(now.getMonth() - 1);
-          previous.start.setMonth(now.getMonth() - 2);
-          previous.end.setMonth(now.getMonth() - 1);
-          break;
-      }
-  
-      return { current, previous };
-    };
-  
-    const ranges = getDateRanges(dateFilter);
-  
-    const calculateStats = async (startDate: Date, endDate: Date) => {
-      const providers = await Vendor.find({
+    // Get current and previous period metrics in parallel
+    const [
+      currentProviders,
+      previousProviders,
+      currentBookings,
+      previousBookings
+    ] = await Promise.all([
+      Vendor.find({
         vendorType: VendorType.SERVICE_PROVIDER,
-        createdAt: { $gte: startDate, $lte: endDate }
-      });
+        createdAt: { $lte: current }
+      }),
+      Vendor.find({
+        vendorType: VendorType.SERVICE_PROVIDER,
+        createdAt: { $lte: previous }
+      }),
+      Booking.find({ createdAt: { $lte: current } }),
+      Booking.find({ createdAt: { $lte: previous } })
+    ]);
   
-      const bookings = await Booking.find({
-        createdAt: { $gte: startDate, $lte: endDate }
-      });
-  
-      // Get unique provider IDs who have received bookings
+    const calculateStats = (providers: any[], bookings: any[]) => {
       const providerBookings = new Map();
       bookings.forEach(booking => {
         const providerId = booking.providerId ? booking.providerId.toString() : '';
@@ -637,49 +502,34 @@ class AdminService extends UserService {
   
       return {
         totalProviders: providers.length,
-        newProviders: providers.length,
+        newProviders: providers.filter(v => 
+          v.createdAt >= previous && v.createdAt <= current
+        ).length,
         returningProviders: Array.from(providerBookings.values())
-          .filter(providerBookingList => providerBookingList.length > 1).length,
+          .filter(bookingList => bookingList.length > 1).length,
         activeProviders: providerBookings.size
       };
     };
   
-    const currentStats = await calculateStats(ranges.current.start, ranges.current.end);
-    const previousStats = await calculateStats(ranges.previous.start, ranges.previous.end);
-  
-    const calculateChange = (current: number, previous: number) => {
-      if (previous === 0) return { percentage: 0, trend: 'up' };
-      const change = ((current - previous) / previous) * 100;
-      return {
-        percentage: Math.abs(Number(change.toFixed(1))),
-        trend: change >= 0 ? 'up' : 'down'
-      };
-    };
+    const currentStats = calculateStats(currentProviders, currentBookings);
+    const previousStats = calculateStats(previousProviders, previousBookings);
   
     return {
       totalServiceProviders: {
-        title: 'Total Service Providers',
-        value: currentStats.totalProviders,
-        period: dateFilter,
-        ...calculateChange(currentStats.totalProviders, previousStats.totalProviders)
+        ...calculateMetrics(currentStats.totalProviders, previousStats.totalProviders, dateFilter),
+        title: 'Total Service Providers'
       },
       newProviders: {
-        title: 'New Providers',
-        value: currentStats.newProviders,
-        period: dateFilter,
-        ...calculateChange(currentStats.newProviders, previousStats.newProviders)
+        ...calculateMetrics(currentStats.newProviders, previousStats.newProviders, dateFilter),
+        title: 'New Providers'
       },
       returningProviders: {
-        title: 'Returning Providers',
-        value: currentStats.returningProviders,
-        period: dateFilter,
-        ...calculateChange(currentStats.returningProviders, previousStats.returningProviders)
+        ...calculateMetrics(currentStats.returningProviders, previousStats.returningProviders, dateFilter),
+        title: 'Returning Providers'
       },
       activeProviders: {
-        title: 'Active Providers',
-        value: currentStats.activeProviders,
-        period: dateFilter,
-        ...calculateChange(currentStats.activeProviders, previousStats.activeProviders)
+        ...calculateMetrics(currentStats.activeProviders, previousStats.activeProviders, dateFilter),
+        title: 'Active Providers'
       }
     };
   }
@@ -825,115 +675,257 @@ class AdminService extends UserService {
     };
   }
 
-    async getKYCStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
-      const now = new Date();
-      let previous;
+  //   async getKYCStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
+  //     const now = new Date();
+  //     let previous;
       
-      switch(filter) {
-        case 'daily':
-          previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-          break;
-        case 'weekly':
-          previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-          break;
-        case 'monthly':
-          previous = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-          break;
-      }
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  //         break;
+  //       case 'weekly':
+  //         previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  //         break;
+  //       case 'monthly':
+  //         previous = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  //         break;
+  //     }
       
-      return { current: now, previous };
-    };
+  //     return { current: now, previous };
+  //   };
       
+  //   const { current, previous } = getDateRange(dateFilter);
+
+  //   const [
+  //     businessInfos,
+  //     businessDetails,
+  //     customerCares,
+  //     shippingAddresses, 
+  //     paymentInfos,
+  //     additionalInfos,
+  //     legalInfos,
+  //     identifications,
+  //     storefronts
+  //   ] = await Promise.all([
+  //     BusinessInfo.find({createdAt: { $gte: previous, $lte: current }}),
+  //     BusinessDetail.find({createdAt: { $gte: previous, $lte: current }}),
+  //     CustomerCareDetail.find({createdAt: { $gte: previous, $lte: current }}),
+  //     ShippingInfo.find({createdAt: { $gte: previous, $lte: current }}),
+  //     PaymentInfo.find({createdAt: { $gte: previous, $lte: current }}),
+  //     AdditionalInfo.find({createdAt: { $gte: previous, $lte: current }}),
+  //     LegalRep.find({createdAt: { $gte: previous, $lte: current }}),
+  //     MeansIdentification.find({createdAt: { $gte: previous, $lte: current }}),
+  //     StoreFront.find({createdAt: { $gte: previous, $lte: current }})
+  //   ]);
+
+  //   const allSubmissions = [
+  //     ...businessInfos,
+  //     ...businessDetails,
+  //     ...customerCares,
+  //     ...shippingAddresses,
+  //     ...paymentInfos,
+  //     ...additionalInfos,
+  //     ...legalInfos,
+  //     ...identifications,
+  //     ...storefronts
+  //   ];
+
+  //   // Get previous period counts for comparison
+  //   const previousSubmissions = await Promise.all([
+  //     BusinessInfo.find({createdAt: { $lt: previous }}),
+  //     BusinessDetail.find({createdAt: { $lt: previous }}), 
+  //     CustomerCareDetail.find({createdAt: { $lt: previous }}),
+  //     ShippingInfo.find({createdAt: { $lt: previous }}),
+  //     PaymentInfo.find({createdAt: { $lt: previous }}),
+  //     AdditionalInfo.find({createdAt: { $lt: previous }}),
+  //     LegalRep.find({createdAt: { $lt: previous }}),
+  //     MeansIdentification.find({createdAt: { $lt: previous }}),
+  //     StoreFront.find({createdAt: { $lt: previous }})
+  //   ]);
+
+  //   const allPreviousSubmissions = previousSubmissions.flat();
+
+  //   // Calculate current period metrics
+  //   const totalSubmitted = allSubmissions.length;
+  //   const pendingKYC = allSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
+  //   const approvedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
+  //   const rejectedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
+
+  //   // Calculate previous period metrics
+  //   const previousTotal = allPreviousSubmissions.length;
+  //   const previousPending = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
+  //   const previousApproved = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
+  //   const previousRejected = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
+
+  //   // Calculate percentages and trends
+  //   const calculateMetrics = (current: number, previous: number) => {
+  //     const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
+  //     return {
+  //       value: current,
+  //       percentage: Math.abs(Math.round(percentage * 10) / 10),
+  //       trend: current >= previous ? 'up' : 'down',
+  //       period: dateFilter
+  //     };
+  //   };
+
+  //   return {
+  //     totalSubmitted: {
+  //       ...calculateMetrics(totalSubmitted, previousTotal),
+  //       title: 'Total Submitted'
+  //     },
+  //     pendingKYC: {
+  //       ...calculateMetrics(pendingKYC, previousPending),
+  //       title: 'Pending KYC'
+  //     },
+  //     approvedKYC: {
+  //       ...calculateMetrics(approvedKYC, previousApproved),
+  //       title: 'Approved KYC'
+  //     },
+  //     rejectedKYC: {
+  //       ...calculateMetrics(rejectedKYC, previousRejected),
+  //       title: 'Rejected KYC'
+  //     }
+  //   };
+  // }
+
+  async getKYCStats(dateFilter: DateFilter = 'daily') {
     const { current, previous } = getDateRange(dateFilter);
-
+  
+    // Get current and previous period metrics in parallel
     const [
-      businessInfos,
-      businessDetails,
-      customerCares,
-      shippingAddresses, 
-      paymentInfos,
-      additionalInfos,
-      legalInfos,
-      identifications,
-      storefronts
+      currentSubmissions,
+      previousSubmissions
     ] = await Promise.all([
-      BusinessInfo.find({createdAt: { $gte: previous, $lte: current }}),
-      BusinessDetail.find({createdAt: { $gte: previous, $lte: current }}),
-      CustomerCareDetail.find({createdAt: { $gte: previous, $lte: current }}),
-      ShippingInfo.find({createdAt: { $gte: previous, $lte: current }}),
-      PaymentInfo.find({createdAt: { $gte: previous, $lte: current }}),
-      AdditionalInfo.find({createdAt: { $gte: previous, $lte: current }}),
-      LegalRep.find({createdAt: { $gte: previous, $lte: current }}),
-      MeansIdentification.find({createdAt: { $gte: previous, $lte: current }}),
-      StoreFront.find({createdAt: { $gte: previous, $lte: current }})
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: current } }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: current } }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: current } }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: current } }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: current } }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: current } }),
+        LegalRep.countDocuments({ createdAt: { $lte: current } }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: current } }),
+        StoreFront.countDocuments({ createdAt: { $lte: current } })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: previous } }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: previous } }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: previous } }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: previous } }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: previous } }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: previous } }),
+        LegalRep.countDocuments({ createdAt: { $lte: previous } }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: previous } }),
+        StoreFront.countDocuments({ createdAt: { $lte: previous } })
+      ]).then(results => results.reduce((a, b) => a + b, 0))
     ]);
-
-    const allSubmissions = [
-      ...businessInfos,
-      ...businessDetails,
-      ...customerCares,
-      ...shippingAddresses,
-      ...paymentInfos,
-      ...additionalInfos,
-      ...legalInfos,
-      ...identifications,
-      ...storefronts
-    ];
-
-    // Get previous period counts for comparison
-    const previousSubmissions = await Promise.all([
-      BusinessInfo.find({createdAt: { $lt: previous }}),
-      BusinessDetail.find({createdAt: { $lt: previous }}), 
-      CustomerCareDetail.find({createdAt: { $lt: previous }}),
-      ShippingInfo.find({createdAt: { $lt: previous }}),
-      PaymentInfo.find({createdAt: { $lt: previous }}),
-      AdditionalInfo.find({createdAt: { $lt: previous }}),
-      LegalRep.find({createdAt: { $lt: previous }}),
-      MeansIdentification.find({createdAt: { $lt: previous }}),
-      StoreFront.find({createdAt: { $lt: previous }})
+  
+    // Get KYC status countDocumentss for current period
+    const [
+      currentPending,
+      currentApproved,
+      currentRejected,
+      previousPending,
+      previousApproved,
+      previousRejected
+    ] = await Promise.all([
+      // Current period status countDocumentss
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        LegalRep.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING }),
+        StoreFront.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.PENDING })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        LegalRep.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED }),
+        StoreFront.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.APPROVED })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        LegalRep.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED }),
+        StoreFront.countDocuments({ createdAt: { $lte: current }, status: KYCStatus.REJECTED })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      // Previous period status countDocumentss
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        LegalRep.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING }),
+        StoreFront.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.PENDING })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        LegalRep.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED }),
+        StoreFront.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.APPROVED })
+      ]).then(results => results.reduce((a, b) => a + b, 0)),
+      Promise.all([
+        BusinessInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        BusinessDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        CustomerCareDetail.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        ShippingInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        PaymentInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        AdditionalInfo.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        LegalRep.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        MeansIdentification.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED }),
+        StoreFront.countDocuments({ createdAt: { $lte: previous }, status: KYCStatus.REJECTED })
+      ]).then(results => results.reduce((a, b) => a + b, 0))
     ]);
-
-    const allPreviousSubmissions = previousSubmissions.flat();
-
-    // Calculate current period metrics
-    const totalSubmitted = allSubmissions.length;
-    const pendingKYC = allSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
-    const approvedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
-    const rejectedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
-
-    // Calculate previous period metrics
-    const previousTotal = allPreviousSubmissions.length;
-    const previousPending = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
-    const previousApproved = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
-    const previousRejected = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
-
-    // Calculate percentages and trends
-    const calculateMetrics = (current: number, previous: number) => {
-      const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
-      return {
-        value: current,
-        percentage: Math.abs(Math.round(percentage * 10) / 10),
-        trend: current >= previous ? 'up' : 'down',
-        period: dateFilter
-      };
-    };
-
+  
+    // const calculateMetrics = (current: number, previous: number) => {
+    //   const difference = current - previous;
+    //   const percentage = previous === 0 ? 100 : (difference / previous) * 100;
+    //   return {
+    //     percentage: Math.abs(Math.round(percentage * 10) / 10),
+    //     trend: difference >= 0 ? 'up' : 'down',
+    //     period: dateFilter,
+    //     value: current
+    //   };
+    // };
+  
     return {
       totalSubmitted: {
-        ...calculateMetrics(totalSubmitted, previousTotal),
+        ...calculateMetrics(currentSubmissions, previousSubmissions, dateFilter),
         title: 'Total Submitted'
       },
       pendingKYC: {
-        ...calculateMetrics(pendingKYC, previousPending),
+        ...calculateMetrics(currentPending, previousPending, dateFilter),
         title: 'Pending KYC'
       },
       approvedKYC: {
-        ...calculateMetrics(approvedKYC, previousApproved),
+        ...calculateMetrics(currentApproved, previousApproved, dateFilter),
         title: 'Approved KYC'
       },
       rejectedKYC: {
-        ...calculateMetrics(rejectedKYC, previousRejected),
+        ...calculateMetrics(currentRejected, previousRejected, dateFilter),
         title: 'Rejected KYC'
       }
     };
@@ -1470,6 +1462,25 @@ class AdminService extends UserService {
       ]
     };
   }
+
+  // for tags
+  async getAllTags() {
+    return await Tags.find();
+  }
+  async createTag(tag: ITags) {
+    let createdTag = await new Tags(tag).save();
+    return createdTag;
+  }
+
+  async updateTag(tagId: string, tag: ITags) {
+    let updatedTag = await Tags.findByIdAndUpdate(tagId, tag, { new: true });
+    return updatedTag;
+  }
+
+  async deleteTag(tagId: string) {
+    let deletedTag = await Tags.findByIdAndDelete(tagId);
+    return deletedTag;
+  };
 
 }
 

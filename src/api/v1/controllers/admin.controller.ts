@@ -393,10 +393,27 @@ class AdminController extends Controller<UserInterface> {
     const result = await this.service.getMonthlyRevenueAndOrders();
 
     return result;
-  }
-);
+  });
+
+  createTag = this.control(async (req: Request) => {
+    const result = await this.service.createTag(req.body);
+    return result;
+  });
   
-  
+  updateTag = this.control(async (req: Request) => {
+    const result = await this.service.updateTag(req.params.tagId, req.body);
+    return result;
+  });
+
+  deleteTag = this.control(async (req: Request) => {
+    const result = await this.service.deleteTag(req.params.tagId);
+    return result;
+  });
+
+  getAllTags = this.control(async (req: Request) => {
+    const result = await this.service.getAllTags();
+    return result;
+  });
   
 }
 

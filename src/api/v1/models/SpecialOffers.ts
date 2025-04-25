@@ -6,8 +6,9 @@ export interface SpecialOffersInterface {
     startDate?: Date;
     endDate?: Date;
     status?: boolean;
-    tags?: string[];
+    tag: Types.ObjectId | string;
     discountId?: string;
+
 }
 
 const SpecialOffersSchema = new Schema({
@@ -16,7 +17,7 @@ const SpecialOffersSchema = new Schema({
     startDate: {type: Date},
     endDate: {type: Date},
     status: {type: Boolean, default: true},
-    tags: {type: [String], default: []},
+    tag:  {type: Schema.Types.ObjectId, ref: 'Tags'},
     discountId: {type: String}
 }, {timestamps: true});
 

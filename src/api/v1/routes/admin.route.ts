@@ -83,6 +83,13 @@ export default class AdminRoute extends Route<UserInterface> {
 
     this.router.route('/chart').get(this.controller.getMonthlyRevenueAndOrders);
 
+    //for tags
+    this.router.route('/tags').get(this.controller.getAllTags);
+    this.router.route('/tags').post(this.controller.createTag);
+    this.router.route('/tags/:tagId').put(this.controller.updateTag);
+    this.router.route('/tags/:tagId').delete(this.controller.deleteTag);
+    // this.router.route('/tags/:tagId').get(this.controller.getTagById);
+
     return this.router;
   }
 }

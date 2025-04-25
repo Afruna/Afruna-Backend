@@ -10,6 +10,9 @@ import Vendor from '@models/Vendor';
 import { VendorType } from '@interfaces/Vendor.Interface';
 import TransactionService from './transaction.service';
 import Transaction from '@models/Transaction';
+import { DateFilter, getDateRange } from '@utils/dateRange';
+import { countVendorsByType, sumTransactions } from '@utils/metricsFetcher';
+import { calculateMetrics } from '@utils/metrics';
 
 export default class AnalyticsService {
   /**
@@ -165,288 +168,492 @@ export default class AnalyticsService {
     return result;
   }
 
-  async adminDashboardCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    // TODO:
-    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
-      const now = new Date();
-      let previous = new Date();
+  // async adminDashboardCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  //   // TODO:
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
+  //     const now = new Date();
+  //     let previous = new Date();
       
-      switch(filter) {
-        case 'daily':
-          previous.setDate(previous.getDate() - 1);
-          break;
-        case 'weekly': 
-          previous.setDate(previous.getDate() - 7);
-          break;
-        case 'monthly':
-          previous.setMonth(previous.getMonth() - 1);
-          break;
-      }
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous.setDate(previous.getDate() - 1);
+  //         break;
+  //       case 'weekly': 
+  //         previous.setDate(previous.getDate() - 7);
+  //         break;
+  //       case 'monthly':
+  //         previous.setMonth(previous.getMonth() - 1);
+  //         break;
+  //     }
       
-      return { current: now, previous };
-    };
+  //     return { current: now, previous };
+  //   };
 
-    const { current, previous } = getDateRange('daily');
+  //   const { current, previous } = getDateRange('daily');
 
-    // Get current period metrics
+  //   // Get current period metrics
+  //   const [
+  //     currentOrders,
+  //     currentEarnings,
+  //     currentUsers,
+  //     currentProducts,
+  //     currentVendors,
+  //     currentServiceProviders, 
+  //     currentServices,
+  //     currentTransactions
+  //   ] = await Promise.all([
+  //     this._orderService().count({ isPaid: true, createdAt: { $gte: previous, $lte: current } }),
+  //     this.getAllSuccessfulTransactions(),
+  //     this._userService().count({ createdAt: { $gte: previous, $lte: current } }),
+  //     this._productService().count({ createdAt: { $gte: previous, $lte: current } }),
+  //     Vendor.find({ vendorType: VendorType.MARKET_SELLER, createdAt: { $gte: previous, $lte: current } }).length,
+  //     Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER, createdAt: { $gte: previous, $lte: current } }).length,
+  //     this._provideService().count({ createdAt: { $gte: previous, $lte: current } }),
+  //     this._txnService().count({ createdAt: { $gte: previous, $lte: current } })
+  //   ]);
+
+  //   // Get previous period metrics
+  //   const previousStart = new Date(previous);
+  //   previousStart.setDate(previousStart.getDate() - 1);
+
+  //   const [
+  //     previousOrders,
+  //     previousEarnings,
+  //     previousUsers,
+  //     previousProducts,
+  //     previousVendors,
+  //     previousServiceProviders,
+  //     previousServices, 
+  //     previousTransactions
+  //   ] = await Promise.all([
+  //     this._orderService().count({ isPaid: true, createdAt: { $lte: previous } }),
+  //     this.getAllSuccessfulTransactions(),
+  //     this._userService().count({ createdAt: { $lte: previous } }),
+  //     this._productService().count({ createdAt: { $lte: previous } }),
+  //     Vendor.find({ vendorType: VendorType.MARKET_SELLER, createdAt: { $lte: previous } }).length,
+  //     Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER, createdAt: { $lte: previous } }).length,
+  //     this._provideService().count({ createdAt: { $lte: previous } }),
+  //     this._txnService().count({ createdAt: { $lte: previous } })
+  //   ]);
+
+  //   const calculateMetrics = (current: number, previous: number, title: string) => {
+  //     const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
+  //     return {
+  //       value: current,
+  //       percentage: Math.abs(Math.round(percentage * 10) / 10),
+  //       trend: current >= previous ? 'up' : 'down',
+  //       period: dateFilter,
+  //       title
+  //     };
+  //   };
+   
+  //   return {
+  //     totalEarnings: calculateMetrics(currentEarnings, previousEarnings, 'Total Earnings'),
+  //     totalOrders: calculateMetrics(currentOrders, previousOrders, 'Total Orders'),
+  //     totalUsers: calculateMetrics(currentUsers, previousUsers, 'Total Users'),
+  //     totalProducts: calculateMetrics(currentProducts, previousProducts, 'Total Products'),
+  //     totalVendors: calculateMetrics(currentVendors, previousVendors, 'Total Vendors'),
+  //     totalServiceProviders: calculateMetrics(currentServiceProviders, previousServiceProviders, 'Total Service Providers'),
+  //     totalServices: calculateMetrics(currentServices, previousServices, 'Total Services'),
+  //     totalTransactions: calculateMetrics(currentTransactions, previousTransactions, 'Total Transactions')
+  //   };
+  // }
+
+  // async getTransactionMetrics(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
+  //     const now = new Date();
+  //     const previous = new Date();
+  //     console.log(filter);
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous.setDate(previous.getDate() - 1);
+  //         break;
+  //       case 'weekly':
+  //         previous.setDate(previous.getDate() - 7); 
+  //         break;
+  //       case 'monthly':
+  //         previous.setMonth(previous.getMonth() - 1);
+  //         break;
+  //     }
+      
+  //     return { current: now, previous };
+  //   };
+
+  //   const { current, previous } = getDateRange(dateFilter);
+
+  //   // Get current period metrics
+  //   const currentTransactions = await this._txnService().find({
+  //     createdAt: { $gte: previous, $lte: current }
+  //   });
+
+  //   // Get previous period metrics
+  //   const previousStart = new Date(previous);
+  //   const timeDiff = current.getTime() - previous.getTime();
+  //   previousStart.setTime(previous.getTime() - timeDiff);
+
+  //   const previousTransactions = await this._txnService().find({
+  //     createdAt: { $gte: previousStart, $lte: previous }
+  //   });
+
+  //   // Calculate metrics for both periods
+  //   const calculateMetrics = (txns: any[]) => {
+  //     return txns.reduce((acc, txn) => {
+  //       acc.volume++;
+  //       acc.revenue += txn.amount;
+  //       txn.success ? acc.successful++ : acc.pending++;
+  //       return acc;
+  //     }, { volume: 0, revenue: 0, successful: 0, pending: 0 });
+  //   };
+
+  //   const currentMetrics = calculateMetrics(currentTransactions);
+  //   const previousMetrics = calculateMetrics(previousTransactions);
+
+  //   // Calculate percentage changes
+  //   const getPercentageChange = (current: number, previous: number) => {
+  //     if (previous === 0) return current > 0 ? 100 : 0;
+  //     return ((current - previous) / previous) * 100;
+  //   };
+
+  //   const formatMetric = (current: number, previous: number, title: string) => {
+  //     const percentage = getPercentageChange(current, previous);
+  //     return {
+  //       title,
+  //       value: current-previous,
+  //       percentage: Math.abs(percentage).toFixed(1),
+  //       trend: percentage >= 0 ? 'up' : 'down',
+  //       period: dateFilter
+  //     };
+  //   };
+
+  //   const metrics = { 
+  //     totalEarnings: formatMetric(currentMetrics.revenue, previousMetrics.revenue, 'Total Earnings'),
+  //     transactionVolume: formatMetric(currentMetrics.volume, previousMetrics.volume, 'Transaction Volume'),
+  //     successfulTransactions: formatMetric(currentMetrics.successful, previousMetrics.successful, 'Successful Transactions'),
+  //     pendingTransactions: formatMetric(currentMetrics.pending, previousMetrics.pending, 'Pending Transactions')
+  //   };
+
+  //   return metrics;
+  // }
+
+  // async adminDashboardServiceCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  //   // Helper function to get date range based on filter
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
+  //     const now = new Date();
+  //     const previous = new Date();
+      
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous.setDate(previous.getDate() - 1);
+  //         break;
+  //       case 'weekly': 
+  //         previous.setDate(previous.getDate() - 7);
+  //         break;
+  //       case 'monthly':
+  //         previous.setMonth(previous.getMonth() - 1);
+  //         break;
+  //     }
+      
+  //     return { current: now, previous };
+  //   };
+
+  //   const { current, previous } = getDateRange(dateFilter);
+
+  //   // Get current and previous period vendor counts
+  //   const currentVendors = await Vendor.countDocuments({ 
+  //     vendorType: VendorType.MARKET_SELLER,
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousVendors = await Vendor.countDocuments({
+  //     vendorType: VendorType.MARKET_SELLER, 
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Get current and previous period earnings
+  //   const currentEarnings = await Transaction.aggregate([
+  //     {
+  //       $match: {
+  //         success: true,
+  //         createdAt: { $lte: current }
+  //       }
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         total: { $sum: "$amount" }
+  //       }
+  //     }
+  //   ]).then(result => result[0]?.total || 0);
+
+  //   const previousEarnings = await Transaction.aggregate([
+  //     {
+  //       $match: {
+  //         success: true,
+  //         createdAt: { $lte: previous }
+  //       }
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         total: { $sum: "$amount" }
+  //       }
+  //     }
+  //   ]).then(result => result[0]?.total || 0);
+
+  //   // Get current and previous period user counts
+  //   const currentUsers = await this._userService().count({
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousUsers = await this._userService().count({
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Get current and previous period service provider counts
+  //   const currentProviders = await Vendor.countDocuments({
+  //     vendorType: VendorType.SERVICE_PROVIDER,
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousProviders = await Vendor.countDocuments({
+  //     vendorType: VendorType.SERVICE_PROVIDER,
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Calculate percentages and trends
+  //   const calculateMetrics = (current: number, previous: number) => {
+  //     const difference = current - previous;
+  //     const percentage = previous === 0 ? 100 : (difference / previous) * 100;
+  //     return {
+  //       percentage: Math.abs(Math.round(percentage)),
+  //       trend: difference >= 0 ? 'up' : 'down',
+  //       period: dateFilter,
+  //       value: difference
+  //     };
+  //   };
+
+  //   const metrics = {
+  //     totalEarnings: {
+  //       ...calculateMetrics(currentEarnings, previousEarnings),
+  //       title: 'Total Earnings'
+  //     },
+  //     totalVendors: {
+  //       ...calculateMetrics(currentVendors, previousVendors),
+  //       title: 'Total Vendors'
+  //     },
+  //     totalUsers: {
+  //       ...calculateMetrics(currentUsers, previousUsers),
+  //       title: 'Total Users'
+  //     },
+  //     totalServiceProviders: {
+  //       ...calculateMetrics(currentProviders, previousProviders),
+  //       title: 'Total Service Providers'
+  //     }
+  //   };
+
+  //   return metrics;
+ 
+  // }
+
+  // async getTransactionMetrics(dateFilter: DateFilter = 'daily') {
+  //   const { current, previous } = getDateRange(dateFilter);
+  //   const { previousStart, previousEnd } = getPreviousPeriodRange(current, previous);
+  
+  //   const [
+  //     currentTransactions,
+  //     previousTransactions
+  //   ] = await Promise.all([
+  //     this._txnService().find({ createdAt: { $gte: previous, $lte: current } }),
+  //     this._txnService().find({ createdAt: { $gte: previousStart, $lte: previousEnd } })
+  //   ]);
+  
+  //   const currentMetrics = calculateTxnMetrics(currentTransactions);
+  //   const previousMetrics = calculateTxnMetrics(previousTransactions);
+  
+  //   const metrics = {
+  //     totalEarnings: {
+  //       ...calculateMetrics(currentMetrics.revenue, previousMetrics.revenue, dateFilter),
+  //       title: 'Total Earnings'
+  //     },
+  //     transactionVolume: {
+  //       ...calculateMetrics(currentMetrics.volume, previousMetrics.volume, dateFilter),
+  //       title: 'Transaction Volume'
+  //     },
+  //     successfulTransactions: {
+  //       ...calculateMetrics(currentMetrics.successful, previousMetrics.successful, dateFilter),
+  //       title: 'Successful Transactions'
+  //     },
+  //     pendingTransactions: {
+  //       ...calculateMetrics(currentMetrics.pending, previousMetrics.pending, dateFilter),
+  //       title: 'Pending Transactions'
+  //     }
+  //   };
+  
+  //   return metrics;
+  // }
+
+  async adminDashboardCards(dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+  
+    // Get all metrics in parallel
     const [
       currentOrders,
-      currentEarnings,
-      currentUsers,
-      currentProducts,
-      currentVendors,
-      currentServiceProviders, 
-      currentServices,
-      currentTransactions
-    ] = await Promise.all([
-      this._orderService().count({ isPaid: true, createdAt: { $gte: previous, $lte: current } }),
-      this.getAllSuccessfulTransactions(),
-      this._userService().count({ createdAt: { $gte: previous, $lte: current } }),
-      this._productService().count({ createdAt: { $gte: previous, $lte: current } }),
-      Vendor.find({ vendorType: VendorType.MARKET_SELLER, createdAt: { $gte: previous, $lte: current } }).length,
-      Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER, createdAt: { $gte: previous, $lte: current } }).length,
-      this._provideService().count({ createdAt: { $gte: previous, $lte: current } }),
-      this._txnService().count({ createdAt: { $gte: previous, $lte: current } })
-    ]);
-
-    // Get previous period metrics
-    const previousStart = new Date(previous);
-    previousStart.setDate(previousStart.getDate() - 1);
-
-    const [
       previousOrders,
+      currentEarnings,
       previousEarnings,
+      currentUsers,
       previousUsers,
+      currentProducts,
       previousProducts,
-      previousVendors,
+      currentMarketVendors,
+      previousMarketVendors,
+      currentServiceProviders,
       previousServiceProviders,
-      previousServices, 
+      currentServices,
+      previousServices,
+      currentTransactions,
       previousTransactions
     ] = await Promise.all([
+      this._orderService().count({ isPaid: true, createdAt: { $lte: current } }),
       this._orderService().count({ isPaid: true, createdAt: { $lte: previous } }),
-      this.getAllSuccessfulTransactions(),
+      sumTransactions(current),
+      sumTransactions(previous),
+      this._userService().count({ createdAt: { $lte: current } }),
       this._userService().count({ createdAt: { $lte: previous } }),
+      this._productService().count({ createdAt: { $lte: current } }),
       this._productService().count({ createdAt: { $lte: previous } }),
-      Vendor.find({ vendorType: VendorType.MARKET_SELLER, createdAt: { $lte: previous } }).length,
-      Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER, createdAt: { $lte: previous } }).length,
+      countVendorsByType(VendorType.MARKET_SELLER, current),
+      countVendorsByType(VendorType.MARKET_SELLER, previous),
+      countVendorsByType(VendorType.SERVICE_PROVIDER, current),
+      countVendorsByType(VendorType.SERVICE_PROVIDER, previous),
+      this._provideService().count({ createdAt: { $lte: current } }),
       this._provideService().count({ createdAt: { $lte: previous } }),
+      this._txnService().count({ createdAt: { $lte: current } }),
       this._txnService().count({ createdAt: { $lte: previous } })
     ]);
-
-    const calculateMetrics = (current: number, previous: number, title: string) => {
-      const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
-      return {
-        value: current,
-        percentage: Math.abs(Math.round(percentage * 10) / 10),
-        trend: current >= previous ? 'up' : 'down',
-        period: dateFilter,
-        title
-      };
-    };
-   
+  
     return {
-      totalEarnings: calculateMetrics(currentEarnings, previousEarnings, 'Total Earnings'),
-      totalOrders: calculateMetrics(currentOrders, previousOrders, 'Total Orders'),
-      totalUsers: calculateMetrics(currentUsers, previousUsers, 'Total Users'),
-      totalProducts: calculateMetrics(currentProducts, previousProducts, 'Total Products'),
-      totalVendors: calculateMetrics(currentVendors, previousVendors, 'Total Vendors'),
-      totalServiceProviders: calculateMetrics(currentServiceProviders, previousServiceProviders, 'Total Service Providers'),
-      totalServices: calculateMetrics(currentServices, previousServices, 'Total Services'),
-      totalTransactions: calculateMetrics(currentTransactions, previousTransactions, 'Total Transactions')
+      totalEarnings: {
+        ...calculateMetrics(currentEarnings, previousEarnings, dateFilter),
+        title: 'Total Earnings'
+      },
+      totalOrders: {
+        ...calculateMetrics(currentOrders, previousOrders, dateFilter),
+        title: 'Total Orders'
+      },
+      totalUsers: {
+        ...calculateMetrics(currentUsers, previousUsers, dateFilter),
+        title: 'Total Users'
+      },
+      totalProducts: {
+        ...calculateMetrics(currentProducts, previousProducts, dateFilter),
+        title: 'Total Products'
+      },
+      totalVendors: {
+        ...calculateMetrics(currentMarketVendors, previousMarketVendors, dateFilter),
+        title: 'Total Vendors'
+      },
+      totalServiceProviders: {
+        ...calculateMetrics(currentServiceProviders, previousServiceProviders, dateFilter),
+        title: 'Total Service Providers'
+      },
+      totalServices: {
+        ...calculateMetrics(currentServices, previousServices, dateFilter),
+        title: 'Total Services'
+      },
+      totalTransactions: {
+        ...calculateMetrics(currentTransactions, previousTransactions, dateFilter),
+        title: 'Total Transactions'
+      }
     };
   }
 
-  async getTransactionMetrics(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
-      const now = new Date();
-      const previous = new Date();
-      console.log(filter);
-      switch(filter) {
-        case 'daily':
-          previous.setDate(previous.getDate() - 1);
-          break;
-        case 'weekly':
-          previous.setDate(previous.getDate() - 7); 
-          break;
-        case 'monthly':
-          previous.setMonth(previous.getMonth() - 1);
-          break;
-      }
-      
-      return { current: now, previous };
-    };
-
+  async getTransactionMetrics(dateFilter: DateFilter = 'daily') {
     const { current, previous } = getDateRange(dateFilter);
-
-    // Get current period metrics
-    const currentTransactions = await this._txnService().find({
-      createdAt: { $gte: previous, $lte: current }
-    });
-
-    // Get previous period metrics
-    const previousStart = new Date(previous);
-    const timeDiff = current.getTime() - previous.getTime();
-    previousStart.setTime(previous.getTime() - timeDiff);
-
-    const previousTransactions = await this._txnService().find({
-      createdAt: { $gte: previousStart, $lte: previous }
-    });
-
-    // Calculate metrics for both periods
-    const calculateMetrics = (txns: any[]) => {
-      return txns.reduce((acc, txn) => {
-        acc.volume++;
-        acc.revenue += txn.amount;
-        txn.success ? acc.successful++ : acc.pending++;
-        return acc;
-      }, { volume: 0, revenue: 0, successful: 0, pending: 0 });
+  
+    // Get current and previous period metrics in parallel
+    const [
+      currentSuccessfulTxns,
+      previousSuccessfulTxns,
+      currentPendingTxns,
+      previousPendingTxns,
+      currentTotalTxns,
+      previousTotalTxns,
+      currentRevenue,
+      previousRevenue
+    ] = await Promise.all([
+      this._txnService().count({ success: true, createdAt: { $lte: current } }),
+      this._txnService().count({ success: true, createdAt: { $lte: previous } }),
+      this._txnService().count({ success: false, createdAt: { $lte: current } }),
+      this._txnService().count({ success: false, createdAt: { $lte: previous } }),
+      this._txnService().count({ createdAt: { $lte: current } }),
+      this._txnService().count({ createdAt: { $lte: previous } }),
+      sumTransactions(current),
+      sumTransactions(previous)
+    ]);
+  
+    return {
+      totalEarnings: {
+        ...calculateMetrics(currentRevenue, previousRevenue, dateFilter),
+        title: 'Total Earnings'
+      },
+      transactionVolume: {
+        ...calculateMetrics(currentTotalTxns, previousTotalTxns, dateFilter),
+        title: 'Transaction Volume'
+      },
+      successfulTransactions: {
+        ...calculateMetrics(currentSuccessfulTxns, previousSuccessfulTxns, dateFilter),
+        title: 'Successful Transactions'
+      },
+      pendingTransactions: {
+        ...calculateMetrics(currentPendingTxns, previousPendingTxns, dateFilter),
+        title: 'Pending Transactions'
+      }
     };
-
-    const currentMetrics = calculateMetrics(currentTransactions);
-    const previousMetrics = calculateMetrics(previousTransactions);
-
-    // Calculate percentage changes
-    const getPercentageChange = (current: number, previous: number) => {
-      if (previous === 0) return current > 0 ? 100 : 0;
-      return ((current - previous) / previous) * 100;
-    };
-
-    const formatMetric = (current: number, previous: number, title: string) => {
-      const percentage = getPercentageChange(current, previous);
-      return {
-        title,
-        value: current-previous,
-        percentage: Math.abs(percentage).toFixed(1),
-        trend: percentage >= 0 ? 'up' : 'down',
-        period: dateFilter
-      };
-    };
-
-    const metrics = { 
-      totalEarnings: formatMetric(currentMetrics.revenue, previousMetrics.revenue, 'Total Earnings'),
-      transactionVolume: formatMetric(currentMetrics.volume, previousMetrics.volume, 'Transaction Volume'),
-      successfulTransactions: formatMetric(currentMetrics.successful, previousMetrics.successful, 'Successful Transactions'),
-      pendingTransactions: formatMetric(currentMetrics.pending, previousMetrics.pending, 'Pending Transactions')
-    };
-
-    return metrics;
   }
 
-  async adminDashboardServiceCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    // Helper function to get date range based on filter
-    const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
-      const now = new Date();
-      const previous = new Date();
-      
-      switch(filter) {
-        case 'daily':
-          previous.setDate(previous.getDate() - 1);
-          break;
-        case 'weekly': 
-          previous.setDate(previous.getDate() - 7);
-          break;
-        case 'monthly':
-          previous.setMonth(previous.getMonth() - 1);
-          break;
-      }
-      
-      return { current: now, previous };
-    };
+  
 
+  async adminDashboardServiceCards(dateFilter: DateFilter = 'daily') {
     const { current, previous } = getDateRange(dateFilter);
-
-    // Get current and previous period vendor counts
-    const currentVendors = await Vendor.countDocuments({ 
-      vendorType: VendorType.MARKET_SELLER,
-      createdAt: { $lte: current }
-    });
-    const previousVendors = await Vendor.countDocuments({
-      vendorType: VendorType.MARKET_SELLER, 
-      createdAt: { $lte: previous }
-    });
-
-    // Get current and previous period earnings
-    const currentEarnings = await Transaction.aggregate([
-      {
-        $match: {
-          success: true,
-          createdAt: { $lte: current }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
-    ]).then(result => result[0]?.total || 0);
-
-    const previousEarnings = await Transaction.aggregate([
-      {
-        $match: {
-          success: true,
-          createdAt: { $lte: previous }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
-    ]).then(result => result[0]?.total || 0);
-
-    // Get current and previous period user counts
-    const currentUsers = await this._userService().count({
-      createdAt: { $lte: current }
-    });
-    const previousUsers = await this._userService().count({
-      createdAt: { $lte: previous }
-    });
-
-    // Get current and previous period service provider counts
-    const currentProviders = await Vendor.countDocuments({
-      vendorType: VendorType.SERVICE_PROVIDER,
-      createdAt: { $lte: current }
-    });
-    const previousProviders = await Vendor.countDocuments({
-      vendorType: VendorType.SERVICE_PROVIDER,
-      createdAt: { $lte: previous }
-    });
-
-    // Calculate percentages and trends
-    const calculateMetrics = (current: number, previous: number) => {
-      const difference = current - previous;
-      const percentage = previous === 0 ? 100 : (difference / previous) * 100;
-      return {
-        percentage: Math.abs(Math.round(percentage)),
-        trend: difference >= 0 ? 'up' : 'down',
-        period: dateFilter,
-        value: difference
-      };
-    };
-
+  
+    const [
+      currentVendors,
+      previousVendors,
+      currentEarnings,
+      previousEarnings,
+      currentUsers,
+      previousUsers,
+      currentProviders,
+      previousProviders
+    ] = await Promise.all([
+      countVendorsByType(VendorType.MARKET_SELLER, current),
+      countVendorsByType(VendorType.MARKET_SELLER, previous),
+      sumTransactions(current),
+      sumTransactions(previous),
+      this._userService().count({ createdAt: { $lte: current } }),
+      this._userService().count({ createdAt: { $lte: previous } }),
+      countVendorsByType(VendorType.SERVICE_PROVIDER, current),
+      countVendorsByType(VendorType.SERVICE_PROVIDER, previous)
+    ]);
+  
     const metrics = {
       totalEarnings: {
-        ...calculateMetrics(currentEarnings, previousEarnings),
+        ...calculateMetrics(currentEarnings, previousEarnings, dateFilter),
         title: 'Total Earnings'
       },
       totalVendors: {
-        ...calculateMetrics(currentVendors, previousVendors),
+        ...calculateMetrics(currentVendors, previousVendors, dateFilter),
         title: 'Total Vendors'
       },
       totalUsers: {
-        ...calculateMetrics(currentUsers, previousUsers),
+        ...calculateMetrics(currentUsers, previousUsers, dateFilter),
         title: 'Total Users'
       },
       totalServiceProviders: {
-        ...calculateMetrics(currentProviders, previousProviders),
+        ...calculateMetrics(currentProviders, previousProviders, dateFilter),
         title: 'Total Service Providers'
       }
     };
-
+  
     return metrics;
- 
   }
 
   salesByCategory() {
