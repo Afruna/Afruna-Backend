@@ -106,6 +106,8 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     let messageObj = null;
     let messageId = null;
 
+    user = await this._userService().findOne({ _id: user._id as string });
+
     let data = await this.repository.findOne({ _id });
     if (!data) throw new HttpError('Booking does not exist');
 
