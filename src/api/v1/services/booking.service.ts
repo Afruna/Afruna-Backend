@@ -107,11 +107,14 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     let messageId = null;
 
     user = await this._userService().findOne({ _id: user._id as string });
+    console.log(user);
+    if (!user) throw new HttpError('User does not exist');
 
     let data = await this.repository.findOne({ _id });
     if (!data) throw new HttpError('Booking does not exist');
 
     const vendor = await this.vendorRepo.findOne({ _id: data.vendorId.toString() });
+    if (!vendor) throw new HttpError('Vendor does not exist');
 
     if(status == BookingStatus.ACCEPTED){
       const conversation = await this._conversationService.createConversation([
