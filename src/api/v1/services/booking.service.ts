@@ -45,13 +45,7 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     if (vendor.vendorType == (VendorType.MARKET_SELLER as VendorType))
       throw new HttpError('Vendor must be of Service Provider');
 
-    let messageObj = null;
-    let messageId = null;
-
-    const conversation = await this._conversationService.createConversation([
-      { id: user._id as string, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER },
-      { id: vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR },
-    ]);
+   
 
     // let message = await this._messageRepo.custom().findOne({
     //   $or: [
@@ -96,11 +90,6 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     // }
 
     //attend to the duplication here
-    const message = await this._conversationService.sendMessage({
-      conversationId: conversation._id,
-      content: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
-      from: user._id
-    });
 
     await this._notificationService().create({
       vendorId: vendor._id,
@@ -113,7 +102,26 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     return this.repository.create({ userId: <string>user._id, ...data });
   }
 
-  async changeBookingStatus(_id: string, status: BookingStatus) {
+  async changeBookingStatus(_id: string, status: BookingStatus,user: Partial<UserInterface>) {
+    let messageObj = null;
+    let messageId = null;
+
+    let data = await this.repository.findOne({ _id });
+    if (!data) throw new HttpError('Booking does not exist');
+
+    const vendor = await this.vendorRepo.findOne({ _id: data.vendorId.toString() });
+
+    const conversation = await this._conversationService.createConversation([
+      { id: user._id as string, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER },
+      { id: vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR },
+    ]);
+    
+    const message = await this._conversationService.sendMessage({
+      conversationId: conversation._id,
+      content: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
+      from: user._id
+    });
+
     return await this.repository.update({ _id }, { status });
   }
 

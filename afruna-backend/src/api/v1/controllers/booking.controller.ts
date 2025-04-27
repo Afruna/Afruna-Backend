@@ -15,7 +15,7 @@ class BookingController extends Controller<BookingInterface> {
 
   changeStatus = this.control((req: Request) => {
     const data = req.body;
-    return this.service.changeBookingStatus(req.params.bookingId, data);
+    return this.service.changeBookingStatus(req.params.bookingId, data, req.user);
   });
 
   getWithVendorId = this.control(async (req: Request) => {

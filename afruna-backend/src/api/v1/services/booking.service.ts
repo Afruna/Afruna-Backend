@@ -102,9 +102,9 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
   }
 
 
-  async changeBookingStatus(_id: string, status: BookingStatus) {
+  async changeBookingStatus(_id: string, status: BookingStatus, user: Partial<UserInterface>) {
 
-    return await this.repository.update({ _id }, { status})
+    return await this.repository.update({ _id }, { status});
   }
 
   static instance() {
