@@ -135,6 +135,8 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       await this._notificationService().create({ userId, subject: `Pending Order: ${orderNumber}`,  message: `Dear customer, you have a Pending Order: ${orderNumber}`, });
 
+      await this._notificationService().create({ vendorId: order.vendorId, subject: `New Order: ${orderNumber}`,  message: `Dear vendor, you have a New Order: ${orderNumber}`, });
+
       return { order, payment, paymentMethod };
 
     }

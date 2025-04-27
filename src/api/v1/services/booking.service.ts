@@ -14,6 +14,7 @@ import MessageService from './message.service';
 import ChatService from './chat.service';
 import { ChatInterface, MESSAGE_TYPE, USER_TYPE } from '@interfaces/Chat.Interface';
 import { ConversationService } from './ConversationService';
+import NotificationService from './notification.service';
 // import ProductService from './product.service';
 // import { logger } from '@utils/logger';
 // import s3 from '@helpers/multer';
@@ -30,6 +31,7 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
   protected readonly _messageService = new MessageService();
   protected readonly _chatService = new ChatService();
   protected readonly _conversationService = new ConversationService();
+  protected _notificationService = NotificationService.instance;
 
   async createBooking(user: Partial<UserInterface>, data: Partial<BookingInterface>) {
     const service = await this.provideRepo.findOne({ _id: data.serviceId.toString() });
@@ -93,11 +95,20 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     //   );
     // }
 
+    //attend to the duplication here
     const message = await this._conversationService.sendMessage({
       conversationId: conversation._id,
       content: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
       from: user._id
     });
+
+    await this._notificationService().create({
+      vendorId: vendor._id,
+      subject: 'New Booking Request',
+      message: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
+      sent_at: new Date(),
+      is_read: false,
+    })
 
     return this.repository.create({ userId: <string>user._id, ...data });
   }

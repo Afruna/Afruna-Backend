@@ -4,7 +4,7 @@ import { Schema, model } from 'mongoose';
 const NotificationSchema = new Schema<NotificationInterface>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    vendorId: { type: Schema.Types.ObjectId, ref: 'User' },
+    vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
     subject: String,
     message: String,
     sent_at: {

@@ -5,17 +5,48 @@ import ConversationService from './conversation.service';
 import MessageRepository from '@repositories/Message.repo';
 import UserService from './user.service';
 import ChatRepository from '@repositories/Chat.repo';
+import NotificationService from './notification.service';
+import { NotificationStatusEnum } from '@interfaces/Notification.Interface';
 
 export default class MessageService extends Service<MessageInterface, MessageRepository> {
   protected repository = new MessageRepository();
   private readonly _conversationService = ConversationService.instance();
   private readonly _userService = UserService.instance;
   private static _instance: MessageService;
+  private readonly _notificationService = NotificationService.instance;
   private readonly chatRepo = new ChatRepository();
 
   async createMessage(data: MessageInterface) {
     let messageId = null;
     let messageObj = null;
+
+    if(data.to){
+      let user = await this._userService().findOne({_id: data.to});
+
+      if(user){
+        //send notification to user
+         let newNotification = {
+          userId: data.to,
+          subject: 'New Message',
+          message: data.content,
+          sent_at: new Date(),
+          is_read: false,
+         }
+        let notification = await this._notificationService().create(newNotification);
+      }
+      else{
+        //send notification to vendor
+        let newNotification = {
+          vendorId: data.to,
+          subject: 'New Message',
+          message: data.content,
+          sent_at: new Date(),
+          is_read: false,
+         }
+        let notification = await this._notificationService().create(newNotification);
+      }
+        
+    }
 
     // let message = await this.repository.custom().findOne({
     //   $or: [

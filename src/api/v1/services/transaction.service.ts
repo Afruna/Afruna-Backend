@@ -24,6 +24,7 @@ import { OrderStatus } from '@interfaces/Order.Interface';
 import CardService from './card.service';
 import OrderSessionService from './order.session.service';
 import OrderSessionRepository from '@repositories/OrderSession.repo';
+import NotificationService from './notification.service';
 
 class TransactionService extends Service<TransactionInterface, TransactionRepository> {
   protected repository = new TransactionRepository();
@@ -40,6 +41,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
   protected paymentRepository = new PaymentRepository();
   protected depositRepository = new DepositRepository();
   protected orderSessionRepository = new OrderSessionRepository();
+  protected _notificationService = NotificationService.instance;
 
   // private _cardService =  CardService();
 
@@ -361,6 +363,14 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
             await this._orderSessionService().update({_id: order.sessionId }, { orderStatus: OrderStatus.PAID });
 
             await this._orderService().update(reference, { isPaid: true, orderStatus: OrderStatus.PAID });
+            //send notifiqation to vendor
+            await this._notificationService().create({
+              vendorId: order.vendor,
+              subject: 'New Paid Order',
+              message: `A vendor just paid for an Order - ${order.customId}`,
+              sent_at: new Date(),
+              is_read: false,
+            });
 
             // const walletId =
             //   (await this._walletService().findOne({ userId: vendorId })) ||
