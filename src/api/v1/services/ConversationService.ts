@@ -45,8 +45,6 @@ export class ConversationService extends Service<ConversationInterface, Reposito
         { 'participants': { $size: participants.length } },
         // Check if all participant IDs exist
         { 'participants.id': { $all: participantIds } },
-        // Ensure no extra participants
-        { 'participants.id': { $not: { $elemMatch: { $nin: participantIds } } } }
       ]
     });
   
