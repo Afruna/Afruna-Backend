@@ -11,6 +11,19 @@ export class ConversationService extends Service<ConversationInterface, Reposito
 
   // Create a new conversation between participants
   async createConversation(participants: Array<{ id: string; name: string; userType: string }>) {
+    // Check if conversation already exists
+    const existingConversation = await Conversation.findOne({
+      participants: {
+        $all: participants.map(participant => ({
+          id: participant.id,
+          userType: participant.userType
+        }))
+      }
+    });
+    if (existingConversation) {
+      return existingConversation;
+    }
+    // Create a new conversation
     const conversation = new Conversation({
       participants,
       unreadCount: {}
