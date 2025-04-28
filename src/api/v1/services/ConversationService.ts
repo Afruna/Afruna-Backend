@@ -10,20 +10,51 @@ export class ConversationService extends Service<ConversationInterface, Reposito
   protected repository = new Repository<ConversationInterface>(Conversation);
 
   // Create a new conversation between participants
+  // async createConversation(participants: Array<{ id: string; name: string; userType: string }>) {
+  //   // Check if conversation already exists
+    
+  //   const existingConversation = await Conversation.findOne({
+  //     participants: {
+  //       $all: participants.map(participant => ({
+  //         id: participant.id,
+  //         name: participant.name,
+  //         userType: participant.userType
+  //       }))
+  //     }
+  //   });
+
+  //   console.log('existingConversation', existingConversation);
+  //   if (existingConversation) {
+  //     return existingConversation;
+  //   }
+  //   // Create a new conversation
+  //   const conversation = new Conversation({
+  //     participants,
+  //     unreadCount: {}
+  //   });
+  //   return await conversation.save();
+  // }
   async createConversation(participants: Array<{ id: string; name: string; userType: string }>) {
-    // Check if conversation already exists
+    // Sort participant IDs to ensure consistent ordering
+    const participantIds = participants.map(p => p.id).sort();
+    
+    // Find conversation where all these participants exist
     const existingConversation = await Conversation.findOne({
-      participants: {
-        $all: participants.map(participant => ({
-          id: participant.id,
-          userType: participant.userType
-        }))
-      }
+      $and: [
+        // Check if participant count matches
+        { 'participants': { $size: participants.length } },
+        // Check if all participant IDs exist
+        { 'participants.id': { $all: participantIds } },
+        // Ensure no extra participants
+        { 'participants.id': { $not: { $elemMatch: { $nin: participantIds } } } }
+      ]
     });
+  
     if (existingConversation) {
       return existingConversation;
     }
-    // Create a new conversation
+  
+    // Create new conversation if none exists
     const conversation = new Conversation({
       participants,
       unreadCount: {}
