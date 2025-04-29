@@ -56,7 +56,7 @@ class MessageController extends Controller<MessageInterface> {
         ...participant,
         isOnline: Boolean(this.socket.users[participant.id])
       }));
-      
+      console.log('participantsWithStatus', participantsWithStatus);
       conversation.participants = participantsWithStatus;
     // }
   
