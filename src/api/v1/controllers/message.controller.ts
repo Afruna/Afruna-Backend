@@ -51,14 +51,14 @@ class MessageController extends Controller<MessageInterface> {
     });
   
     // Add online status to conversation participants
-    if (conversation && conversation.participants) {
+    // if (conversation && conversation.participants) {
       const participantsWithStatus = conversation.participants.map(participant => ({
         ...participant,
         isOnline: Boolean(this.socket.users[participant.id])
       }));
       
       conversation.participants = participantsWithStatus;
-    }
+    // }
   
     return { messages, conversation };
   });
