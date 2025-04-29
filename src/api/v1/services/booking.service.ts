@@ -124,13 +124,13 @@ class BookingService extends Service<BookingInterface, BookingRepository> {
     
     const message = await this._conversationService.sendMessage({
       conversationId: conversation._id,
-      content: `${vendor.firstname} ${vendor.lastname}, You have a new Booking Request`,
+      content: data.description,
       from: user._id
     });
-    }
+    };
 
     return await this.repository.update({ _id }, { status });
-  }
+  };
 
   static instance() {
     if (!BookingService._instance) {

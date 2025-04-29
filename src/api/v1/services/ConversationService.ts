@@ -72,7 +72,7 @@ export class ConversationService extends Service<ConversationInterface, Reposito
   // Get a single conversation by ID
   async getConversation(conversationId: string) {
     return await Conversation.findById(conversationId).lean();
-  }
+  };
 
   // Get messages for a conversation
   async getConversationMessages(conversationId: string, page = 1, limit = 50) {
@@ -82,7 +82,7 @@ export class ConversationService extends Service<ConversationInterface, Reposito
       .skip(skip)
       .limit(limit)
       .lean();
-  }
+  };
 
   // Send a new message
   async sendMessage(messageData: Omit<MessageInterface, '_id' | 'createdAt' | 'updatedAt'>) {
