@@ -294,7 +294,7 @@ class AdminController extends Controller<UserInterface> {
 
   
   updateKYCStatus = this.control(async (req: Request) => {
-    const result = await this.service.updateKYCStatus(req.body.type, req.body.vendorId, req.body.status, req.body.rejectionMessage);
+    const result = await this.service.updateKYCStatus(req.body.type, req.body.vendorId, req.body.status, req.body.rejectionMessage, req.user);
 
     return result;
   });
@@ -413,8 +413,7 @@ class AdminController extends Controller<UserInterface> {
   getAllTags = this.control(async (req: Request) => {
     const result = await this.service.getAllTags();
     return result;
-  });
-  
+  }); 
 }
 
 export default AdminController;

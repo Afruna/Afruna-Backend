@@ -5,7 +5,7 @@ import { USER_TYPE } from '@interfaces/Chat.Interface';
 const MessageSchema = new Schema<MessageInterface>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
-    content: { type: String, required: true },
+    content: { type: String, required: false },
     from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     readBy: [{
       userId: String,

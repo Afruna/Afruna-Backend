@@ -42,6 +42,25 @@ export class SocketEvents {
       console.log(`User registered v3: ${userId} -> ${socket.id}`);
     });
 
+    socket.on('typing_start', (data: { from: string, to: string }) => {
+      const recipientSocketId = this.users[data.to];
+      if (recipientSocketId) {
+        this.io.to(recipientSocketId).emit('typing_indicator', {
+          isTyping: true,
+          userId: data.from
+        });
+      }
+    });
+
+    socket.on('typing_end', (data: { from: string, to: string }) => {
+      const recipientSocketId = this.users[data.to];
+      if (recipientSocketId) {
+        this.io.to(recipientSocketId).emit('typing_indicator', {
+          isTyping: false,
+          userId: data.from
+        });
+      }
+    });
 
     // Listen for private messages
     // socket.on('user_provider', async(chat: ChatInterface) => {
@@ -178,6 +197,13 @@ export class SocketEvents {
         
         const parsedChat = chat;
         const recipientSocketId = this.users[parsedChat.to];
+
+        if (recipientSocketId) {
+          this.io.to(recipientSocketId).emit('typing_indicator', {
+            isTyping: false,
+            userId: parsedChat.from.id
+          });
+        }
         
         if(chat.messageType == MESSAGE_TYPE.QUOTE)
         {

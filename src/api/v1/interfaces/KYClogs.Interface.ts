@@ -17,9 +17,17 @@ export enum KYCStatus {
 
 export interface KYClogsInterface {
   vendorId: Types.ObjectId;
-  kycType: KYCType;
   status: KYCStatus;
   message?: string;
   reviewedBy?: Types.ObjectId;
   reviewedAt?: Date;
+  businessDetailStatus?: boolean;
+  businessInfoStatus?: boolean;
+  shippingInfoStatus?: boolean;
+  legalRepStatus?: boolean;
+  paymentInfoStatus?: boolean;
+  meansIdentificationStatus?: boolean;
+  customerCareStatus?: boolean;
+  additionalInfoStatus?: boolean;
+  storeFrontStatus?: boolean;
 } 

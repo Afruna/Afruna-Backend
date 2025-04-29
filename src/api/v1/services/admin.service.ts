@@ -39,6 +39,8 @@ import axios from 'axios';
 import { DateFilter, getDateRange } from '@utils/dateRange';
 import { calculateMetrics } from '@utils/metrics';
 import Tags, { ITags } from '@models/Tags';
+import KycLogsService from './kycLogs.service';
+import mongoose from 'mongoose';
 
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
@@ -50,6 +52,7 @@ class AdminService extends UserService {
   private _vendorService = VendorService.instance;
   private _orderService = OrderService.instance;
   private _specialOffersService = SpecialOffersService.instance;
+  private _kycLogsService = KycLogsService.instance;
 
   getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
     const now = new Date();
@@ -1002,32 +1005,42 @@ class AdminService extends UserService {
     return uniqueSubmissions;
   };
 
-  async updateKYCStatus(type: string, id: string, status: VendorStatus, rejectionMessage?: string) {
+  async updateKYCStatus(type: string, id: string, status: VendorStatus, rejectionMessage?: string, loggedAdmin: id) {
     let Model;
+
+    let field;
     switch(type) {
       case 'businessInfo':
         Model = BusinessInfo;
+        field = "businessInfoStatus";
         break;
       case 'businessDetail':
         Model = BusinessDetail;
+        field = "businessDetailStatus";
         break;
       case 'customerCare':
         Model = CustomerCareDetail;
+        field = "customerCareStatus";
         break;
       case 'shippingAddress':
         Model = ShippingInfo;
+        field = "shippingInfoStatus";
         break;
       case 'paymentInfo':
         Model = PaymentInfo;
+        field = "paymentInfoStatus";
         break;
       case 'additionalInfo':
         Model = AdditionalInfo;
+        field = "additionalInfoStatus";
         break;
       case 'legalInfo':
         Model = LegalRep;
+        field = "legalInfoStatus";
         break;
       case 'identification':
         Model = MeansIdentification;
+        field = "meansIdentificationStatus";
         break;
       case 'storefront':
         Model = StoreFront;
@@ -1041,6 +1054,15 @@ class AdminService extends UserService {
       { status, rejectionMessage },
       { new: true }
     ).populate('vendorId');
+
+    let kyc: KYClogsInterface = {
+      vendorId: id,
+      reviewedAt: new Date(),
+      reviewedBy: loggedAdmin, 
+      field: status
+    };
+
+    kyc = await this._kycLogsService().createKycLog(kyc);
 
     if (!doc) {
       throw new HttpError('Document not found', 404);

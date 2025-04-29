@@ -6,11 +6,13 @@ import Controller from '@controllers/controller';
 import { OPTIONS } from '@config';
 import { ConversationService } from '@services/ConversationService';
 import Conversation from '@models/Conversation';
+import { SocketEvents } from '@events/socket';
 // import { MessageResponseDTO } from '@dtos/Message.dto';
 
 class MessageController extends Controller<MessageInterface> {
   service = new MessageService();
   conversationService = new ConversationService();
+  socket = new SocketEvents();  
 
   responseDTO = undefined; // MessageResponseDTO.Message;
   create = this.control(async (req: Request) => {
@@ -26,14 +28,39 @@ class MessageController extends Controller<MessageInterface> {
     return result;
   });
 
-  get =  this.control(async (req: Request) => {
-    let messages = await this.service.find({
-      conversationId: req.params.conversationId as string  || req.query.conversationId as string,
-    })
-    let conversation = await Conversation.findOne({
-      _id: req.params.conversationId as string  || req.query.conversationId as string});
+  // get =  this.control(async (req: Request) => {
+  //   let messages = await this.service.find({
+  //     conversationId: req.params.conversationId as string  || req.query.conversationId as string,
+  //   })
+  //   let conversation = await Conversation.findOne({
+  //     _id: req.params.conversationId as string  || req.query.conversationId as string});
 
-    return {messages, conversation};
+  //   // this.socket.users
+
+
+  //   return {messages, conversation};
+  // });
+
+  get = this.control(async (req: Request) => {
+    const messages = await this.service.find({
+      conversationId: req.params.conversationId as string || req.query.conversationId as string,
+    });
+    
+    const conversation = await Conversation.findOne({
+      _id: req.params.conversationId as string || req.query.conversationId as string
+    });
+  
+    // Add online status to conversation participants
+    if (conversation && conversation.participants) {
+      const participantsWithStatus = conversation.participants.map(participant => ({
+        ...participant,
+        isOnline: Boolean(this.socket.users[participant.id])
+      }));
+      
+      conversation.participants = participantsWithStatus;
+    }
+  
+    return { messages, conversation };
   });
 
   getMessage = this.control((req: Request) => {
