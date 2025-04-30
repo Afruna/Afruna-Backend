@@ -26,7 +26,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   private readonly _conversationService = new ConversationService();
 
   async createQuote(data: Partial<QuoteInterface>) {
-    
+    console.log(data.to)
     const user = await this.userRepo.findOne({ _id: data.to});
 
     if(!user)
@@ -65,19 +65,6 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     //     }
     //   ]
     //  });
-    let conversation = await this._conversationService.findOne({_id: data.conversationId});
-    
-
-    //  const to = {id: user._id, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER }; 
-
-     const chat = {
-      from,
-      message: `${user.firstName} ${user.lastName}, You have a new Quote`,
-      messageType: MESSAGE_TYPE.QUOTE,
-      quote,
-      quoteData: { userId: user._id, vendorId: vendor._id, amount: data.amount, serviceId: data.serviceId, serviceTitle: service.name },
-      conversationId: conversation._id
-    }
 
     const messageData = {
       ...data,
