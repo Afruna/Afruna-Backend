@@ -37,7 +37,6 @@ class MessageController extends Controller<MessageInterface> {
 
   //   // this.socket.users
 
-
   //   return {messages, conversation};
   // });
 
@@ -60,7 +59,7 @@ class MessageController extends Controller<MessageInterface> {
       conversation.participants = participantsWithStatus;
     // }
   
-    return { messages, conversation };
+    return { messages, conversation, participantsWithStatus };
   });
 
   getMessage = this.control((req: Request) => {
