@@ -3,6 +3,9 @@ import { Request } from 'express';
 import QuoteService from '@services/quote.service';
 import { QuoteInterface } from '@interfaces/Quote.Interface';
 import Controller from '@controllers/controller';
+import Message from '@models/Message';
+import Quote from '@models/Quote';
+import Provide from '@models/Provide';
 // import { ConversationResponseDTO } from '@dtos/Conversation.dto';
 
 class QuoteController extends Controller<QuoteInterface> {
@@ -42,6 +45,39 @@ class QuoteController extends Controller<QuoteInterface> {
 
   getServiceProfile = this.control(async (req: Request) => {
     return this.service.findOne(req.params.serviceProfileId);
+  });
+
+  delete = this.control((req: Request) => {
+    const { quoteId } = req.params;
+    if (!quoteId) {
+      throw new Error('Quote ID is required');
+    }
+    this.service.delete(quoteId);
+    let messageBinded = Message.findOneAndDelete({quote: quoteId})
+    return { message: 'Quote deleted successfully' };
+  }
+  );
+
+  update = this.control(async (req: Request) => {
+    const { quoteId } = req.params;
+    if (!quoteId) {
+      throw new Error('Quote ID is required');
+    }
+
+    let quote = await Quote.findById(quoteId);
+    if (!quote) {
+      throw new Error('Quote not found');
+    }
+    const service = await Provide.findById(req.body.serviceId);
+    if (!service) {
+      throw new Error('Service not found');
+    }
+    const data = {
+      ...req.body,
+      serviceTitle: service.name,
+    }
+    let messageBinded = await Message.findOneAndUpdate({quote: quoteId}, {quoteData: data})
+    return this.service.update(quoteId, req.body);
   });
 }
 

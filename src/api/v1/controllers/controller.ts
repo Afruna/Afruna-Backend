@@ -135,6 +135,7 @@ export default abstract class Controller<T> {
   });
 
   delete = this.control(async (req: Request) => {
+    console.log(req.params[this.resourceId]);
     const result = await this.service.delete(req.params[this.resourceId]);
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;

@@ -5,7 +5,7 @@ const QuoteSchema = new Schema<QuoteInterface>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
-    serviceId: { type: Schema.Types.ObjectId, ref: 'Service' },
+    serviceId: { type: Schema.Types.ObjectId, ref: 'Provide' },
     serviceTitle: { type: String },
     amount: {
       type: Number,
@@ -16,6 +16,6 @@ const QuoteSchema = new Schema<QuoteInterface>(
     }
   },
   { timestamps: true },
-);
+)
 
 export default model('Quote', QuoteSchema);
