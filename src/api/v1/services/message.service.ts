@@ -87,7 +87,7 @@ export default class MessageService extends Service<MessageInterface, MessageRep
 
     //  if(!message)
     //   {
-        messageObj =  await this.create({from: data.from, conversationId: data.conversationId, content: data.content, attachment: data.attachment});
+        messageObj =  await this.create({from: data.from, conversationId: data.conversationId, content: data.content, attachment: data.attachment, messageType: data.messageType, to: data.to});
         let conversation = await this._conversationService.update({_id: data.conversationId}, {lastMessage: {content: messageObj.content, timestamp: messageObj.createdAt}});
         console.log(messageObj)
         messageId = messageObj._id

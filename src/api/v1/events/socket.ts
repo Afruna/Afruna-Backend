@@ -238,10 +238,8 @@ export class SocketEvents {
     // Handle user disconnection
     socket.on('disconnect', () => {
       const userId = Object.keys(this.users).find((key) => this.users[key] == socket.id);
-
-    
       this._onlineStatusService.createOnlineStatus({id: userId, isOnline: false});
-      console.log('A user disconnected:', userId);
+      console.log('A user disconnected v2:', userId);
       delete this.clients[socket.id];
     });
 
