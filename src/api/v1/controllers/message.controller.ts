@@ -54,19 +54,22 @@ class MessageController extends Controller<MessageInterface> {
     // if (conversation && conversation.participants) {
     // console.log(this.socket.users)
     // console.log(this.socket.)
-    const participantsWithStatus = conversation.participants.map(async (participant) => {
-      let isOnline = (await OnlineStatus.findOne({ id: participant.id }))?.isOnline || false;
+    
+  // Use Promise.all to wait for all async operations
+  const participantsWithStatus = await Promise.all(
+    conversation.participants.map(async (participant) => {
+      const isOnline = (await OnlineStatus.findOne({ id: participant.id }))?.isOnline || false;
       return {
-        ...participant.toObject(), // Convert Mongoose document to plain object
+        ...participant.toObject(),
         isOnline
-      }
-    });
+      };
+    })
+  );
 
-    // Create a new object instead of modifying the Mongoose document
-    const conversationWithStatus = {
-      ...conversation.toObject(),
-      participants: participantsWithStatus,
-    };
+  const conversationWithStatus = {
+    ...conversation.toObject(),
+    participants: participantsWithStatus
+  }
 
     return { messages, conversation: conversationWithStatus };
   });
