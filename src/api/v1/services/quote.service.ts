@@ -27,7 +27,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
 
   async createQuote(data: Partial<QuoteInterface>) {
     
-    const user = await this.userRepo.findOne({ _id: data.to.toString() });
+    const user = await this.userRepo.findOne({ _id: data.to});
 
     if(!user)
       throw new HttpError("User does not exist");
