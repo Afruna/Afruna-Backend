@@ -47,13 +47,13 @@ class QuoteController extends Controller<QuoteInterface> {
     return this.service.findOne(req.params.serviceProfileId);
   });
 
-  delete = this.control((req: Request) => {
+  delete = this.control(async (req: Request) => {
     const { quoteId } = req.params;
     if (!quoteId) {
       throw new Error('Quote ID is required');
     }
     this.service.delete(quoteId);
-    let messageBinded = Message.findOneAndDelete({quote: quoteId})
+    let messageBinded = await Message.findOneAndDelete({quote: quoteId})
     return { message: 'Quote deleted successfully' };
   }
   );
