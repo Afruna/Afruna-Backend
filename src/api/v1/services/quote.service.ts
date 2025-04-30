@@ -27,26 +27,24 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
 
   async createQuote(data: Partial<QuoteInterface>) {
     
-    const user = await this.userRepo.findOne({ _id: data.userId.toString() });
+    const user = await this.userRepo.findOne({ _id: data.to.toString() });
 
     if(!user)
       throw new HttpError("User does not exist");
 
-    const vendor = await this.vendorRepo.findOne({ _id: data.vendorId.toString() });
+    const vendor = await this.vendorRepo.findOne({ _id: data.from.toString() });
 
     console.log(vendor)
 
     if(!vendor)
       throw new HttpError("Vendor does not exist");
 
-    const service = await this.provideRepo.findOne({ _id: data.serviceId.toString() });
+    const service = await this.provideRepo.findOne({ _id: data.quote.serviceId.toString() });
 
     if(!service)
       throw new HttpError("Service does not exist");
 
-    const quoteData = {}
-
-    const quote = await this.repository.create(data);
+    const quote = await this.repository.create(data.quote);
 
     let messageObj = null;
     let messageId = null;
@@ -67,9 +65,8 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     //     }
     //   ]
     //  });
-    let conversation = await this._conversationService.findOne({_id: data.conversationId})
-
-     const from = {id: <string>vendor._id, name: `${vendor.firstname} ${vendor.lastname}`, userType: USER_TYPE.VENDOR }; 
+    let conversation = await this._conversationService.findOne({_id: data.conversationId});
+    
 
     //  const to = {id: user._id, name: `${user.firstName} ${user.lastName}`, userType: USER_TYPE.USER }; 
 
@@ -80,6 +77,12 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
       quote,
       quoteData: { userId: user._id, vendorId: vendor._id, amount: data.amount, serviceId: data.serviceId, serviceTitle: service.name },
       conversationId: conversation._id
+    }
+
+    const messageData = {
+      ...data,
+      content: `${user.firstName} ${user.lastName}, You have a new Quote`,
+      quoteData: { userId: user._id, vendorId: vendor._id, amount: data.amount, serviceId: data.serviceId, serviceTitle: service.name },
     }
 
     //  const chatMessage = await this._chatService.create({ ...chat });
@@ -99,7 +102,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     //     );
     //   }
 
-    const message = await this._messageService.create(chat);
+    const message = await this._messageService.create(messageData);
     console.log(message);
     // const messageId = await this._messageService.createMessage({ fromId: data.vendorId.toString(), toId: data.userId.toString() })
     // const newMessage = this._chatService.create({ message: "Vendor Created New Quote", quote, messageType: MESSAGE_TYPE.QUOTE , messageId });

@@ -10,7 +10,9 @@ const QuoteSchema = new Schema<QuoteInterface>(
     amount: {
       type: Number,
       required: true,
-    }
+    },
+    description: {
+      type: String,}
   },
   { timestamps: true },
 );

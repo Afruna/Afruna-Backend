@@ -7,4 +7,5 @@ export interface QuoteInterface {
     serviceId: string | Types.ObjectId; //
     amount: number;
     conversationId: string | Types.ObjectId; //
-}
+    description: string;
+};
