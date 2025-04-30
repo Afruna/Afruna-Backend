@@ -51,6 +51,8 @@ class MessageController extends Controller<MessageInterface> {
 
     // Add online status to conversation participants
     // if (conversation && conversation.participants) {
+    console.log(this.socket.users)
+    // console.log(this.socket.)
     const participantsWithStatus: ParticipantWithStatus[] = conversation.participants.map((participant) => ({
       ...participant.toObject(), // Convert Mongoose document to plain object
       isOnline: Boolean(this.socket.users[participant.id]),
