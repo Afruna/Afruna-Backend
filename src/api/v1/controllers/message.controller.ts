@@ -7,6 +7,7 @@ import { OPTIONS } from '@config';
 import { ConversationService } from '@services/ConversationService';
 import Conversation from '@models/Conversation';
 import { SocketEvents } from '@events/socket';
+import OnlineStatus from '@models/OnlineStatus';
 // import { MessageResponseDTO } from '@dtos/Message.dto';
 
 class MessageController extends Controller<MessageInterface> {
@@ -53,10 +54,13 @@ class MessageController extends Controller<MessageInterface> {
     // if (conversation && conversation.participants) {
     console.log(this.socket.users)
     // console.log(this.socket.)
-    const participantsWithStatus: ParticipantWithStatus[] = conversation.participants.map((participant) => ({
-      ...participant.toObject(), // Convert Mongoose document to plain object
-      isOnline: Boolean(this.socket.users[participant.id]),
-    }));
+    const participantsWithStatus = conversation.participants.map(async (participant) => {
+      let isOnline = (await OnlineStatus.findOne({ id: participant.id })).isOnline;
+      return {
+        ...participant.toObject(), // Convert Mongoose document to plain object
+        isOnline
+      }
+    });
 
     // Create a new object instead of modifying the Mongoose document
     const conversationWithStatus = {

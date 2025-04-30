@@ -10,6 +10,8 @@ import ChatService from '@services/chat.service';
 import MessageService from '@services/message.service';
 import MessageRepository from '@repositories/Message.repo';
 import QuoteService from '@services/quote.service';
+import OnlineStatus from '@models/OnlineStatus';
+import OnlineStatusService from '@services/onlineStatus.service';
 export class SocketEvents {
   io: Server;
   //   socket;
@@ -24,6 +26,8 @@ export class SocketEvents {
   _chatService = new ChatService();
   _userService = new UserService();
   _messageRepo = new MessageRepository();
+  _onlineStatusService = new OnlineStatusService();
+  ;
   constructor(io: Server) {
     this.io = io;
 
@@ -39,6 +43,7 @@ export class SocketEvents {
     // Register user with username
     socket.on('register', (userId) => {
       this.users[userId] = socket.id;
+      this._onlineStatusService.createOnlineStatus({id: userId, isOnline: true});
       console.log(`User registered v3: ${userId} -> ${socket.id}`);
     });
 
@@ -204,6 +209,7 @@ export class SocketEvents {
             userId: parsedChat.from.id
           });
         }
+
         
         if(chat.messageType == MESSAGE_TYPE.QUOTE)
         {

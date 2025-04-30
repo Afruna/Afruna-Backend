@@ -4,6 +4,7 @@ import { UserRole } from '@interfaces/User.Interface';
 import { notificationRequestDTO } from '@dtos/notification.dto';
 import NotificationController from '@controllers/notification.controller';
 import { NotificationInterface } from '@interfaces/Notification.Interface';
+import { authenticateUserOrVendor } from '@middlewares/jwt';
 // import { authorize } from '@middlewares/jwt';
 
 export default class NotificationRoute extends Route<NotificationInterface> {
@@ -31,8 +32,8 @@ export default class NotificationRoute extends Route<NotificationInterface> {
 
     this.router
       .route('/:notificationId')
-      .put(this.authorize(), this.validator(this.dto.update), this.controller.markAsRead)
-      .delete(this.authorize(), this.validator(this.dto.update), this.controller.delete);
+      .put( authenticateUserOrVendor(), this.validator(this.dto.update), this.controller.markAsRead)
+      .delete(authenticateUserOrVendor(), this.validator(this.dto.update), this.controller.delete);
     
     return this.router;
   }
