@@ -44,6 +44,8 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     if(!service)
       throw new HttpError("Service does not exist");
 
+    const quoteData = {}
+
     const quote = await this.repository.create(data);
 
     let messageObj = null;
