@@ -18,8 +18,8 @@ export default class QuoteRoute extends Route<QuoteInterface> {
       .put(this.authorizeVendor(), this.validator(this.dto.update), this.controller.update)
       .delete(this.authorizeVendor(), this.validator(this.dto.id), this.controller.delete);
 
-    this.router.route('/user');
-    .get(this.authorize(), this.controller.findAllByUser);
+    // this.router.route('/user');
+    // .get(this.authorize(), this.controller.findAllByUser);
 
 
     this.router.route('/vendor')
