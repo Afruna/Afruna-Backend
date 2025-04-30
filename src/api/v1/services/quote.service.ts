@@ -39,12 +39,12 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     if(!vendor)
       throw new HttpError("Vendor does not exist");
 
-    const service = await this.provideRepo.findOne({ _id: data.quote.serviceId.toString() });
+    const service = await this.provideRepo.findOne({ _id: data.quoteData.serviceId.toString() });
 
     if(!service)
       throw new HttpError("Service does not exist");
 
-    const quote = await this.repository.create(data.quote);
+    const quote = await this.repository.create(data.quoteData);
 
     let messageObj = null;
     let messageId = null;
@@ -82,7 +82,8 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     const messageData = {
       ...data,
       content: `${user.firstName} ${user.lastName}, You have a new Quote`,
-      quoteData: { userId: user._id, vendorId: vendor._id, amount: data.amount, serviceId: data.serviceId, serviceTitle: service.name },
+      quote,
+      quoteData: { userId: user._id, vendorId: vendor._id, amount: data.quoteData.amount, serviceId: data.quoteData.serviceId, serviceTitle: service.name, description: data.quoteData.description },
     }
 
     //  const chatMessage = await this._chatService.create({ ...chat });

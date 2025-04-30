@@ -12,7 +12,8 @@ const QuoteSchema = new Schema<QuoteInterface>(
       required: true,
     },
     description: {
-      type: String,}
+      type: String
+    }
   },
   { timestamps: true },
 );
