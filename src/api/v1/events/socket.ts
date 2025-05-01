@@ -49,7 +49,9 @@ export class SocketEvents {
 
     socket.on('typing_start', (data: { from: string, to: string }) => {
       const recipientSocketId = this.users[data.to];
+      console.log(recipientSocketId)
       if (recipientSocketId) {
+        console.log("Typing start")
         this.io.to(recipientSocketId).emit('typing_indicator', {
           isTyping: true,
           userId: data.from
