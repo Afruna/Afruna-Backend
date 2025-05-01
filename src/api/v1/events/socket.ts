@@ -49,6 +49,7 @@ export class SocketEvents {
 
     socket.on('typing_start', (data: { from: string, to: string }) => {
       console.log(this.users)
+      console.log(data)
       const recipientSocketId = this.users[data.to];
       console.log(recipientSocketId)
       if (recipientSocketId) {
