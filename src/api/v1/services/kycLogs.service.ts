@@ -20,10 +20,15 @@ class KycLogsService extends Service<KYClogsInterface, KycLogsRepository> {
     let existingLog = await this.repository.findOne({ vendorId: data.vendorId });
     if (existingLog) {
       existingLog = await this.repository.update(existingLog._id, data);
+
       let status = existingLog.additionalInfoStatus && existingLog.storeFrontStatus && existingLog.paymentInfoStatus && existingLog.shippingInfoStatus && ((existingLog.businessDetailStatus && existingLog.businessInfoStatus && existingLog.customerCareStatus) || (existingLog.legalRepStatus && existingLog.meansIdentificationStatus)) ? KYCStatus.APPROVED : KYCStatus.PENDING;
 
+      console.log("status", status)
+
       if(status === KYCStatus.APPROVED) {
-        this.vendorService.update(existingLog._id, {kycStatus: KYCStatus.APPROVED});
+        console.log("approved")
+        let vendor = await this.vendorService.update(existingLog.vendorId, {kycStatus: KYCStatus.APPROVED});
+        console.log("vendor", vendor)
       }
 
       existingLog = await this.repository.update(existingLog._id, {status});

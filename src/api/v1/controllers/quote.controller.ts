@@ -59,7 +59,7 @@ class QuoteController extends Controller<QuoteInterface> {
   );
 
   update = this.control(async (req: Request) => {
-    const { quoteId } = req.params;
+    const { quoteId } = req.body;
     if (!quoteId) {
       throw new Error('Quote ID is required');
     }

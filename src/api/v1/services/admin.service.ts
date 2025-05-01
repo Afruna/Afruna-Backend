@@ -1036,7 +1036,7 @@ class AdminService extends UserService {
         break;
       case 'legalInfo':
         Model = LegalRep;
-        field = "legalInfoStatus";
+        field = "legalRepStatus";
         break;
       case 'identification':
         Model = MeansIdentification;
@@ -1044,6 +1044,7 @@ class AdminService extends UserService {
         break;
       case 'storefront':
         Model = StoreFront;
+        field = "storeFrontStatus"
         break;
       default:
         throw new HttpError('Invalid KYC type', 400);
@@ -1059,8 +1060,11 @@ class AdminService extends UserService {
       vendorId: id,
       reviewedAt: new Date(),
       reviewedBy: loggedAdmin, 
-      field: status
     };
+
+    kyc[field] = status == KYCStatus.APPROVED ? true : false;
+
+    console.log(kyc);
 
     kyc = await this._kycLogsService().createKycLog(kyc);
 
