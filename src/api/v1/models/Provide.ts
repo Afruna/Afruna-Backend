@@ -6,7 +6,7 @@ const ProvideSchema = new Schema<ProvideInterface>(
   {
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
     name: String,
-    categoryId:  { type: Schema.Types.ObjectId, ref: 'ServiceCatergory' },
+    categoryId:  { type: Schema.Types.ObjectId},
     state: String,
     country: String,
     desc: String,
