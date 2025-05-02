@@ -267,7 +267,6 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
           path: 'categoryId',
           model: 'Category',
         },
-
         {
           path: 'vendor',
           model: 'Vendor',
