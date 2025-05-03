@@ -37,7 +37,7 @@ class Category2Route extends Route<CategoryInterface> {
     );
 
     this.router
-      .route('/:categoryId')
+      .route('/:category2Id')
       // .get(this.validator(this.dto.id), this.controller.getOne)
       .put( this.controller.update)
       .delete(this.controller.delete);

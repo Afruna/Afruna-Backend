@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Request } from 'express';
 import ProductService from '@services/product.service';
-import { ProductInterface } from '@interfaces/Product.Interface';
+import { ProductInterface, ProductStatus } from '@interfaces/Product.Interface';
 import Controller from '@controllers/controller';
 import { ProductResponseDTO } from '@dtos/product.dto';
 // import { ProductResponseDTO } from '@dtos/product.dto';
@@ -13,6 +13,7 @@ class ProductController extends Controller<ProductInterface> {
   create = this.control((req: Request) => {
     this.processFile(req, true);
     const data = req.body;
+    data.status = data.status == ProductStatus.DRAFT ? ProductStatus.DRAFT : ProductStatus.PENDING;
     return this.service.createProduct({ ...data, vendor: req.vendor?._id.toString() });
   });
 

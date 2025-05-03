@@ -48,7 +48,8 @@ class ProductRoute extends Route<ProductInterface> {
       .route('/:productId')
       .get(this.validator(this.dto.id), this.controller.getOne)
       .put(
-        this.authorizeVendor(),
+        //attendto to this later
+        // this.authorizeVendor(),
         //this.accessControl(['product'], 'update'),
         this.fileProcessor.uploadField<ProductInterface>([
           { name: 'coverPhoto', maxCount: 1 },

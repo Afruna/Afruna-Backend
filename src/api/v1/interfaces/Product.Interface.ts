@@ -41,4 +41,4 @@ export enum ProductStatus {
   PENDING = "PENDING",
   ACTIVE = "ACTIVE",
   REJECTED = "REJECTED"
-}
+};
