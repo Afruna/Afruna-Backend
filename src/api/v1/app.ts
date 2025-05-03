@@ -58,6 +58,7 @@ import CardRoute from '@routes/card.route';
 import SearchHistoryRoute from '@routes/search.history.route';
 import ServiceProfileRoute from '@routes/service.profile.route';
 import QuoteRoute from '@routes/quote.route';
+import Category2Route from '@routes/category2.route';
 
 // Create MongoDBStore instance
 const MongoDBStoreInstance = MongoDBStore(session);
@@ -105,7 +106,8 @@ class App {
     cards: new CardRoute(),
     searchHistory: new SearchHistoryRoute(),
     serviceProfile: new ServiceProfileRoute(),
-    quotes: new QuoteRoute()
+    quotes: new QuoteRoute(),
+    category2: new Category2Route(),
   };
   httpServer;
 

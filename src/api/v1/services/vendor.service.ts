@@ -21,6 +21,8 @@ import OrderRepository from '@repositories/Order.repo';
 import { DeliveryStatus, OrderStatus } from '@interfaces/Order.Interface';
 import ProvideRepository from '@repositories/Provide.repo';
 import BookingRepository from '@repositories/Booking.repo';
+import Order from '@models/Order';
+import Quote from '@models/Quote';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -228,6 +230,84 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
     }
     return VendorService._instance;
   }
+
+    async getMonthlyRevenueAndOrders(vendorId: string, type: VendorType) {
+      // Initialize data structure for all months
+      const months = [...Array(12)].map((_, i) => ({
+        month: new Date(2023, i).toLocaleString('default', { month: 'short' }),
+        revenue: 0,
+        orders: 0
+      }));
+  
+      // Get all orders for the current year
+      const currentYear = new Date().getFullYear();
+
+      if(type === VendorType.MARKET_SELLER) {
+        const orders = await Order.find({
+          vendorId,
+          createdAt: {
+            $gte: new Date(currentYear, 0, 1),
+            $lte: new Date(currentYear, 11, 31)
+          }
+        });
+    
+        // Aggregate data by month
+        orders.forEach(order => {
+          const monthIndex = new Date(order.createdAt).getMonth();
+          months[monthIndex].orders++;
+          months[monthIndex].revenue += order.total || 0;
+        });
+    
+        return {
+          labels: months.map(m => m.month),
+          datasets: [
+            {
+              label: 'Revenue',
+              data: months.map(m => m.revenue),
+              borderColor: "#496FA8"
+            },
+            {
+              label: 'Orders',
+              data: months.map(m => m.orders),
+              borderColor: "#EF8D1A"
+            }
+          ]
+        };
+      }
+      
+      else {
+        const bookings = await Quote.find({
+          vendorId,
+          createdAt: {
+            $gte: new Date(currentYear, 0, 1),
+            $lte: new Date(currentYear, 11, 31)
+          }
+        });
+    
+        // Aggregate data by month
+        bookings.forEach(booking => {
+          const monthIndex = new Date(booking.createdAt).getMonth();
+          months[monthIndex].orders++;
+          months[monthIndex].revenue += booking.amount || 0;
+        });
+    
+        return {
+          labels: months.map(m => m.month),
+          datasets: [
+            {
+              label: 'Revenue',
+              data: months.map(m => m.revenue),
+              borderColor: "#496FA8"
+            },
+            {
+              label: 'Bookings',
+              data: months.map(m => m.orders),
+              borderColor: "#EF8D1A"
+            }
+          ]
+        };
+      }
+    }
 }
 
 export default VendorService;

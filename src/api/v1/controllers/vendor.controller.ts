@@ -87,6 +87,13 @@ class VendorController extends Controller<VendorInterface> {
     return result;
   });
 
+  getDashboardChart = this.control(async (req: Request) => {
+    const result = await this.service.getMonthlyRevenueAndOrders(req.vendor._id, req.query.type as string);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  }
+)
+
 }
 
 export default VendorController;
