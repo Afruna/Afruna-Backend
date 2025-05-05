@@ -22,6 +22,8 @@ class ProductRoute extends Route<ProductInterface> {
         this.controller.create,
       );
 
+      this.router.route('/all').get(this.controller.getAll);
+
     this.router.route('/setProductStatus').post(this.authorizeVendor(), this.validator(this.dto.status), this.controller.setProductStatus);
     this.router.route('/getByVendor').get(this.authorizeVendor(), this.controller.getByVendor);
     this.router.route('/search').get(this.controller.searchByName);

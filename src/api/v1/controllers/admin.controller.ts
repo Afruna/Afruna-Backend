@@ -5,6 +5,7 @@ import Controller from '@controllers/controller';
 import { UserResponseDTO } from '@dtos/user.dto';
 import AdminService from '@services/admin.service';
 import { AuthResponseDTO } from '@dtos/auth.dto';
+import User from '@models/User';
 
 class AdminController extends Controller<UserInterface> {
   service = new AdminService();
@@ -105,7 +106,7 @@ class AdminController extends Controller<UserInterface> {
   });
 
   getCustomers = this.control(async (req: Request) => {
-    const result = await this.service.getCustomers(this.safeQuery(req));
+    const result = await User.find()
     return result;
   });
 

@@ -4,6 +4,7 @@ import ProductService from '@services/product.service';
 import { ProductInterface, ProductStatus } from '@interfaces/Product.Interface';
 import Controller from '@controllers/controller';
 import { ProductResponseDTO } from '@dtos/product.dto';
+import Product from '@models/Product';
 // import { ProductResponseDTO } from '@dtos/product.dto';
 
 class ProductController extends Controller<ProductInterface> {
@@ -14,6 +15,7 @@ class ProductController extends Controller<ProductInterface> {
     this.processFile(req, true);
     const data = req.body;
     data.status = data.status == ProductStatus.DRAFT ? ProductStatus.DRAFT : ProductStatus.PENDING;
+    console.log(data)
     return this.service.createProduct({ ...data, vendor: req.vendor?._id.toString() });
   });
 
@@ -217,9 +219,15 @@ class ProductController extends Controller<ProductInterface> {
     }
 
     let userId = req.user?._id;
-
+    query.status = ProductStatus.ACTIVE;
     return this.service.paginatedFindWithWishlist(query, userId);
   });
+
+  getAll = this.control(async (req: Request) => {
+    let products = await Product.find();
+    return products
+  }
+  );
 
   getVendorCards = this.control(async (req: Request) => {
     return this.service.vendorCards(req.user?._id);
