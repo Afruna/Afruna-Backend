@@ -220,6 +220,7 @@ class ProductController extends Controller<ProductInterface> {
 
     let userId = req.user?._id;
     query.status = ProductStatus.ACTIVE;
+    
     return this.service.paginatedFindWithWishlist(query, userId);
   });
 

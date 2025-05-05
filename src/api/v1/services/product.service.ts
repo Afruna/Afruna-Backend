@@ -89,7 +89,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
   }
 
   async getProductsBySubCategory(mainCategoryId: string) {
-    return this.find({ mainCategoryId })
+    return this.find({ mainCategoryId, status : ProductStatus.ACTIVE })
     //return this._categoryService.getAllProductsInNestedCategories(categoryId);
   }
 
