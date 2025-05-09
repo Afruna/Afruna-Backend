@@ -12,6 +12,8 @@ import { VendorInterface } from '@interfaces/Vendor.Interface';
 import UserRepository from '@repositories/User.repository';
 import VendorRepository from '@repositories/Vendor.repo';
 import { ConversationService } from './ConversationService';
+import NotificationService from './notification.service';
+import Wallet from '@models/Wallet';
 
 export default class QuoteService extends Service<QuoteInterface, QuoteRepository> {
   protected repository = new QuoteRepository();
@@ -23,6 +25,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   protected _messageRepo = new MessageRepository();
   protected userRepo = new UserRepository();
   protected vendorRepo = new VendorRepository();
+  protected _notificationService = new NotificationService();
   private readonly _conversationService = new ConversationService();
 
   async createQuote(data: Partial<QuoteInterface>) {
@@ -101,6 +104,53 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     // const newMessage = this._chatService.create({ message: "Vendor Created New Quote", quote, messageType: MESSAGE_TYPE.QUOTE , messageId });
 
     return quote;
+  }
+
+  async payForQuote(quoteId: string, userId: string) {
+    const quote = await this.repository.findOne({ _id: quoteId });
+
+    if (!quote) { 
+      throw new HttpError('Quote not found');
+    }
+
+    // if (quote.userId !== userId) {
+    //   throw new HttpError('You are not authorized to pay for this quote');
+    // }
+
+    // if (quote.status !== 'pending') {
+    //   throw new HttpError('Quote is not pending');
+    // }
+
+    
+    let userWallet = await Wallet.findOne({ userId: quote.userId });
+
+    if (!userWallet) {
+      throw new HttpError('User wallet not found');
+    }
+
+    let vendorWallet = await Wallet.findOne({ userId: quote.vendorId });
+
+    if (!vendorWallet) {
+      throw new HttpError('Vendor wallet not found');
+    }
+
+    if (userWallet.balance < quote.amount) {
+      throw new HttpError('Insufficient balance');
+    }
+
+    userWallet.balance -= quote.amount;
+    vendorWallet.ledgerBalance += quote.amount;
+
+    await userWallet.save();
+    await vendorWallet.save();
+
+    const updatedQuote = await this.repository.update(quoteId, { status: 'paid' });
+
+     await this._notificationService.create({ vendorId: quote.vendorId, subject: "Quote Payment",  message: `Quote with ID ${quoteId} has been paid`, });
+
+    await this._notificationService.create({ vendorId: quote.vendorId, subject: "Quote Payment",  message: `You just paid for a quote with ID ${quoteId}`, });
+
+    return updatedQuote;
   }
 
   static instance() {

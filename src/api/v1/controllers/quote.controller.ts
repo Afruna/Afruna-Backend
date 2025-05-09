@@ -59,7 +59,7 @@ class QuoteController extends Controller<QuoteInterface> {
   );
 
   update = this.control(async (req: Request) => {
-    const { quoteId } = req.body;
+    const { quoteId } = req.params;
     if (!quoteId) {
       throw new Error('Quote ID is required');
     }
@@ -78,6 +78,16 @@ class QuoteController extends Controller<QuoteInterface> {
     }
     let messageBinded = await Message.findOneAndUpdate({quote: quoteId}, {quoteData: data})
     return this.service.update(quoteId, req.body);
+  });
+
+  pay = this.control(async (req: Request) => {
+    const { quoteId } = req.params;
+    if (!quoteId) {
+      throw new Error('Quote ID is required');
+    }
+
+    let user = req.user;
+    return this.service.payForQuote(quoteId, user._id);
   });
 }
 

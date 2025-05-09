@@ -2,10 +2,10 @@
 import { Types } from 'mongoose';
 
 export enum ServiceStatusEnum {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  DELETED = 'delete',
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
 }
 
 export interface ProvideInterface {

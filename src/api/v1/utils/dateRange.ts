@@ -15,29 +15,49 @@ export const getDateRange = (filter: DateFilter): DateComparison => {
 
   switch (filter) {
     case 'daily':
-      previous.setDate(now.getDate() - 1);
+      // Current: Today (until now)
+      now.setHours(23, 59, 59, 999);
+      
+      // Previous: Yesterday (full day)
+      previous.setDate(previous.getDate() - 1);
+      previous.setHours(0, 0, 0, 0);
       break;
 
-    case 'weekly':
-      previous.setDate(now.getDate() - 7);
+     case 'weekly':
+      // Current: This week (until now)
+      now.setHours(23, 59, 59, 999);
+      
+      // Previous: Last week (full week)
+      previous.setDate(previous.getDate() - 7);
+      previous.setHours(0, 0, 0, 0);
       break;
 
     case 'monthly':
-      previous.setMonth(now.getMonth() - 1);
+      // Current: This month (until now)
+      now.setHours(23, 59, 59, 999);
+      
+      // Previous: Last month (full month)
+      previous.setMonth(previous.getMonth() - 1);
+      previous.setDate(1); // Start of previous month
+      previous.setHours(0, 0, 0, 0);
       break;
 
     case 'yearly':
-      //     now.setMonth(0); // Set to January
-      //     now.setDate(1); // Set to first day of January
-      //   const lastYear = new Date();
-      //   lastYear.setFullYear(now.getFullYear() - 1);
-      //   previous.setTime(lastYear.getTime());
-      previous.setMonth(0); // January is 0
-      previous.setDate(1);
+      // Current: This year (until now)
+      now.setHours(23, 59, 59, 999);
+      
+      // Previous: Start of this year
+      previous.setMonth(0); // January
+      previous.setDate(1); // First day
+      previous.setHours(0, 0, 0, 0);
       break;
-
+ 
     case 'all':
-      previous.setFullYear(2020); // Or your application's start date
+      now.setHours(23, 59, 59, 999);
+      previous.setFullYear(2020);
+      previous.setMonth(0);
+      previous.setDate(1);
+      previous.setHours(0, 0, 0, 0);
       break;
   }
 

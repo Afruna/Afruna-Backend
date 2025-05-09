@@ -8,4 +8,5 @@ export interface QuoteInterface {
     amount: number;
     conversationId: string | Types.ObjectId; //
     description: string;
+    status: 'pending' | 'paid' | 'completed' | 'canceled';
 };

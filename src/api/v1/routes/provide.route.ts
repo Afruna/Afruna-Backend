@@ -29,8 +29,8 @@ export default class ProvideRoute extends Route<ProvideInterface> {
     
     this.router
       .route('/my/:serviceId')
-      .get(this.authorizeVendor(), this.validator(this.dto.id), this.controller.getOne)
-      .put(this.authorizeVendor(), this.validator(this.dto.id.concat(this.dto.update)), this.controller.update)
+      .get(this.validator(this.dto.id), this.controller.getOne)
+      .put( this.validator(this.dto.id.concat(this.dto.update)), this.controller.update)
       .delete(this.authorizeVendor(), this.validator(this.dto.id), this.controller.delete);
 
     this.router.route('/popular').get(this.controller.getPopular);
