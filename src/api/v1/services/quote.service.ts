@@ -14,6 +14,8 @@ import VendorRepository from '@repositories/Vendor.repo';
 import { ConversationService } from './ConversationService';
 import NotificationService from './notification.service';
 import Wallet from '@models/Wallet';
+import WalletService from './wallet.service';
+import _ from 'lodash';
 
 export default class QuoteService extends Service<QuoteInterface, QuoteRepository> {
   protected repository = new QuoteRepository();
@@ -27,6 +29,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   protected vendorRepo = new VendorRepository();
   protected _notificationService = new NotificationService();
   private readonly _conversationService = new ConversationService();
+  private readonly _walletService = new WalletService();
 
   async createQuote(data: Partial<QuoteInterface>) {
     console.log(data.to)
@@ -126,9 +129,9 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
 
     if (!userWallet) {
       throw new HttpError('User wallet not found');
-    }
+    };
 
-    let vendorWallet = await Wallet.findOne({ userId: quote.vendorId });
+    let vendorWallet = await this._walletService.getOrCreateWalletByVendor(quote.vendorId);
 
     if (!vendorWallet) {
       throw new HttpError('Vendor wallet not found');
