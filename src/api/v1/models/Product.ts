@@ -46,7 +46,8 @@ const ProductSchema = new Schema<ProductInterface>(
     viewed: {
       type: Date
     },
-    status: { type: String, enum: Object.values(ProductStatus), default: ProductStatus.DRAFT },    
+    status: { type: String, enum: Object.values(ProductStatus), default: ProductStatus.DRAFT },  
+    rejectionReason: String,  
   },
   { timestamps: true },
 );

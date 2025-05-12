@@ -37,4 +37,5 @@ export interface ProvideInterface {
   ratedBy: number;
   status: ServiceStatusEnum;
   booked: number;
+  rejectionReason?: String,
 }

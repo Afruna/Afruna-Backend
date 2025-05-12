@@ -33,6 +33,7 @@ export interface ProductInterface {
   viewed: Date;
   inCart?: boolean;
   status?: ProductStatus;
+  rejectionReason?: String
 }
 
 

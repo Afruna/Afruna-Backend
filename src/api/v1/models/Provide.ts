@@ -32,6 +32,7 @@ const ProvideSchema = new Schema<ProvideInterface>(
     ratedBy: { type: Number, default: 0 },
     booked: { type: Number, default: 0 },
     status: { type: String, enum: Object.values(ServiceStatusEnum), default: ServiceStatusEnum.PENDING },
+    rejectionReason: String,
   },
   { timestamps: true },
 );

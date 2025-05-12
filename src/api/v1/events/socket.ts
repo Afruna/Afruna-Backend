@@ -206,6 +206,7 @@ export class SocketEvents {
         
         const parsedChat = chat;
         console.log(parsedChat)
+        console.log("users", this.users)
         const recipientSocketId = this.users[parsedChat.to];
 
         if (recipientSocketId) {
