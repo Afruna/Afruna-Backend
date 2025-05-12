@@ -1,6 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { PaymentMethod, TransactionEvent, TransactionInterface } from '@interfaces/Transaction.Interface';
 import { customIdPlugin } from './IdPlugin';
+import { Query } from 'mongoose';
 
 const transactionSchema = new Schema<TransactionInterface>(
   {
@@ -29,6 +30,11 @@ const transactionSchema = new Schema<TransactionInterface>(
     timestamps: true,
   },
 );
+
+transactionSchema.pre(/^find/, function (this: Query<any, any>, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
 
 transactionSchema.plugin(customIdPlugin, { modelName: 'Transaction' });
 

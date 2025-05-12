@@ -1,6 +1,7 @@
 import { DeliveryStatus, OrderInterface, OrderItemInterface, OrderStatus, PaymentMethod } from '@interfaces/Order.Interface';
 import { Schema, model } from 'mongoose';
 import { customIdPlugin } from './IdPlugin';
+import { Query } from 'mongoose';
 
 const OrderItemSchema = new Schema<OrderItemInterface>(
   {
@@ -62,6 +63,11 @@ const OrderSchema = new Schema<OrderInterface>(
   },
   { timestamps: true },
 );
+
+OrderSchema.pre(/^find/, function (this: Query<any, any>, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
 
 OrderSchema.plugin(customIdPlugin, { modelName: 'Order' });
 

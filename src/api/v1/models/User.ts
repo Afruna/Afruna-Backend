@@ -104,6 +104,11 @@ const userSchema = new Schema<UserInterface>(
 //   return pick(user.toJSON(), ['id', 'email', 'name', 'age', 'role']);
 // };
 
+userSchema.pre(/^find/, function (this: any, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
+
 userSchema.plugin(customIdPlugin, { modelName: 'User' });
 
 export default <Model<UserInterface>>model('User', userSchema);

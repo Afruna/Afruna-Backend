@@ -34,6 +34,11 @@ const VendorSchema = new Schema<VendorInterface>(
   { timestamps: true },
 );
 
+VendorSchema.pre(/^find/, function (this: mongoose.Query<any, any>, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
+
 const Vendor = model('Vendor', VendorSchema);
 
 export default Vendor;

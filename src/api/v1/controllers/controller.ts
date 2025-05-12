@@ -128,7 +128,11 @@ export default abstract class Controller<T> {
   });
 
   update = this.control(async (req: Request) => {
+    let {} = req.body;
+    
     const result = await this.service.update(req.params[this.resourceId], req.body);
+
+
 
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;

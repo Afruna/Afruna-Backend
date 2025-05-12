@@ -1,6 +1,7 @@
 import { ProductInterface, ProductStatus } from '@interfaces/Product.Interface';
 import { Schema, model } from 'mongoose';
 import { customIdPlugin } from './IdPlugin';
+import { Query } from 'mongoose';
 
 const ProductSchema = new Schema<ProductInterface>(
   {
@@ -55,6 +56,11 @@ const ProductSchema = new Schema<ProductInterface>(
 ProductSchema.methods.discountedPrice = function () {
   return this.discount ? this.price * (this.discount / 100) : this.price;
 };
+
+ProductSchema.pre(/^find/, function (this: Query<any, any>, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
 
 ProductSchema.plugin(customIdPlugin, { modelName: 'Product' });
 

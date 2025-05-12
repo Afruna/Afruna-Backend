@@ -1,6 +1,7 @@
 import { ProvideInterface, ServiceStatusEnum } from '@interfaces/Provide.Interface';
 import { Schema, model } from 'mongoose';
 import { customIdPlugin } from './IdPlugin';
+import { Query } from 'mongoose';
 
 const ProvideSchema = new Schema<ProvideInterface>(
   {
@@ -36,6 +37,11 @@ const ProvideSchema = new Schema<ProvideInterface>(
   },
   { timestamps: true },
 );
+
+ProvideSchema.pre(/^find/, function (this: Query<any, any>, next) {
+  this.sort({ createdAt: -1 });
+  next();
+});
 
 const Provide = model('Service', ProvideSchema);
 
