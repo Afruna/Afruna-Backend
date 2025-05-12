@@ -16,6 +16,7 @@ import NotificationService from './notification.service';
 import Wallet from '@models/Wallet';
 import WalletService from './wallet.service';
 import _ from 'lodash';
+import Message from '@models/Message';
 
 export default class QuoteService extends Service<QuoteInterface, QuoteRepository> {
   protected repository = new QuoteRepository();
@@ -32,28 +33,25 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   private readonly _walletService = new WalletService();
 
   async createQuote(data: Partial<QuoteInterface>) {
-    console.log(data.to)
-    const user = await this.userRepo.findOne({ _id: data.to});
+    console.log(data.to);
+    const user = await this.userRepo.findOne({ _id: data.to });
 
-    if(!user)
-      throw new HttpError("User does not exist");
+    if (!user) throw new HttpError('User does not exist');
 
     const vendor = await this.vendorRepo.findOne({ _id: data.from.toString() });
 
-    console.log(vendor)
+    console.log(vendor);
 
-    if(!vendor)
-      throw new HttpError("Vendor does not exist");
+    if (!vendor) throw new HttpError('Vendor does not exist');
 
     const service = await this.provideRepo.findOne({ _id: data.quoteData.serviceId.toString() });
 
-    if(!service)
-      throw new HttpError("Service does not exist");
+    if (!service) throw new HttpError('Service does not exist');
 
     const quoteDataFromMessage = {
       ...data.quoteData,
       vendorId: vendor._id,
-    }
+    };
 
     const quote = await this.repository.create(quoteDataFromMessage);
 
@@ -65,7 +63,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     //       {
     //         $and: [
     //             { fromId: user._id },
-    //             { toId: vendor._id } 
+    //             { toId: vendor._id }
     //           ]
     //       },
     //       {
@@ -81,8 +79,15 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
       ...data,
       content: `${user.firstName} ${user.lastName}, You have a new Quote`,
       quote,
-      quoteData: { userId: user._id, vendorId: vendor._id, amount: data.quoteData.amount, serviceId: data.quoteData.serviceId, serviceTitle: service.name, description: data.quoteData.description },
-    }
+      quoteData: {
+        userId: user._id,
+        vendorId: vendor._id,
+        amount: data.quoteData.amount,
+        serviceId: data.quoteData.serviceId,
+        serviceTitle: service.name,
+        description: data.quoteData.description,
+      },
+    };
 
     //  const chatMessage = await this._chatService.create({ ...chat });
 
@@ -112,7 +117,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   async payForQuote(quoteId: string, userId: string) {
     const quote = await this.repository.findOne({ _id: quoteId });
 
-    if (!quote) { 
+    if (!quote) {
       throw new HttpError('Quote not found');
     }
 
@@ -124,12 +129,11 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     //   throw new HttpError('Quote is not pending');
     // }
 
-    
     let userWallet = await Wallet.findOne({ userId });
 
     if (!userWallet) {
       throw new HttpError('User wallet not found');
-    };
+    }
 
     let vendorWallet = await this._walletService.getOrCreateWalletByVendor(quote.vendorId);
 
@@ -137,7 +141,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
       throw new HttpError('Vendor wallet not found');
     }
 
-    console.log("balance", userWallet.balance, quote.amount);
+    console.log('balance', userWallet.balance, quote.amount);
 
     if (userWallet.balance < quote.amount) {
       throw new HttpError('Insufficient balance');
@@ -147,13 +151,36 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     vendorWallet.ledgerBalance += quote.amount;
 
     await userWallet.save();
-    await this._walletService.update(vendorWallet._id, { balance: vendorWallet.balance, ledgerBalance: vendorWallet.ledgerBalance });
+    await this._walletService.update(vendorWallet._id, {
+      balance: vendorWallet.balance,
+      ledgerBalance: vendorWallet.ledgerBalance,
+    });
 
     const updatedQuote = await this.repository.update(quoteId, { status: 'paid' });
 
-     await this._notificationService.create({ vendorId: quote.vendorId, subject: "Quote Payment",  message: `Quote with ID ${quoteId} has been paid`, });
+    let message = await Message.findOne({ quote: quoteId });
+    if (!message) {
+      throw new HttpError('Message not found');
+    }
 
-    await this._notificationService.create({ vendorId: quote.vendorId, subject: "Quote Payment",  message: `You just paid for a quote with ID ${quoteId}`, });
+    const data = {
+      ...message['quoteData'],
+      status: 'paid',
+    };
+
+    let messageBinded = await Message.findOneAndUpdate({ quote: quoteId }, { quoteData: data });
+
+    await this._notificationService.create({
+      vendorId: quote.vendorId,
+      subject: 'Quote Payment',
+      message: `Quote with ID ${quoteId} has been paid`,
+    });
+
+    await this._notificationService.create({
+      vendorId: quote.vendorId,
+      subject: 'Quote Payment',
+      message: `You just paid for a quote with ID ${quoteId}`,
+    });
 
     return updatedQuote;
   }
