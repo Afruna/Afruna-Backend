@@ -185,6 +185,58 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     return updatedQuote;
   }
 
+  async markAsCompleted(quoteId: string, userId: string) {
+    const quote = await this.repository.findOne({ _id: quoteId });
+
+    if (!quote) {
+      throw new HttpError('Quote not found');
+    }
+
+    if (quote.userId !== userId) {
+      throw new HttpError('You are not authorized to mark this quote as completed');
+    }
+
+    if (quote.status !== 'paid') {
+      throw new HttpError('Quote is not paid');
+    }
+
+    const updatedQuote = await this.repository.update(quoteId, { status: 'completed' });
+
+    let vendorWallet = await this._walletService.getOrCreateWalletByVendor(quote.vendorId);
+
+    if (!vendorWallet) {
+      throw new HttpError('Vendor wallet not found');
+    }
+
+    vendorWallet.balance += quote.amount;
+    vendorWallet.ledgerBalance -= quote.amount;
+
+    await this._walletService.update(vendorWallet._id, {
+      balance: vendorWallet.balance,
+      ledgerBalance: vendorWallet.ledgerBalance,
+    });
+
+    let message = await Message.findOne({ quote: quoteId });
+    if (!message) {
+      throw new HttpError('Message not found');
+    }
+
+    const data = {
+      ...message['quoteData'],
+      status: 'completed',
+    };
+
+    let messageBinded = await Message.findOneAndUpdate({ quote: quoteId }, { quoteData: data });
+
+    await this._notificationService.create({
+      vendorId: quote.vendorId,
+      subject: 'Quote Completed',
+      message: `Quote with ID ${quoteId} has been marked completed`,
+    });
+
+    return updatedQuote;
+  }
+
   static instance() {
     if (!QuoteService._instance) {
       QuoteService._instance = new QuoteService();

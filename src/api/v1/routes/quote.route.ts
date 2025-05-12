@@ -21,6 +21,9 @@ export default class QuoteRoute extends Route<QuoteInterface> {
     this.router.route("/pay/:quoteId")
     .get(this.authorize(), this.controller.pay);
 
+    this.router.route("/complete/:quoteId")
+    .get(this.authorize(), this.controller.markAsCompleted);
+
     // this.router.route('/user');
     // .get(this.authorize(), this.controller.findAllByUser);
 

@@ -17,30 +17,40 @@ class QuoteController extends Controller<QuoteInterface> {
   // });
 
   createQuote = this.control((req: Request) => {
-    return this.service.createQuote({ ...req.body, vendorId: req.vendor._id});
+    return this.service.createQuote({ ...req.body, vendorId: req.vendor._id });
   });
 
   findAllByUser = this.control((req: Request) => {
-    return this.service.find({userId: req.user?._id}, { populate: {
-      path: 'serviceId',
-      model: 'Service',
-      populate: {
-        path: 'vendorid',
-        model: 'Vendor',
+    return this.service.find(
+      { userId: req.user?._id },
+      {
+        populate: {
+          path: 'serviceId',
+          model: 'Service',
+          populate: {
+            path: 'vendorid',
+            model: 'Vendor',
+          },
+        },
       },
-    }});
+    );
   });
 
   findAllByVendor = this.control((req: Request) => {
-    return this.service.find({vendorId: req.vendor?._id}, { populate: {
-      path: 'serviceId',
-      model: 'Service',
-      populate: {
-        path: 'vendorId',
-        model: 'Vendor',
-        select: '-password'
+    return this.service.find(
+      { vendorId: req.vendor?._id },
+      {
+        populate: {
+          path: 'serviceId',
+          model: 'Service',
+          populate: {
+            path: 'vendorId',
+            model: 'Vendor',
+            select: '-password',
+          },
+        },
       },
-    }});
+    );
   });
 
   getServiceProfile = this.control(async (req: Request) => {
@@ -53,10 +63,9 @@ class QuoteController extends Controller<QuoteInterface> {
       throw new Error('Quote ID is required');
     }
     this.service.delete(quoteId);
-    let messageBinded = await Message.findOneAndDelete({quote: quoteId})
+    let messageBinded = await Message.findOneAndDelete({ quote: quoteId });
     return { message: 'Quote deleted successfully' };
-  }
-  );
+  });
 
   update = this.control(async (req: Request) => {
     const { quoteId } = req.params;
@@ -75,8 +84,8 @@ class QuoteController extends Controller<QuoteInterface> {
     const data = {
       ...req.body,
       serviceTitle: service.name,
-    }
-    let messageBinded = await Message.findOneAndUpdate({quote: quoteId}, {quoteData: data})
+    };
+    let messageBinded = await Message.findOneAndUpdate({ quote: quoteId }, { quoteData: data });
     return this.service.update(quoteId, req.body);
   });
 
@@ -88,6 +97,16 @@ class QuoteController extends Controller<QuoteInterface> {
 
     let user = req.user;
     return this.service.payForQuote(quoteId, user._id);
+  });
+
+  markAsCompleted = this.control(async (req: Request) => {
+    const { quoteId } = req.params;
+    if (!quoteId) {
+      throw new Error('Quote ID is required');
+    }
+    let user = req.user;
+
+    return this.service.markAsCompleted(quoteId, user._id);
   });
 }
 
