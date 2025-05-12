@@ -147,7 +147,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     vendorWallet.ledgerBalance += quote.amount;
 
     await userWallet.save();
-    await vendorWallet.save();
+    await this._walletService.update(vendorWallet._id, { balance: vendorWallet.balance, ledgerBalance: vendorWallet.ledgerBalance });
 
     const updatedQuote = await this.repository.update(quoteId, { status: 'paid' });
 
