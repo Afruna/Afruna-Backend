@@ -125,7 +125,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     // }
 
     
-    let userWallet = await Wallet.findOne({ userId: quote.userId });
+    let userWallet = await Wallet.findOne({ userId });
 
     if (!userWallet) {
       throw new HttpError('User wallet not found');
