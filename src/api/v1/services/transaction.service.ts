@@ -435,6 +435,51 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     return this.find({ userId });
   }
 
+  async handleQuotePayment(
+  userId: string, 
+  quoteId: string, 
+  amount: number, 
+  reference: string,
+  vendorId: string,
+  paymentMethod: PaymentMethod = PaymentMethod.WALLET
+) {
+  try {
+    // Check if transaction already exists
+    const referenceExists = await this.findOne({ reference });
+    if (referenceExists) return;
+
+    // Create transaction record for customer payment
+    await this.create({
+      success: true,
+      userId,
+      event: TransactionEvent.PAYMENT,
+      amount,
+      date: new Date(),
+      description: `Payment for quote ${quoteId}`,
+      reference,
+      paymentMethod
+    });
+
+    // Create transaction record for vendor credit
+    await this.create({
+      success: true,
+      userId: vendorId,
+      event: TransactionEvent.CREDITED,
+      amount,
+      date: new Date(),
+      description: `Credit for quote ${quoteId}`,
+      reference,
+      paymentMethod
+    });
+
+    return { success: true, message: "Quote payment processed successfully" };
+
+  } catch (error) {
+    logger.error('Error processing quote payment:', error);
+    throw new HttpError('Failed to process quote payment', 500);
+  }
+}
+
   static instance() {
     if (!TransactionService._instance) {
       TransactionService._instance = new TransactionService();

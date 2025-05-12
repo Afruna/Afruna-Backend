@@ -17,6 +17,8 @@ import Wallet from '@models/Wallet';
 import WalletService from './wallet.service';
 import _ from 'lodash';
 import Message from '@models/Message';
+import TransactionService from './transaction.service';
+import { PaymentMethod } from '@interfaces/Transaction.Interface';
 
 export default class QuoteService extends Service<QuoteInterface, QuoteRepository> {
   protected repository = new QuoteRepository();
@@ -31,6 +33,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
   protected _notificationService = new NotificationService();
   private readonly _conversationService = new ConversationService();
   private readonly _walletService = new WalletService();
+  private readonly _transactionService = new TransactionService();
 
   async createQuote(data: Partial<QuoteInterface>) {
     console.log(data.to);
@@ -158,6 +161,15 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
 
     const updatedQuote = await this.repository.update(quoteId, { status: 'paid' });
 
+    await this._transactionService.handleQuotePayment(
+      userId,
+      quoteId,
+      quote.amount,
+      `quote_payment_${quoteId}`, // unique reference
+      quote.vendorId as string,
+      PaymentMethod.WALLET, // since payment is from wallet
+    );
+
     let message = await Message.findOne({ quote: quoteId });
     if (!message) {
       throw new HttpError('Message not found');
@@ -177,10 +189,12 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     });
 
     await this._notificationService.create({
-      vendorId: quote.vendorId,
+      userId,
       subject: 'Quote Payment',
       message: `You just paid for a quote with ID ${quoteId}`,
     });
+
+    // transaction
 
     return updatedQuote;
   }
