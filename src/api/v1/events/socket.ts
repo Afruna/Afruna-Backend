@@ -216,13 +216,13 @@ export class SocketEvents {
           });
         }
 
-        
+        let response;
         if(chat.messageType == MESSAGE_TYPE.QUOTE)
         {
-          const quote = await this._quoteService.createQuote(parsedChat);
+          response = await this._quoteService.createQuote(parsedChat);
         }
         else{
-            const messageData = await this._messageService.createMessage(parsedChat);
+            response = await this._messageService.createMessage(parsedChat);
         }
         console.log("Message", JSON.stringify(parsedChat));
     
@@ -231,7 +231,7 @@ export class SocketEvents {
     
         if (recipientSocketId) {
           console.log("sending message")
-          this.io.to(recipientSocketId).emit('receive_message', parsedChat);
+          this.io.to(recipientSocketId).emit('receive_message', response);
         } else {
           console.log('error', `User ${parsedChat.to.id} is offline.`);
         };

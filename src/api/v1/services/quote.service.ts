@@ -114,7 +114,7 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
     // const messageId = await this._messageService.createMessage({ fromId: data.vendorId.toString(), toId: data.userId.toString() })
     // const newMessage = this._chatService.create({ message: "Vendor Created New Quote", quote, messageType: MESSAGE_TYPE.QUOTE , messageId });
 
-    return quote;
+    return message;
   }
 
   async payForQuote(quoteId: string, userId: string) {
