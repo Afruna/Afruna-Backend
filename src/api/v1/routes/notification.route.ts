@@ -19,7 +19,7 @@ export default class NotificationRoute extends Route<NotificationInterface> {
         this.validator(this.dto.create),
         this.controller.create,
       )
-      .delete(this.authorize(), this.controller.deleteAll);
+      .delete(authenticateUserOrVendor(), this.controller.deleteAll);
 
     this.router
       .route('/my/vendor')
