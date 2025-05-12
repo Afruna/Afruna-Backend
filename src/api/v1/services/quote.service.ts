@@ -137,6 +137,8 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
       throw new HttpError('Vendor wallet not found');
     }
 
+    console.log("balance", userWallet.balance, quote.amount);
+
     if (userWallet.balance < quote.amount) {
       throw new HttpError('Insufficient balance');
     }
