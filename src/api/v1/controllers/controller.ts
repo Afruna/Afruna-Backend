@@ -11,6 +11,7 @@ import Multer from '@helpers/uploader';
 import safeQuery from '@utils/safeQuery';
 import httpStatus from 'http-status';
 import { OPTIONS } from '@config';
+import Notification from '@models/Notification';
 
 export default abstract class Controller<T> {
   protected HttpError = httpError;
@@ -20,10 +21,9 @@ export default abstract class Controller<T> {
   protected safeQuery = safeQuery;
   abstract service: Service<T, any>;
   readonly fileProcessor = OPTIONS.USE_MULTER ? Multer : null;
-  abstract responseDTO?: Function 
+  abstract responseDTO?: Function;
 
   protected processFile = (req: Request, create = false) => {
-    
     if (!this.fileProcessor) return;
     let multerFile!: 'path' | 'location' | 'buffer';
 
@@ -128,11 +128,20 @@ export default abstract class Controller<T> {
   });
 
   update = this.control(async (req: Request) => {
-    let {} = req.body;
-    
+    let { status, rejectionReason } = req.body;
+
+    if (status == 'REJECTED') {
+      let data: any = await this.service.findOne(req.params[this.resourceId]);
+      let vendorId = data.vendorId;
+      let notification = await new Notification({
+        vendorId: vendorId,
+        subject: `${this.resource} Rejected`,
+        message: rejectionReason
+      }).save();
+      console.log('notification sent', notification);
+    }
+
     const result = await this.service.update(req.params[this.resourceId], req.body);
-
-
 
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
