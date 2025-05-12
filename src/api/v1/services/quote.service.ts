@@ -192,9 +192,9 @@ export default class QuoteService extends Service<QuoteInterface, QuoteRepositor
       throw new HttpError('Quote not found');
     }
 
-    if (quote.userId !== userId) {
-      throw new HttpError('You are not authorized to mark this quote as completed');
-    }
+    // if (quote.userId !== userId) {
+    //   throw new HttpError('You are not authorized to mark this quote as completed');
+    // }
 
     if (quote.status !== 'paid') {
       throw new HttpError('Quote is not paid');
