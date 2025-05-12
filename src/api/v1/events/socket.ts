@@ -229,10 +229,11 @@ export class SocketEvents {
       
     
         if (recipientSocketId) {
+          console.log("sending message")
           this.io.to(recipientSocketId).emit('receive_message', parsedChat);
         } else {
-          socket.emit('error', `User ${parsedChat.to.id} is offline.`);
-        }
+          console.log('error', `User ${parsedChat.to.id} is offline.`);
+        };
       } catch (error) {
         console.error("Error handling user_provider event:", error);
         socket.emit('error', "An error occurred while processing your message.");
