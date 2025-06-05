@@ -38,7 +38,7 @@ class VendorController extends Controller<VendorInterface> {
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
   });
-  
+
   getFollowing = this.control(async (req: Request) => {
     const result = await this.service.getFollow(
       req.vendor?._id,
@@ -66,9 +66,7 @@ class VendorController extends Controller<VendorInterface> {
     const result = await this.service.getOne(req.params[this.resourceId]);
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
-
   });
-
 
   update = this.control(async (req: Request) => {
     this.processFile(req);
@@ -91,9 +89,19 @@ class VendorController extends Controller<VendorInterface> {
     const result = await this.service.getMonthlyRevenueAndOrders(req.vendor._id, req.query.type as string);
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
-  }
-)
+  });
 
+  getProfile = this.control(async (req: Request) => {
+    const result = await this.service.getVendorProfile(req.vendor._id || req.params[this.resourceId]);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
+  getProfileByVendorId = this.control(async (req: Request) => {
+    const result = await this.service.getVendorProfile(req.params[this.resourceId]);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
 }
 
 export default VendorController;

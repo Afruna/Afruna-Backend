@@ -415,6 +415,17 @@ class AdminController extends Controller<UserInterface> {
     const result = await this.service.getAllTags();
     return result;
   }); 
+
+  getCustomerDashboardData = this.control(async (req: Request) => {
+    const result = await this.service.getCustomerDashboardData(req.params.userId);
+    return result;
+  });
+
+  getServiceProviderDashboardData = this.control(async (req: Request) => {
+    const result = await this.service.getServiceProviderDashboardData(req.params.providerId, <any>req.query.dateFilter);
+    return result;
+  });
+  
 }
 
 export default AdminController;

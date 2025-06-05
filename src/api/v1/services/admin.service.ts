@@ -41,6 +41,9 @@ import { calculateMetrics } from '@utils/metrics';
 import Tags, { ITags } from '@models/Tags';
 import KycLogsService from './kycLogs.service';
 import mongoose from 'mongoose';
+import Wallet from '@models/Wallet';
+import { BookingStatus } from '@interfaces/Booking.Interface';
+import Quote from '@models/Quote';
 
 class AdminService extends UserService {
   private _analytics = new AnalyticsService();
@@ -1507,6 +1510,96 @@ class AdminService extends UserService {
     let deletedTag = await Tags.findByIdAndDelete(tagId);
     return deletedTag;
   };
+
+  async getCustomerDashboardData(userId: string) {
+    // 1. Get wallet balance
+    const user = await User.findById(userId);
+    const walletBalance = (await Wallet.findOne({userId: user?._id})).balance; // Adjust field as per your schema
+
+    // 2. Get all orders for the user
+    const totalOrders = await Order.countDocuments({ userId });
+
+    // 3. Get completed orders for the user
+    const completedOrders = await Order.countDocuments({
+      userId,
+      orderStatus: OrderStatus.PAID // or your completed status
+    });
+
+    // 4. Get services requested (bookings)
+    const servicesRequested = await Booking.countDocuments({ userId });
+
+    return {
+      walletBalance,
+      totalOrders,
+      completedOrders,
+      servicesRequested
+    };
+  }
+
+  async getServiceProviderDashboardData(providerId: string, dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+
+    // Get current and previous period metrics in parallel
+    const [
+      currentWallet,
+      previousWallet,
+      currentServices,
+      previousServices,
+      currentBookings,
+      previousBookings,
+      currentQuotes,
+      previousQuotes
+    ] = await Promise.all([
+      // Current period
+      Wallet.findOne({ vendorId: providerId }),
+      // Previous period
+      Wallet.findOne({ vendorId: providerId }),
+      // Current period services
+      Provide.find({ vendorId: providerId, createdAt: { $lte: current } }),
+      // Previous period services
+      Provide.find({ vendorId: providerId, createdAt: { $lte: previous } }),
+      // Current period bookings
+      Booking.find({ vendorId: providerId, createdAt: { $lte: current } }),
+      // Previous period bookings
+      Booking.find({ vendorId: providerId, createdAt: { $lte: previous } }),
+      // Current period quotes
+      Quote.find({ vendorId: providerId, createdAt: { $lte: current }, status: 'completed' }),
+      // Previous period quotes
+      Quote.find({ vendorId: providerId, createdAt: { $lte: previous }, status: 'completed' })
+    ]);
+
+    const calculateStats = (services: any[], bookings: any[], quotes: any[]) => ({
+      totalServices: services.length,
+      totalCompletedServices: quotes.length,
+      servicesRequested: bookings.length
+    });
+
+    const currentStats = calculateStats(currentServices, currentBookings, currentQuotes);
+    const previousStats = calculateStats(previousServices, previousBookings, previousQuotes);
+
+    return {
+      walletBalance: {
+        ...calculateMetrics(currentWallet?.balance || 0, previousWallet?.balance || 0, dateFilter),
+        title: 'Wallet Balance'
+      },
+      totalServices: {
+        ...calculateMetrics(currentStats.totalServices, previousStats.totalServices, dateFilter),
+        title: 'Total Services'
+      },
+      totalCompletedServices: {
+        ...calculateMetrics(currentStats.totalCompletedServices, previousStats.totalCompletedServices, dateFilter),
+        title: 'Completed Services'
+      },
+      servicesRequested: {
+        ...calculateMetrics(currentStats.servicesRequested, previousStats.servicesRequested, dateFilter),
+        title: 'Services Requested'
+      }
+    };
+  }
+
+  
+
+
 
 }
 

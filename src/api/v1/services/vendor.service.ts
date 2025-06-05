@@ -23,6 +23,8 @@ import ProvideRepository from '@repositories/Provide.repo';
 import BookingRepository from '@repositories/Booking.repo';
 import Order from '@models/Order';
 import Quote from '@models/Quote';
+import ServiceProfile from '@models/ServiceProfile';
+import Review from '@models/Review';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -307,6 +309,19 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
           ]
         };
       }
+    }
+
+    async getVendorProfile(vendorId: string){
+      let profile = await ServiceProfile.findOne({vendorId});
+
+      let vendorReviews = await Review.find({vendorId});
+
+      let data = {
+        ...profile,
+        reviews: vendorReviews
+      }
+
+      return data;
     }
 }
 

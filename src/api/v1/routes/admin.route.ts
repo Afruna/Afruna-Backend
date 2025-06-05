@@ -90,6 +90,9 @@ export default class AdminRoute extends Route<UserInterface> {
     this.router.route('/tags/:tagId').delete(this.controller.deleteTag);
     // this.router.route('/tags/:tagId').get(this.controller.getTagById);
 
+    this.router.route('/customer-dashboard/:userId').get(this.controller.getCustomerDashboardData);
+    this.router.route('/service-provider-dashboard/:providerId').get(this.controller.getServiceProviderDashboardData);
+
     return this.router;
   }
 }

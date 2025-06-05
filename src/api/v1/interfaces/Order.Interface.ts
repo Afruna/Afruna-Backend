@@ -44,6 +44,9 @@ export enum OrderStatus {
   PAID = 'PAID',
   CANCELLED = 'Cancelled',
   RETURNED = 'Returned',
+  IN_PROGRESS = 'In Progress',
+  SHIPPED = 'Shipped',
+  FULFILLED = 'Fulfilled',
 }
 
 
