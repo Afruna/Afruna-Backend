@@ -425,6 +425,16 @@ class AdminController extends Controller<UserInterface> {
     const result = await this.service.getServiceProviderDashboardData(req.params.providerId, <any>req.query.dateFilter);
     return result;
   });
+
+  deleteOrder = this.control(async (req: Request) => {
+    const result = await this.service.deleteOrder(req.params.orderId);
+    return result;
+  });
+
+  deleteVendor = this.control(async (req: Request) => {
+    const result = await this.service.deleteVendor(req.params.vendorId);
+    return result;
+  });
   
 }
 

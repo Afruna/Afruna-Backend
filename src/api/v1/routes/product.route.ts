@@ -60,7 +60,7 @@ class ProductRoute extends Route<ProductInterface> {
         this.validator(this.dto.update.concat(this.dto.id)),
         this.controller.update,
       )
-      .delete(this.authorizeVendor(), this.validator(this.dto.id), this.controller.delete);
+      .delete( this.validator(this.dto.id), this.controller.delete); //admin auth
     return this.router;
   }
 }

@@ -28,6 +28,7 @@ export default class AdminRoute extends Route<UserInterface> {
     this.router.route('/orders/:orderId').get(this.controller.getOrderById);
     this.router.route('/orders/customer/:userId').get(this.controller.getOrdersByUserId);
     this.router.route('/orders/vendor/:vendorId').get(this.controller.getOrdersByVendorId); 
+    this.router.route('/orders/:orderId').delete(this.controller.deleteOrder);
     this.router.route('/vendor/:vendorId/business-information').get(this.controller.getVendorBusinessInformation);
     this.router.route('/vendor/:vendorId/business-details').get(this.controller.getVendorBusinessDetails);
     this.router.route('/vendor/:vendorId/customer-care-information').get(this.controller.getVendorCustomerCareInformation);
@@ -37,7 +38,7 @@ export default class AdminRoute extends Route<UserInterface> {
     this.router.route('/vendor/:vendorId/legal-information').get(this.controller.getProviderLegalInformation);
     this.router.route('/vendor/:vendorId/means-of-identification').get(this.controller.getProviderMeansOfIdentification);
     this.router.route('/vendor/:vendorId/store-front').get(this.controller.getStoreFront);
-
+    this.router.route('/vendor/:vendorId').delete(this.controller.deleteVendor);
     this.router.route('/submitted-kyc').get(this.controller.getAllSubmittedKYC);
     this.router.route('/submitted-kyc/:vendorId').get(this.controller.getAllVendorKYCDetails);
     this.router.route('/submitted-kyc').put(this.controller.updateKYCStatus);

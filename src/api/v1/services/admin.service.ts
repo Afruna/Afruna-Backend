@@ -1597,9 +1597,13 @@ class AdminService extends UserService {
     };
   }
 
-  
+  async deleteOrder(orderId: string) {
+    return await Order.findByIdAndDelete(orderId);
+  };
 
-
+  async deleteVendor(vendorId: string) {
+    return await Vendor.findByIdAndDelete(vendorId);
+  };
 
 }
 
