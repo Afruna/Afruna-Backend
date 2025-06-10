@@ -25,6 +25,8 @@ import Order from '@models/Order';
 import Quote from '@models/Quote';
 import ServiceProfile from '@models/ServiceProfile';
 import Review from '@models/Review';
+import Vendor from '@models/Vendor';
+import ShippingInfo from '@models/ShippingInfo';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -312,16 +314,17 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
     }
 
     async getVendorProfile(vendorId: string){
-      let profile = await ServiceProfile.findOne({vendorId});
+      const vendor = await Vendor.findOne({_id: vendorId}).lean();
+      const profile = await ServiceProfile.findOne({vendorId}).lean();
+      const vendorReviews = await Review.find({vendorId}).lean();
+      const shippingInfo = await ShippingInfo.findOne({vendorId}).lean();
 
-      let vendorReviews = await Review.find({vendorId});
-
-      let data = {
+      return {
         ...profile,
-        reviews: vendorReviews
-      }
-
-      return data;
+        reviews: vendorReviews,
+        profilePicture: vendor?.profilePicture || null,
+        location: shippingInfo?.shippingAddress || null
+      };
     }
 }
 
