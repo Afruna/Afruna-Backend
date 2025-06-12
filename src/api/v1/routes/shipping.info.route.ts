@@ -19,7 +19,7 @@ class ShippingInfoRoute extends Route<ShippingInfoInterface> {
 
     this.router
       .route('/:shippingInfoId')
-      .put(this.authorize(), this.validator(this.dto.update.concat(this.dto.id)), this.controller.update)
+      .put( this.controller.update)
       .delete(this.authorize(), this.validator(this.dto.id), this.controller.delete);
 
     

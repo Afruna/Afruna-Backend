@@ -19,7 +19,7 @@ class AdditionalInfoRoute extends Route<AdditionalInfoInterface> {
 
     this.router
       .route('/:additionalInfoId')
-      .put(this.authorize(), this.validator(this.dto.update.concat(this.dto.id)), this.controller.update)
+      .put(this.controller.update) //add authorize
       .delete(this.authorize(), this.validator(this.dto.id), this.controller.delete);
 
     

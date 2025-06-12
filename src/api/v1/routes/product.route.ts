@@ -57,7 +57,7 @@ class ProductRoute extends Route<ProductInterface> {
           { name: 'coverPhoto', maxCount: 1 },
           { name: 'images', maxCount: 10 },
         ]),
-        this.validator(this.dto.update.concat(this.dto.id)),
+        // this.validator(this.dto.update.concat(this.dto.id)),
         this.controller.update,
       )
       .delete( this.validator(this.dto.id), this.controller.delete); //admin auth

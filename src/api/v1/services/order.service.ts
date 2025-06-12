@@ -44,6 +44,11 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
     
     try
     {
+      let user = await this._userService().findOne({ _id: userId });
+
+      if(!user) throw new HttpError('User not found', 404)
+
+      
 
       const cartSession = await this._cartService().session.findOne({ userId });
 

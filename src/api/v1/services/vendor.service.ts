@@ -318,9 +318,13 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
       const profile = await ServiceProfile.findOne({vendorId}).lean();
       const vendorReviews = await Review.find({vendorId}).lean();
       const shippingInfo = await ShippingInfo.findOne({vendorId}).lean();
+      
 
       return {
         ...profile,
+        firstName: vendor?.firstname,
+        lastName: vendor?.lastname,
+        rating: vendorReviews?.reduce((acc, review) => acc + review.rating, 0) / vendorReviews.length || 0,
         reviews: vendorReviews,
         profilePicture: vendor?.profilePicture || null,
         location: shippingInfo?.shippingAddress || null
