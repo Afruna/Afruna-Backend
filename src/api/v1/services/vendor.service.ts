@@ -27,6 +27,7 @@ import ServiceProfile from '@models/ServiceProfile';
 import Review from '@models/Review';
 import Vendor from '@models/Vendor';
 import ShippingInfo from '@models/ShippingInfo';
+import { BookingStatus } from '@interfaces/Booking.Interface';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -318,6 +319,7 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
       const profile = await ServiceProfile.findOne({vendorId}).lean();
       const vendorReviews = await Review.find({vendorId}).lean();
       const shippingInfo = await ShippingInfo.findOne({vendorId}).lean();
+      const totalCompletedJobs = await Quote.countDocuments({vendorId, status: BookingStatus.COMPLETED});
       
 
       return {
@@ -325,6 +327,7 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
         firstName: vendor?.firstname,
         lastName: vendor?.lastname,
         rating: vendorReviews?.reduce((acc, review) => acc + review.rating, 0) / vendorReviews.length || 0,
+        totalCompletedJobs,
         reviews: vendorReviews,
         profilePicture: vendor?.profilePicture || null,
         location: shippingInfo?.shippingAddress || null
