@@ -68,6 +68,10 @@ class ProvideController extends Controller<ProvideInterface> {
     return this.service.find({ vendorId: req.vendor._id });
   });
 
+  getByProviderId = this.control(async (req: Request) => {
+    return this.service.find({ vendorId: req.params.providerId });
+  });
+
   getAll = this.control((req: Request) => {
     const query: {
       [x: string]: string | boolean;

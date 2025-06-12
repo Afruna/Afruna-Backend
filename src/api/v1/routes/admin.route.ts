@@ -93,6 +93,7 @@ export default class AdminRoute extends Route<UserInterface> {
 
     this.router.route('/customer-dashboard/:userId').get(this.controller.getCustomerDashboardData);
     this.router.route('/service-provider-dashboard/:providerId').get(this.controller.getServiceProviderDashboardData);
+    this.router.route('/vendor-dashboard/:vendorId').get(this.controller.getVendorDashboardData);
 
     return this.router;
   }

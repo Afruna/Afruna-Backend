@@ -1614,9 +1614,71 @@ class AdminService extends UserService {
         ...calculateMetrics(currentStats.totalCompletedOrders, previousStats.totalCompletedOrders, dateFilter),
         title: 'Completed Orders'
       },
-      totalRevenue: {
-        ...calculateMetrics(currentStats.totalRevenue, previousStats.totalRevenue, dateFilter),
-        title: 'Total Revenue'
+      // totalRevenue: {
+      //   ...calculateMetrics(currentStats.totalRevenue, previousStats.totalRevenue, dateFilter),
+      //   title: 'Total Revenue'
+      // }
+    };
+  }
+
+
+  async getServiceProviderDashboardData(providerId: string, dateFilter: DateFilter = 'daily') {
+    const { current, previous } = getDateRange(dateFilter);
+
+    // Get current and previous period metrics in parallel
+    const [
+      currentWallet,
+      previousWallet,
+      currentServices,
+      previousServices,
+      currentBookings,
+      previousBookings,
+      currentQuotes,
+      previousQuotes
+    ] = await Promise.all([
+      // Current period
+      Wallet.findOne({ vendorId: providerId }),
+      // Previous period
+      Wallet.findOne({ vendorId: providerId }),
+      // Current period services
+      Provide.find({ vendorId: providerId, createdAt: { $lte: current } }),
+      // Previous period services
+      Provide.find({ vendorId: providerId, createdAt: { $lte: previous } }),
+      // Current period bookings
+      Booking.find({ vendorId: providerId, createdAt: { $lte: current } }),
+      // Previous period bookings
+      Booking.find({ vendorId: providerId, createdAt: { $lte: previous } }),
+      // Current period quotes
+      Quote.find({ vendorId: providerId, createdAt: { $lte: current }, status: 'completed' }),
+      // Previous period quotes
+      Quote.find({ vendorId: providerId, createdAt: { $lte: previous }, status: 'completed' })
+    ]);
+
+    const calculateStats = (services: any[], bookings: any[], quotes: any[]) => ({
+      totalServices: services.length,
+      totalCompletedServices: quotes.length,
+      servicesRequested: bookings.length
+    });
+
+    const currentStats = calculateStats(currentServices, currentBookings, currentQuotes);
+    const previousStats = calculateStats(previousServices, previousBookings, previousQuotes);
+
+    return {
+      walletBalance: {
+        ...calculateMetrics(currentWallet?.balance || 0, previousWallet?.balance || 0, dateFilter),
+        title: 'Wallet Balance'
+      },
+      totalServices: {
+        ...calculateMetrics(currentStats.totalServices, previousStats.totalServices, dateFilter),
+        title: 'Total Services'
+      },
+      totalCompletedServices: {
+        ...calculateMetrics(currentStats.totalCompletedServices, previousStats.totalCompletedServices, dateFilter),
+        title: 'Completed Services'
+      },
+      servicesRequested: {
+        ...calculateMetrics(currentStats.servicesRequested, previousStats.servicesRequested, dateFilter),
+        title: 'Services Requested'
       }
     };
   }

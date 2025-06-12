@@ -46,6 +46,11 @@ export default class ProvideRoute extends Route<ProvideInterface> {
     this.router
       .route('/provider')
       .get(this.authorizeVendor(), this.controller.getWithProviderId);
+
+    this.router
+      .route('/provider/:providerId')
+      .get(this.controller.getByProviderId);
+
     this.router
       .route('/:serviceId/verify')
       .put(this.authorize(UserRole.ADMIN), this.validator(this.dto.id), this.controller.verify);
