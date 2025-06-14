@@ -28,6 +28,7 @@ import Review from '@models/Review';
 import Vendor from '@models/Vendor';
 import ShippingInfo from '@models/ShippingInfo';
 import { BookingStatus } from '@interfaces/Booking.Interface';
+import Transaction from '@models/Transaction';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -332,6 +333,83 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
         profilePicture: vendor?.profilePicture || null,
         location: shippingInfo?.shippingAddress || null
       };
+    }
+
+    async getVendorTransactions(vendorId: string, fromDate?: Date, toDate?: Date) {
+      const vendor = await this.findOne(vendorId);
+      if (!vendor) throw new HttpError('Invalid vendor', 404);
+
+      const dateFilter: any = {};
+      if (fromDate || toDate) {
+        dateFilter.createdAt = {};
+        if (fromDate) dateFilter.createdAt.$gte = fromDate;
+        if (toDate) dateFilter.createdAt.$lte = toDate;
+      }
+
+      if (vendor.vendorType === VendorType.MARKET_SELLER) {
+        const orders = await Order.find({
+          vendor: vendorId,
+          orderStatus: OrderStatus.PAID,
+          ...dateFilter
+        }).sort({ createdAt: -1 }).populate('userId').populate("vendorId").populate("serviceId");
+
+        return orders.map(order => ({
+          type: 'order',
+          id: order._id,
+          amount: order.total,
+          status: order.orderStatus,
+          date: order.createdAt,
+          customer: order.userId,
+          items: order.items
+        }));
+      } else {
+        const quotes = await Quote.find({
+          vendorId,
+          
+        }).sort({ createdAt: -1 }).populate('userId').populate("serviceId");
+
+        
+
+        return quotes.map(quote => ({
+          type: 'service',
+          id: quote._id,
+          amount: quote.amount,
+          status: quote.status,
+          date: quote.createdAt,
+          customer: quote.userId,
+          service: quote.serviceId
+        }));
+      }
+    }
+
+    async getVendorTransactionHistory(vendorId: string, fromDate?: Date, toDate?: Date) {
+      const vendor = await this.findOne(vendorId);
+      if (!vendor) throw new HttpError('Invalid vendor', 404);
+
+      const dateFilter: any = {};
+      if (fromDate || toDate) {
+        dateFilter.date = {};
+        if (fromDate) dateFilter.date.$gte = fromDate;
+        if (toDate) dateFilter.date.$lte = toDate;
+      }
+
+      const transactions = await Transaction.find({
+        userId: vendorId,
+        ...dateFilter
+      })
+      .populate('userId')
+      .sort({ date: -1 });
+
+      return transactions.map(transaction => ({
+        id: transaction._id,
+        amount: transaction.amount,
+        type: transaction.event,
+        date: transaction.date,
+        description: transaction.description,
+        paymentMethod: transaction.paymentMethod,
+        reference: transaction.reference,
+        success: transaction.success
+      }));
     }
 }
 

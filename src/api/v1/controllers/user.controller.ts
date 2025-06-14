@@ -107,6 +107,7 @@ class UserController extends Controller<UserInterface> {
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
   });
+
 }
 
 export default UserController;

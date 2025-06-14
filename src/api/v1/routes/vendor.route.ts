@@ -44,6 +44,8 @@ class VendorRoute extends Route<VendorInterface> {
 
       this.router.route('/following').get(this.controller.getFollowing);
       this.router.route('/follow').put(this.validator(this.dto.vendorId), this.controller.toggleFollow);
+      this.router.route('/transactions/:vendorId').get(this.authorizeVendor(), this.controller.getVendorTransactions);
+      this.router.route('/transactions/history').get(this.authorizeVendor(), this.controller.getVendorTransactionHistory);
 
     return this.router;
   }

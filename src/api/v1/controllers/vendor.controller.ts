@@ -102,6 +102,18 @@ class VendorController extends Controller<VendorInterface> {
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
   });
+
+  getVendorTransactions = this.control(async (req: Request) => {
+    const result = await this.service.getVendorTransactions(req.params[this.resourceId], req.query.fromDate as string, req.query.toDate as string);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
+  getVendorTransactionHistory = this.control(async (req: Request) => {
+    const result = await this.service.getVendorTransactionHistory(req.vendor._id, req.query.fromDate as string, req.query.toDate as string);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
 }
 
 export default VendorController;
