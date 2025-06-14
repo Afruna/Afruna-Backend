@@ -12,6 +12,7 @@ import safeQuery from '@utils/safeQuery';
 import httpStatus from 'http-status';
 import { OPTIONS } from '@config';
 import Notification from '@models/Notification';
+import { SendEmail, SendMail } from '../../../config/email.config';
 
 export default abstract class Controller<T> {
   protected HttpError = httpError;
@@ -129,15 +130,17 @@ export default abstract class Controller<T> {
 
   update = this.control(async (req: Request) => {
     let { status, rejectionReason } = req.body;
+    console.log(req.body);
 
     if (status == 'REJECTED') {
       let data: any = await this.service.findOne(req.params[this.resourceId]);
       let vendorId = data.vendorId;
       let notification = await new Notification({
         vendorId: vendorId,
-        subject: `${this.resource} Rejected`,
+        subject: `${this.resource.to} rejected`,
         message: rejectionReason
       }).save();
+      SendEmail("eolaosebikan60@gmail.com", "eolaosebikan60@gmail.com", "test")
       console.log('notification sent', notification);
     }
 

@@ -241,6 +241,11 @@ class ProductController extends Controller<ProductInterface> {
   report = this.control(async (req: Request) => {
     return this.service.report(req.user?._id);
   });
+
+  // update = this.control(async (req: Request) => {
+  //   const data = req.body;
+  //   return this.service.update(data);
+  // });
 }
 
 export default ProductController;

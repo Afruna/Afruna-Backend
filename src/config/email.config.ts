@@ -114,7 +114,7 @@ export const SendEmail = (toName, toEmail, message, emailType = EMAIL_TYPE.VERIF
         }
         console.log('Email sent successfully:', info.response);
     });
-}
+};
 
 export enum EMAIL_TYPE {
     VERIFY_EMAIL = "VERIFY_EMAIL",

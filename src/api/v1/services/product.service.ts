@@ -128,6 +128,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
 
   async update(query: string | Partial<ProductInterface>, data: UpdateData<ProductInterface>) {
     const product = await this.findOne(query);
+    console.log(data);
     if (!product) throw new HttpError('invalid product', 404);
 
     if (data.deliveryLocations) {
