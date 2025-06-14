@@ -59,6 +59,7 @@ import SearchHistoryRoute from '@routes/search.history.route';
 import ServiceProfileRoute from '@routes/service.profile.route';
 import QuoteRoute from '@routes/quote.route';
 import Category2Route from '@routes/category2.route';
+import PayoutRoute from '@routes/payout.route';
 
 // Create MongoDBStore instance
 const MongoDBStoreInstance = MongoDBStore(session);
@@ -108,6 +109,7 @@ class App {
     serviceProfile: new ServiceProfileRoute(),
     quotes: new QuoteRoute(),
     category2: new Category2Route(),
+    payouts: new PayoutRoute(),
   };
   httpServer;
 
