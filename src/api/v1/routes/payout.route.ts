@@ -12,11 +12,11 @@ export default class PayoutRoute extends Route<PayoutInterface> {
     // Vendor routes
     this.router
       .route('/request')
-      .post(authorizeVendor, this.validator(this.dto.request), this.controller.requestPayout);
+      .post(authorizeVendor(), this.validator(this.dto.request), this.controller.requestPayout);
 
     this.router
       .route('/vendor')
-      .get(authorizeVendor, this.controller.getVendorPayouts);
+      .get(authorizeVendor(), this.controller.getVendorPayouts);
 
     // Admin routes
     this.router
