@@ -2,6 +2,7 @@ import Route from '@routes/route';
 import PayoutController from '@controllers/payout.controller';
 import { payoutRequestDTO } from '@dtos/payout.dto';
 import { PayoutInterface } from '@interfaces/Payout.Interface';
+import { authorizeVendor } from '@middlewares/jwt';
 
 export default class PayoutRoute extends Route<PayoutInterface> {
   controller = new PayoutController('payout');
@@ -11,11 +12,11 @@ export default class PayoutRoute extends Route<PayoutInterface> {
     // Vendor routes
     this.router
       .route('/request')
-      .post(this.authorizeVendor(), this.validator(this.dto.request), this.controller.requestPayout);
+      .post(authorizeVendor, this.validator(this.dto.request), this.controller.requestPayout);
 
     this.router
       .route('/vendor')
-      .get(this.authorizeVendor(), this.controller.getVendorPayouts);
+      .get(authorizeVendor, this.controller.getVendorPayouts);
 
     // Admin routes
     this.router
