@@ -61,7 +61,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       if(!deliveryAddress)
         throw new HttpError('Invalid Address', 400);
 
-      const orderNumber = generateOrderNumber();
+      const orderNumber = generateOrderNumber(deliveryAddress.state);
 
       const orderSession = await this._orderSession.create({
         userId,

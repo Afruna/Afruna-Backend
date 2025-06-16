@@ -9,8 +9,8 @@ var Chance = require('chance');
 var chance = new Chance();
 
 
-export const generateOrderNumber = (min: number = 1000001, max: number = 9999999) => {
-    return chance.integer({ min: min, max: max })
+export const generateOrderNumber = (state: string, min: number = 1000001, max: number = 9999999) => {
+    return chance.integer({ min: min, max: max }) + "-" + state.slice(0, 2)
 };
 
 export const generateDepositNumber = (min: number = 1000001, max: number = 9999999) => {
