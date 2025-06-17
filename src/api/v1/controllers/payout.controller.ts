@@ -4,6 +4,7 @@ import PayoutService from '@services/payout.service';
 import { PayoutInterface, PayoutMethod, PayoutStatus } from '@interfaces/Payout.Interface';
 import HttpError from '@helpers/HttpError';
 import { logger } from '@utils/logger';
+import Payouts from '@models/Payouts';
 
 export default class PayoutController extends Controller<PayoutInterface> {
   public service = PayoutService.instance();
@@ -79,7 +80,7 @@ export default class PayoutController extends Controller<PayoutInterface> {
 
   getVendorPayouts = this.control(async (req: Request) => {
     try {
-      const vendorId = req.vendor?._id;
+      const vendorId = req.vendor?._id.toString();
       const { status, startDate, endDate } = req.query;
 
       if (!vendorId) throw new HttpError('Unauthorized', 401);
@@ -93,8 +94,8 @@ export default class PayoutController extends Controller<PayoutInterface> {
         if (startDate) query.createdAt.$gte = new Date(startDate as string);
         if (endDate) query.createdAt.$lte = new Date(endDate as string);
       }
-
-      const payouts = await this.service.find(query);
+      console.log(query);
+      const payouts = await Payouts.find(query);
 
       return payouts;
     } catch (error) {
