@@ -185,7 +185,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
   frequent(
     query: Partial<ProductInterface & { page?: string | number | undefined; limit?: string | number | undefined }>,
   ) {
-    return this.paginatedFind(query, { frequency: -1 }, [
+    return this.paginatedFind({...query, status: ProductStatus.ACTIVE}, { frequency: -1 }, [
       {
         path: 'categoryId',
         model: 'Category'

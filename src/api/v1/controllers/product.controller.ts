@@ -126,7 +126,7 @@ class ProductController extends Controller<ProductInterface> {
   getTrending = this.control(async (req: Request) => {
     // TODO:
     const result = await this.service.find(
-      {},
+      {status: ProductStatus.ACTIVE},
       {
         populate: {
           path: 'categoryId',
