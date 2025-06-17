@@ -14,7 +14,7 @@ class PayoutService extends Service<PayoutInterface, PayoutRepository> {
 
   async requestPayout(vendorId: string, amount: number, method: PayoutMethod, bankDetails?: any) {
     // Check if vendor has sufficient balance
-    const wallet = await this._walletService.findOne({ userId: vendorId });
+    const wallet = await this._walletService.findOne({ vendorId });
     if (!wallet || wallet.balance < amount) {
       throw new HttpError('Insufficient wallet balance', 400);
     }
@@ -61,7 +61,7 @@ class PayoutService extends Service<PayoutInterface, PayoutRepository> {
     // Process the payout
     try {
       // Deduct from vendor's wallet
-      await this._walletService.debitWallet(payout.vendorId.toString(), payout.amount);
+      await this._walletService.debitWallet(null, payout.amount, payout.vendorId.toString());
 
       // Update transaction record to success
       await Transaction.findOneAndUpdate(

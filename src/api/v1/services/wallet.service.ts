@@ -56,8 +56,8 @@ class WalletService extends Service<WalletInterface, WalletRepository> {
     return this._paystack.confirmAccount(accountNumber, bankCode);
   }
 
-  async debitWallet(userId: string, amount: number) {
-    const wallet = await this.getOrCreateWallet(userId);
+  async debitWallet(userId: string, amount: number, vendorId?: string) {
+    const wallet = await this.getOrCreateWallet(vendorId || userId);
     
     if (wallet.balance < amount) throw new HttpError('insufficient balance', 400);
     let balance: number;
