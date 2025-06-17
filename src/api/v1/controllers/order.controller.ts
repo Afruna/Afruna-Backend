@@ -193,11 +193,12 @@ class OrderController extends Controller<OrderInterface> {
   });
 
   getVendorOrder = this.control(async (req: Request) => {
-    
-    const findQuery = { vendor: req.vendor?._id };
-
-    const orders = await this.service.getVendorOrder(req.vendor?._id);
-
+    const { startDate, endDate } = req.query;
+    const orders = await this.service.getVendorOrder(
+      req.vendor?._id,
+      startDate as string,
+      endDate as string
+    );
     return orders;
   });
 

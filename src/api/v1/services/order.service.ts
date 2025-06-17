@@ -275,9 +275,17 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       },);
   }
 
-  async getVendorOrder(vendor: string) {
-    return await this.find(
-      { vendor });
+  async getVendorOrder(vendor: string, startDate?: string, endDate?: string) {
+    const query: any = { vendor };
+    
+    // Add date range filter if provided
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
+    return await this.find(query);
   }
 
   trackOrder(orderNumber: string) {

@@ -80,14 +80,21 @@ export default class PayoutController extends Controller<PayoutInterface> {
   getVendorPayouts = this.control(async (req: Request) => {
     try {
       const vendorId = req.vendor?._id;
-      const { status } = req.query;
+      const { status, startDate, endDate } = req.query;
 
       if (!vendorId) throw new HttpError('Unauthorized', 401);
 
-      const payouts = await this.service.getVendorPayouts(
-        vendorId.toString(),
-        status as PayoutStatus
-      );
+      const query: any = { vendorId };
+      if (status) query.status = status;
+      
+      // Add date range filter if provided
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) query.createdAt.$gte = new Date(startDate as string);
+        if (endDate) query.createdAt.$lte = new Date(endDate as string);
+      }
+
+      const payouts = await this.service.find(query);
 
       return payouts;
     } catch (error) {
@@ -98,7 +105,18 @@ export default class PayoutController extends Controller<PayoutInterface> {
 
   getPendingPayouts = this.control(async (req: Request) => {
     try {
-      const payouts = await this.service.getPendingPayouts();
+      const { startDate, endDate } = req.query;
+      
+      const query: any = { status: PayoutStatus.PENDING };
+      
+      // Add date range filter if provided
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) query.createdAt.$gte = new Date(startDate as string);
+        if (endDate) query.createdAt.$lte = new Date(endDate as string);
+      }
+
+      const payouts = await this.service.find(query);
 
       return payouts;
     } catch (error) {

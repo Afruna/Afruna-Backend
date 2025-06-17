@@ -19,16 +19,29 @@ class BookingController extends Controller<BookingInterface> {
   });
 
   getWithVendorId = this.control(async (req: Request) => {
-    return this.service.find({ vendorId: req.vendor._id }, { multiPopulate: [
-      {
-        path: 'serviceId',
-        model: 'Service',
-      },
-      {
-        path: 'vendorId',
-        model: 'Vendor',
-      }
-    ]});
+    const { startDate, endDate } = req.query;
+    
+    const query: any = { vendorId: req.vendor._id };
+    
+    // Add date range filter if provided
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate as string);
+      if (endDate) query.createdAt.$lte = new Date(endDate as string);
+    }
+
+    return this.service.find(query, { 
+      multiPopulate: [
+        {
+          path: 'serviceId',
+          model: 'Service',
+        },
+        {
+          path: 'vendorId',
+          model: 'Vendor',
+        }
+      ]
+    });
   });
 
   get = this.control((req: Request) => {
