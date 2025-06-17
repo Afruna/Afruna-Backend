@@ -32,14 +32,14 @@ class BookingController extends Controller<BookingInterface> {
 
     return this.service.find(query, { 
       multiPopulate: [
-        {
-          path: 'serviceId',
-          model: 'Service',
-        },
-        {
-          path: 'vendorId',
-          model: 'Vendor',
-        }
+      {
+        path: 'serviceId',
+        model: 'Service',
+      },
+      {
+        path: 'vendorId',
+        model: 'Vendor',
+      }
       ]
     });
   });

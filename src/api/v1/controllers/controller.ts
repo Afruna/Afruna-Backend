@@ -135,13 +135,7 @@ export default abstract class Controller<T> {
     if (status == 'REJECTED') {
       let data: any = await this.service.findOne(req.params[this.resourceId]);
       let vendorId = data.vendorId;
-      let notification = await new Notification({
-        vendorId: vendorId,
-        subject: `${this.resource.to} rejected`,
-        message: rejectionReason
-      }).save();
-      SendEmail("eolaosebikan60@gmail.com", "eolaosebikan60@gmail.com", "test")
-      console.log('notification sent', notification);
+      await this.sendRejectionNotification(vendorId, rejectionReason);
     }
 
     const result = await this.service.update(req.params[this.resourceId], req.body);
@@ -174,5 +168,20 @@ export default abstract class Controller<T> {
         },
       })),
     };
+  }
+
+  protected capitalizeResourceName(resource: string): string {
+    return resource
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  protected async sendRejectionNotification(vendorId: string, rejectionReason: string) {
+    let notification = await new Notification({
+      vendorId: vendorId,
+      subject: `${this.capitalizeResourceName(this.resource)} Rejected`,
+      message: rejectionReason
+    }).save();
   }
 }

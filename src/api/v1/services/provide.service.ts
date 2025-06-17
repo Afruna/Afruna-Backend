@@ -1,15 +1,12 @@
 import HttpError from '@helpers/HttpError';
-import { ProvideInterface } from '@interfaces/Provide.Interface';
+import { ProvideInterface, ServiceStatusEnum } from '@interfaces/Provide.Interface';
 import ProvideRepository from '@repositories/Provide.repo';
 import Service from '@services/service';
 import TransactionService from './transaction.service';
 import { TransactionEvent } from '@interfaces/Transaction.Interface';
 import UserService from '@services/user.service';
 import ServiceCategoryRepository from '@repositories/ServiceCategory.repo';
-// import ProductService from './product.service';
-// import { logger } from '@utils/logger';
-// import s3 from '@helpers/multer';
-// import { OPTIONS } from '@config';
+import { ServiceStatusEnum } from '@enums/Service.enum';
 
 class ProvideService extends Service<ProvideInterface, ProvideRepository> {
   protected repository = new ProvideRepository();
@@ -29,17 +26,16 @@ class ProvideService extends Service<ProvideInterface, ProvideRepository> {
     });
   }
 
-  
 
   async getSimilarServices(serviceId) {
-    const service = await this.findOne({ _id: serviceId})
+    const service = await this.findOne({ _id: serviceId, status: ServiceStatusEnum.ACTIVE})
 
     if(!service)
       throw new HttpError("Invalid Service")
 
     const categoryId = service.categoryId;
 
-    return await this.repository.find({ categoryId }, { multiPopulate: 
+    return await this.repository.find({ categoryId, status: ServiceStatusEnum.ACTIVE }, { multiPopulate: 
       [
         {
           path: 'vendorId',
@@ -90,7 +86,7 @@ class ProvideService extends Service<ProvideInterface, ProvideRepository> {
       | undefined,
     options?: OptionsParser<ProvideInterface>,
   ): Promise<DocType<ProvideInterface>[]> {
-    return this.repository.find(query, {
+    return this.repository.find({...query, status: ServiceStatusEnum.ACTIVE}, {
       ...options,
       multiPopulate: [
         {
