@@ -188,7 +188,7 @@ export default abstract class Controller<T> {
     
     let notification = await new Notification({
       vendorId: vendorId,
-      subject: `${capitalizedResource} Rejected`,
+      subject: `${this.resource.toUpperCase() || 'Item'} Rejected`,
       message: rejectionReason
     }).save();
   }
