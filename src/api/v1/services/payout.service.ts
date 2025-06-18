@@ -31,15 +31,15 @@ class PayoutService extends Service<PayoutInterface, PayoutRepository> {
     });
 
     // Create pending transaction record
-    await Transaction.create({
-      userId: vendorId,
-      amount: amount,
-      event: TransactionEvent.WITHDRAWAL,
-      description: `Payout request of ${amount}`,
-      reference: payout.reference,
-      success: false,
-      date: new Date()
-    });
+    // await Transaction.create({
+    //   userId: vendorId,
+    //   amount: amount,
+    //   event: TransactionEvent.WITHDRAWAL,
+    //   description: `Payout request of ${amount}`,
+    //   reference: payout.reference,
+    //   success: false,
+    //   date: new Date()
+    // });
 
     return payout;
   }
