@@ -171,9 +171,14 @@ export default abstract class Controller<T> {
   }
 
   protected capitalizeResourceName(resource: string): string {
+    if (!resource) return '';
+    
     return resource
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map(word => {
+        if (!word) return '';
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
       .join(' ');
   }
 
