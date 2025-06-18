@@ -56,7 +56,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       if (!cartSession.total || cartSession.total < 1) throw new HttpError('empty cart', 400);
       await this.validateOutOfStock(cartSession._id);
 
-      const deliveryAddress = this._addressService().findOne({_id: addressId});
+      const deliveryAddress = await this._addressService().findOne({_id: addressId});
 
       if(!deliveryAddress)
         throw new HttpError('Invalid Address', 400);

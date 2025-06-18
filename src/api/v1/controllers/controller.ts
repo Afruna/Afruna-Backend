@@ -177,18 +177,16 @@ export default abstract class Controller<T> {
       .split(' ')
       .map(word => {
         if (!word) return '';
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+        return word.charAt(0).toUpperCase() + word?.slice(1)?.toLowerCase();
       })
       .join(' ');
   }
 
   protected async sendRejectionNotification(vendorId: string, rejectionReason: string) {
-    const resourceName = this.resource || 'Item';
-    const capitalizedResource = this.capitalizeResourceName(resourceName);
-    
     let notification = await new Notification({
       vendorId: vendorId,
-      subject: `${this.resource.toUpperCase() || 'Item'} Rejected`,
+      subject: `${this.capitalizeResourceName(this.resource)} Rejected`,
       message: rejectionReason
     }).save();
   }
