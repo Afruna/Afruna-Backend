@@ -150,7 +150,8 @@ class AdminController extends Controller<UserInterface> {
   });
 
   getAllTransactions = this.control(async (req: Request) => {
-    const result = await this.service.getAllTransactions();
+    const {type} = req.query;
+    const result = await this.service.getAllTransactions(type as string);
 
     return result;
   });

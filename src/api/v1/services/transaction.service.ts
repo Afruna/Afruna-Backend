@@ -457,7 +457,8 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
       date: new Date(),
       description: `Payment for quote ${quoteId}`,
       reference,
-      paymentMethod
+      paymentMethod,
+      source: 'service'
     });
 
     // Create transaction record for vendor credit
@@ -469,7 +470,8 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
       date: new Date(),
       description: `Credit for quote ${quoteId}`,
       reference,
-      paymentMethod
+      paymentMethod,
+      source: 'service'
     });
 
     return { success: true, message: "Quote payment processed successfully" };

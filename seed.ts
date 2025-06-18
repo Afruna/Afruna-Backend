@@ -1,26 +1,30 @@
-// seedAdmin.ts
-import Product from '@models/Product';
+// seedTransactions.ts
+import Transaction from '@models/Transaction';
 import mongoose from 'mongoose';
 
+const MONGO_URI = 'mongodb://admin:afrunadmin@152.53.249.30:27017/afruna?authSource=admin';
 
-const MONGO_URI = 'mongodb://admin:afrunadmin@152.53.249.30:27017/afruna?authSource=admin'; // replace with your actual 
+async function updateAllTransactions() {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log('Connected to MongoDB');
 
-async function updateAllProducts() {
-  await mongoose.connect(MONGO_URI);
+    const result = await Transaction.updateMany(
+      {}, // filter: match all transactions
+      {
+        $set: {
+          source: 'marketplace'
+        },
+      }
+    );
 
-  const result = await Product.updateMany(
-    {}, // filter: match all
-    {
-      $set: {
-        quantity: 99999999,
-        isOutOfStock: false
-      },
-    }
-  );
-
-  console.log(`✅ Updated ${result.modifiedCount} products`);
-
-  await mongoose.disconnect();
+    console.log(`✅ Updated ${result.modifiedCount} transactions`);
+  } catch (error) {
+    console.error('Error updating transactions:', error);
+  } finally {
+    await mongoose.disconnect();
+    console.log('Disconnected from MongoDB');
+  }
 }
 
-updateAllProducts();
+updateAllTransactions();

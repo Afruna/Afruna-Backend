@@ -7,6 +7,11 @@ const transactionSchema = new Schema<TransactionInterface>(
   {
     success: Boolean,
     userId: {type: Schema.Types.ObjectId, ref: 'User'},
+    source: {
+      type: String,
+      enum: ['service', 'marketplace'],
+      default: 'marketplace',
+    },
     amount: Number,
     date: Date,
     description: String,

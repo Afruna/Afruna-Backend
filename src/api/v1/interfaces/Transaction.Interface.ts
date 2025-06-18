@@ -16,6 +16,7 @@ export enum PaymentMethod {
 export interface TransactionInterface {
   success: boolean;
   userId: string | Types.ObjectId;
+  source: 'service' | 'marketplace';
   event: TransactionEvent;
   amount: number;
   date: Date;

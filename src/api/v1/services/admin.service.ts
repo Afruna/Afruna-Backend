@@ -1321,8 +1321,8 @@ class AdminService extends UserService {
     return this._analytics.getTransactionMetrics(dateFilter);
   }
 
-  async getAllTransactions() {
-    return await Transaction.find().populate("userId");
+  async getAllTransactions(type: string) {
+    return await Transaction.find({source: type}).populate("userId");
   }
 
   bookingSummary(startDate: string, endDate: string) {
