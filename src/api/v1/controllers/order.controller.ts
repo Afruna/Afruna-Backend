@@ -184,11 +184,12 @@ class OrderController extends Controller<OrderInterface> {
   });
 
   getUserOrders = this.control(async (req: Request) => {
-    
-    const findQuery = { userId: req.user?._id };
-
-    const orders = await this.service.getUserOrders(req.user?._id);
-
+    const { startDate, endDate } = req.query;
+    const orders = await this.service.getUserOrders(
+      req.user?._id,
+      startDate as string,
+      endDate as string
+    );
     return orders;
   });
 

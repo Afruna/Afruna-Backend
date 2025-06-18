@@ -29,6 +29,7 @@ import Vendor from '@models/Vendor';
 import ShippingInfo from '@models/ShippingInfo';
 import { BookingStatus } from '@interfaces/Booking.Interface';
 import Transaction from '@models/Transaction';
+import Wallet from '@models/Wallet';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -99,9 +100,9 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
           {
             vendor: vendorId
           },
-          {
-            createdAt: { $gte: startDate, $lte: endDate }
-          },
+          // {
+          //   createdAt: { $gte: startDate, $lte: endDate }
+          // },
           {
             orderStatus: OrderStatus.PAID
           }
@@ -207,10 +208,12 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
   }
 
   async getServiceProviderDashboardStats(vendorId: string) {
+    let balance = (await Wallet.findOne({vendorId})).balance;
+    let dailyJobRequests = await this.bookingRepo.count({vendorId, createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 1)) } });
     return {
-      totalRevenue: 0,
+      totalRevenue: balance,
       totalJobs: await this.provideRepo.count({ vendorId }),
-      totalDailyRequests: await this.bookingRepo.count({ vendorId }),
+      totalDailyRequests: dailyJobRequests,
       revenueBreakDown: []
     }
   }

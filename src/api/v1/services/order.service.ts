@@ -252,9 +252,18 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       },);
   }
 
-  getUserOrders(userId: string) {
+  async getUserOrders(userId: string, startDate?: string, endDate?: string) {
+    const query: any = { userId };
+    
+    // Add date range filter if provided
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
     return this.find(
-      { userId },
+      query,
       {
         sort: { createdAt: -1 },
         multiPopulate: [
@@ -272,7 +281,8 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             model: 'Product',
           },
         ],
-      },);
+      }
+    );
   }
 
   async getVendorOrder(vendor: string, startDate?: string, endDate?: string) {

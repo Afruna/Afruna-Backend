@@ -4,6 +4,7 @@ import ProvideService from '@services/provide.service';
 import { ProvideInterface } from '@interfaces/Provide.Interface';
 import Controller from '@controllers/controller';
 import { UserRole } from '@interfaces/User.Interface';
+import Provide from '@models/Provide';
 // import { ProvideResponseDTO } from '@dtos/Provide.dto';
 
 class ProvideController extends Controller<ProvideInterface> {
@@ -96,11 +97,17 @@ class ProvideController extends Controller<ProvideInterface> {
       
     // ]);
 
-    return this.service.find({}, { populate: {
+    // return this.service.find({}, { populate: {
+    //   path: 'vendorId',
+    //     model: 'Vendor',
+    //     select: 'firstname lastname',
+    // }})
+
+    return Provide.find(query).populate({
       path: 'vendorId',
-        model: 'Vendor',
-        select: 'firstname lastname',
-    }})
+      model: 'Vendor',
+      select: 'firstname lastname',
+    });
   });
 
   verify = this.control(async (req: Request) => {
