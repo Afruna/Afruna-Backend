@@ -449,7 +449,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       let data = {
         sender_address_code: 51378738,
-        reciever_address_code: await this.getAddressCode(addressId),
+        reciever_address_code: 66761979,
         pickup_date: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
         package_items: shippingItems,
         package_dimension: packageDimensions,
