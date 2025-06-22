@@ -17,7 +17,9 @@ class OrderRoute extends Route<OrderInterface> {
     this.router.get('/track/:ref', this.authorize(), this.controller.trackOrder);
     this.router.get('/:ref', this.authorize(), this.controller.getOne);
 
-    this.router.post('/shipping/rates', this.controller.getShippingRates);
+    this.router.get('/shipping/rates/:addressId', this.authorize(), this.controller.getShippingRates);
+
+    this.router.get('/address/:addressId', this.controller.getAddressCode);
 
     return this.router;
   }

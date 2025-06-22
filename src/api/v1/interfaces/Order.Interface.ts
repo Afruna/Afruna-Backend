@@ -29,6 +29,11 @@ export interface OrderInterface {
   deliveryFee?: number;
   vat?: number;
   discount: number;
+  request_token?: string;
+  courier_id?: string;
+  service_code?: string;
+  sb_order_id?: string;
+  tracking_url?: string;
 }
 
 export enum DeliveryStatus {

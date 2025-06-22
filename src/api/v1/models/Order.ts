@@ -60,6 +60,11 @@ const OrderSchema = new Schema<OrderInterface>(
     customId: String,
     isCanceled: { type: Boolean, default: false },
     options: Schema.Types.Mixed,
+    request_token: { type: String, default: null },
+    courier_id: { type: String, default: null },
+    service_code: { type: String, default: null },
+    sb_order_id: { type: String, default: null },
+    tracking_url: { type: String, default: null },
   },
   { timestamps: true },
 );

@@ -21,7 +21,7 @@ class OrderController extends Controller<OrderInterface> {
     // } else {
     //   data = (await this.service.addAddress(req.user?._id, req.body))?.addresses;
     // }
-    return this.service.createOrder(req.user?._id, data.addressId, data.paymentMethod);
+    return this.service.createOrder(req.user?._id, data.addressId, data.paymentMethod, data.request_token, data.service_code, data.courier_id);
   });
 
   getAddresses = this.control(async (req: Request) => {
@@ -344,76 +344,13 @@ class OrderController extends Controller<OrderInterface> {
   // });
 
   getShippingRates = this.control(async (req: Request) => {
-    try {
-      const dto = req.body;
-  
-      const totalWeight = dto.items.reduce((sum, item) => {
-        return sum + item.weight * item.quantity;
-      }, 0);
-  
-      if (totalWeight <= 0) {
-        throw new HttpError('Invalid total weight: must be greater than 0', 400);
-      }
-  
-      // Build request payload for Shipbubble
-      const payload = {
-        origin: {
-          country: 'NG',
-          state: 'Lagos',
-          city: 'Ikeja'
-        },
-        destination: dto.destination,
-        package: {
-          weight: totalWeight,
-          weight_unit: 'kg'
-        }
-      };
-  
-      const response = await axios.post("https://api.shipbubble.com/v1/shipping/fetch_rates", payload, {
-        headers: {
-          Authorization: `Bearer sb_sandbox_680615a07122033eac37ebee2be93c79a395ff293c8c508642f2c0cd33644354`
-        }
-      });
-  
-      if (!response.data?.data || !Array.isArray(response.data.data)) {
-        throw new HttpError('Invalid response from shipping service', 500);
-      }
-  
-      const rates = response.data.data.map((rate: any) => {
-        if (!rate.id || !rate.name || !rate.price || !rate.carrier) {
-          throw new HttpError('Invalid shipping rate data received', 500);
-        }
-  
-        return {
-          id: rate.id,
-          name: rate.name,
-          price: rate.price,
-          estimated_days: rate.estimated_days || 'N/A',
-          carrier: rate.carrier
-        };
-      });
-  
-      return rates;
-  
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new HttpError(
-            `Shipping service error: ${error.response.data?.message || error.message}`,
-            error.response.status
-          );
-        } else if (error.request) {
-          throw new HttpError('No response from shipping service', 503);
-        } else {
-          throw new HttpError(`Error setting up shipping request: ${error.message}`, 500);
-        }
-      }
-  
-      if (error instanceof HttpError) throw error;
-  
-      // Class-validator errors or other unexpected errors
-      throw new HttpError(`Error getting shipping rates: ${error.message}`, 500);
-    }
+    const shippingRates = await this.service.getShippingRates(req.user?._id, req.params.addressId as string);
+    return shippingRates;
+  });
+
+  getAddressCode = this.control(async (req: Request) => {
+    const addressCode = await this.service.getAddressCode(req.params.addressId);
+    return addressCode;
   });
 }
 

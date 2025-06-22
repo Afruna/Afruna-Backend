@@ -14,7 +14,7 @@ export const generateOrderNumber = (state: string, min: number = 1000001, max: n
 };
 
 export const generateDepositNumber = (min: number = 1000001, max: number = 9999999) => {
-  return chance.integer({ min: min, max: max })
+  return chance.integer({ min: min, max: max });
 };
 
 function generateRandomNumber(length?: number) {
