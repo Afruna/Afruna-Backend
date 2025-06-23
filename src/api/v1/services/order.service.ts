@@ -70,7 +70,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
         total: cartSession.total,
         orderNumber,
         paymentMethod,
-        deliveryFee: await computeDeliveryFee(),
+        deliveryFee,
         vat: await computeVAT(cartSession.total),
       });
 

@@ -10,7 +10,7 @@ export const computeDeliveryFee = async(reference: string = "") => {
 
   export const computeVAT = async(amount) => {
 
-    let fee = (parseInt(VAT_FEE) / 100) * amount;
+    let fee = (7.5 / 100) * amount;
 
     return fee;
   };
