@@ -45,7 +45,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
 
   // private _cardService =  CardService();
 
-  async initializePayment(orderSessionRef: string, orderId: string, userId: string, url: string | null = null) {
+  async initializePayment(orderSessionRef: string, orderId: string, userId: string, url: string | null = null, deliveryFee?: number) {
     const data = {
       orderSessionRef,
       orderId,
@@ -58,7 +58,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef});
     if (!orderSession) throw new HttpError('order not found', 404);
 
-    const amount = (orderSession.total + orderSession.deliveryFee + orderSession.vat);
+    const amount = (orderSession.total + deliveryFee + orderSession.vat);
 
     const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId })
 

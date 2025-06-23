@@ -108,7 +108,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             items: [{ productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total }],
             options: cartItem.options,
             isPaid: false,
-            total: cartItem.total + deliveryFee + (cartItem.total * 0.075),
+            total: cartItem.total,
             sessionId: orderSession._id,
             orderNumber,
             addressId,
@@ -145,6 +145,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             order._id,
             userId,
             PAYSTACK_REDIRECT,
+            deliveryFee
           );
           break;
 
@@ -152,7 +153,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
           payment = await this._transactionService().walletHandler(
             userId,
             order._id,
-            orderSession.total + orderSession.vat + orderSession.deliveryFee,
+            orderSession.total + orderSession.vat + deliveryFee,
             { type: 'product', orderSessionRef: orderSession._id, orderId: order._id },
           );
           break;
