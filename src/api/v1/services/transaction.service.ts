@@ -63,7 +63,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId })
 
     const user = await this._userService().findOne(orderSession.userId.toString());
-    const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat + orderSession.deliveryFee)}`, user!, data, PAYSTACK_REDIRECT, payment._id);
+    const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat +   deliveryFee)}`, user!, data, PAYSTACK_REDIRECT, payment._id);
     return result;
   }
 
