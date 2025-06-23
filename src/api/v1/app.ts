@@ -60,6 +60,7 @@ import ServiceProfileRoute from '@routes/service.profile.route';
 import QuoteRoute from '@routes/quote.route';
 import Category2Route from '@routes/category2.route';
 import PayoutRoute from '@routes/payout.route';
+import ShipbubbleWebhookRoute from '@routes/shipbubble.webhook.route';
 
 // Create MongoDBStore instance
 const MongoDBStoreInstance = MongoDBStore(session);
@@ -110,6 +111,7 @@ class App {
     quotes: new QuoteRoute(),
     category2: new Category2Route(),
     payouts: new PayoutRoute(),
+    webhook: new ShipbubbleWebhookRoute(),
   };
   httpServer;
 
