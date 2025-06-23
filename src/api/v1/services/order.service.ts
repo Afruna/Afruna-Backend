@@ -75,7 +75,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       });
 
       // if(request_token && service_code && courier_id){
-        let createdShipment = await shipbubbleAxios.post('/shipping/create_shipment', {
+        let createdShipment = await shipbubbleAxios.post('/shipping/labels', {
           request_token,
           service_code,
           courier_id,
