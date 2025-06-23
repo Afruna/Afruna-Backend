@@ -93,7 +93,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             {
               load: {
                 key: 'items',
-                value: { productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total },
+                value: { productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total, deliveryFee: deliveryFee },
               },
               increment: { key: 'total', value: +cartItem.total },
             },
