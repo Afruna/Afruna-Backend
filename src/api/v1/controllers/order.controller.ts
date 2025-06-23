@@ -21,7 +21,7 @@ class OrderController extends Controller<OrderInterface> {
     // } else {
     //   data = (await this.service.addAddress(req.user?._id, req.body))?.addresses;
     // }
-    return this.service.createOrder(req.user?._id, data.addressId, data.paymentMethod, data.request_token, data.service_code, data.courier_id);
+    return this.service.createOrder(req.user?._id, data.addressId, data.paymentMethod, data.request_token, data.service_code, data.courier_id, data.deliveryFee);
   });
 
   getAddresses = this.control(async (req: Request) => {

@@ -46,7 +46,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
     return this._userService().getAllAddresses;
   }
 
-  async createOrder(userId: string, addressId: string, paymentMethod: PaymentMethod = PaymentMethod.CARD, request_token?: string, service_code?: string, courier_id?: string) {
+  async createOrder(userId: string, addressId: string, paymentMethod: PaymentMethod = PaymentMethod.CARD, request_token?: string, service_code?: string, courier_id?: string, deliveryFee?: number) {
     try {
       let user = await this._userService().findOne({ _id: userId });
 
@@ -108,12 +108,12 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             items: [{ productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total }],
             options: cartItem.options,
             isPaid: false,
-            total: cartItem.total,
+            total: cartItem.total + deliveryFee + (cartItem.total * 0.075),
             sessionId: orderSession._id,
             orderNumber,
             addressId,
             deliveryStatus: DeliveryStatus.PENDING,
-            deliveryFee: await computeDeliveryFee(),
+            deliveryFee,
             paymentMethod,
           });
 
