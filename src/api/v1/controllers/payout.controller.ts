@@ -45,12 +45,12 @@ export default class PayoutController extends Controller<PayoutInterface> {
   approvePayout = this.control(async (req: Request) => {
     try {
       const { payoutId } = req.params;
-      const adminId = req.vendor?._id;
+      // const adminId = req.vendor?._id;
 
-      if (!adminId) throw new HttpError('Unauthorized', 401);
-      if (!payoutId) throw new HttpError('Payout ID is required', 400);
+      // if (!adminId) throw new HttpError('Unauthorized', 401);
+      // if (!payoutId) throw new HttpError('Payout ID is required', 400);
 
-      const payout = await this.service.approvePayout(payoutId, adminId.toString());
+      const payout = await this.service.approvePayout(payoutId, null);
 
       return payout;
     } catch (error) {
@@ -63,13 +63,13 @@ export default class PayoutController extends Controller<PayoutInterface> {
     try {
       const { payoutId } = req.params;
       const { reason } = req.body;
-      const adminId = req.vendor?._id;
+      // const adminId = req.vendor?._id;
 
-      if (!adminId) throw new HttpError('Unauthorized', 401);
-      if (!payoutId) throw new HttpError('Payout ID is required', 400);
-      if (!reason) throw new HttpError('Rejection reason is required', 400);
+      // if (!adminId) throw new HttpError('Unauthorized', 401);
+      // if (!payoutId) throw new HttpError('Payout ID is required', 400);
+      // if (!reason) throw new HttpError('Rejection reason is required', 400);
 
-      const payout = await this.service.rejectPayout(payoutId, adminId.toString(), reason);
+      const payout = await this.service.rejectPayout(payoutId, null, reason);
 
       return payout;
     } catch (error) {
@@ -164,6 +164,16 @@ export default class PayoutController extends Controller<PayoutInterface> {
       return payout;
     } catch (error) {
       logger.error('Error in getPayoutDetails:', error);
+      throw new this.HttpError(error.message, 400);
+    }
+  });
+
+  getAllPayouts = this.control(async (req: Request) => {
+    try {
+      const payouts = await this.service.getAllPayouts();
+      return payouts;
+    } catch (error) {
+      logger.error('Error in getAllPayouts:', error);
       throw new this.HttpError(error.message, 400);
     }
   });

@@ -33,4 +33,4 @@ class ShipbubbleWebhookController {
   }
 }
 
-export default ShipbubbleWebhookController; 
+export default ShipbubbleWebhookController;

@@ -6,6 +6,7 @@ import WalletService from './wallet.service';
 import { logger } from '@utils/logger';
 import { TransactionEvent, PaymentMethod } from '@interfaces/Transaction.Interface';
 import Transaction from '@models/Transaction';
+import Payouts from '@models/Payouts';
 
 class PayoutService extends Service<PayoutInterface, PayoutRepository> {
   protected repository = new PayoutRepository();
@@ -120,7 +121,7 @@ class PayoutService extends Service<PayoutInterface, PayoutRepository> {
 
     return this.update(payoutId, {
       status: PayoutStatus.REJECTED,
-      approvedBy: adminId,
+      approvedBy: null,
       approvedAt: new Date(),
       failureReason: reason
     });
@@ -170,6 +171,10 @@ class PayoutService extends Service<PayoutInterface, PayoutRepository> {
       }
     }
     return payouts;
+  }
+
+  async getAllPayouts() {
+    return await Payouts.find().populate('vendorId');
   }
 
   static instance() {

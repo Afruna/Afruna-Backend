@@ -18,7 +18,7 @@ export default class PayoutRoute extends Route<PayoutInterface> {
       .route('/vendor')
       .get(this.authorizeVendor(), this.controller.getVendorPayouts);
 
-    // Admin routes
+      // Admin routes
     this.router
       .route('/pending')
       .get(this.authorize('admin'), this.controller.getPendingPayouts);
@@ -29,15 +29,19 @@ export default class PayoutRoute extends Route<PayoutInterface> {
 
     this.router
       .route('/:payoutId/approve')
-      .post(this.authorize('admin'), this.controller.approvePayout);
+      .post(this.controller.approvePayout);
 
     this.router
       .route('/:payoutId/reject')
-      .post(this.authorize('admin'), this.validator(this.dto.reject), this.controller.rejectPayout);
+      .post( this.controller.rejectPayout);
 
     this.router
       .route('/:payoutId')
       .get(this.authorize(), this.controller.getPayoutDetails);
+
+    this.router
+      .route('/')
+      .get(this.controller.getAllPayouts);
 
     return this.router;
   }

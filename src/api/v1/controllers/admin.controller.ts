@@ -442,7 +442,10 @@ class AdminController extends Controller<UserInterface> {
     return result;
   });
 
-  
+  editUser = this.control(async (req: Request) => {
+    const result = await this.service.editUser(req.params.userId, req.body);
+    return result;
+  });
   
 }
 

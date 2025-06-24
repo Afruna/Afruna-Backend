@@ -1691,6 +1691,10 @@ class AdminService extends UserService {
     return await Vendor.findByIdAndDelete(vendorId);
   };
 
+  async editUser(userId: string, data: any) {
+    return await User.findByIdAndUpdate(userId, data, { new: true });
+  };
+
 }
 
 export default AdminService;

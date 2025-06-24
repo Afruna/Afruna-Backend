@@ -19,7 +19,7 @@ class BusinessDetailRoute extends Route<BusinessDetailInterface> {
 
     this.router
       .route('/:businessDetailId')
-      .put(this.authorize(), this.validator(this.dto.update.concat(this.dto.id)), this.controller.update)
+      .put( this.controller.update)
       .delete(this.authorize(), this.validator(this.dto.id), this.controller.delete);
 
     
