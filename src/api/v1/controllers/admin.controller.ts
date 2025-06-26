@@ -21,7 +21,10 @@ class AdminController extends Controller<UserInterface> {
     return result;
   });
   adminDashboardCards = this.control(async (req: Request) => {
-    const result = await this.service.adminDashboardCards(<any>req.query.dateFilter);
+    const result = await this.service.adminDashboardCards(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
   salesByCategory = this.control(async (req: Request) => {
@@ -138,14 +141,18 @@ class AdminController extends Controller<UserInterface> {
   });
 
   adminDashboardServiceCards = this.control(async (req: Request) => {
-    const result = await this.service.adminDashboardServiceCards(<any>req.query.dateFilter);
-
+    const result = await this.service.adminDashboardServiceCards(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   adminTransactionMetrics = this.control(async (req: Request) => {
-    const result = await this.service.adminTransactionMetrics(<any>req.query.dateFilter);
-
+    const result = await this.service.adminTransactionMetrics(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
@@ -332,38 +339,50 @@ class AdminController extends Controller<UserInterface> {
   });
 
   getKYCStats = this.control(async (req: Request) => {
-    const result = await this.service.getKYCStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getKYCStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getProductStats = this.control(async (req: Request) => {
-    const result = await this.service.getProductStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getProductStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getOrderStats = this.control(async (req: Request) => {
-    const result = await this.service.getOrderStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getOrderStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getCustomerStats = this.control(async (req: Request) => {
-    const result = await this.service.getCustomerStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getCustomerStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getVendorStats = this.control(async (req: Request) => {
-    const result = await this.service.getVendorStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getVendorStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getServiceProviderStats = this.control(async (req: Request) => {
-    const result = await this.service.getServiceProviderStats(<any>req.query.dateFilter);
-
+    const result = await this.service.getServiceProviderStats(
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
@@ -418,17 +437,29 @@ class AdminController extends Controller<UserInterface> {
   }); 
 
   getCustomerDashboardData = this.control(async (req: Request) => {
-    const result = await this.service.getCustomerDashboardData(req.params.userId, <any>req.query.dateFilter);
+    const result = await this.service.getCustomerDashboardData(
+      req.params.userId,
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getServiceProviderDashboardData = this.control(async (req: Request) => {
-    const result = await this.service.getServiceProviderDashboardData(req.params.providerId, <any>req.query.dateFilter);
+    const result = await this.service.getServiceProviderDashboardData(
+      req.params.providerId,
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 
   getVendorDashboardData = this.control(async (req: Request) => {
-    const result = await this.service.getVendorDashboardData(req.params.vendorId, <any>req.query.dateFilter);
+    const result = await this.service.getVendorDashboardData(
+      req.params.vendorId,
+      req.query.date as string,
+      req.query.dateFilter as string
+    );
     return result;
   });
 

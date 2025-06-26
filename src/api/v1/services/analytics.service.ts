@@ -453,6 +453,199 @@ export default class AnalyticsService {
   // }
 
   // async getTransactionMetrics(dateFilter: DateFilter = 'daily') {
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
+  //     const now = new Date();
+  //     const previous = new Date();
+  //     console.log(filter);
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous.setDate(previous.getDate() - 1);
+  //         break;
+  //       case 'weekly':
+  //         previous.setDate(previous.getDate() - 7); 
+  //         break;
+  //       case 'monthly':
+  //         previous.setMonth(previous.getMonth() - 1);
+  //         break;
+  //     }
+      
+  //     return { current: now, previous };
+  //   };
+
+  //   const { current, previous } = getDateRange(dateFilter);
+
+  //   // Get current period metrics
+  //   const currentTransactions = await this._txnService().find({
+  //     createdAt: { $gte: previous, $lte: current }
+  //   });
+
+  //   // Get previous period metrics
+  //   const previousStart = new Date(previous);
+  //   const timeDiff = current.getTime() - previous.getTime();
+  //   previousStart.setTime(previous.getTime() - timeDiff);
+
+  //   const previousTransactions = await this._txnService().find({
+  //     createdAt: { $gte: previousStart, $lte: previous }
+  //   });
+
+  //   // Calculate metrics for both periods
+  //   const calculateMetrics = (txns: any[]) => {
+  //     return txns.reduce((acc, txn) => {
+  //       acc.volume++;
+  //       acc.revenue += txn.amount;
+  //       txn.success ? acc.successful++ : acc.pending++;
+  //       return acc;
+  //     }, { volume: 0, revenue: 0, successful: 0, pending: 0 });
+  //   };
+
+  //   const currentMetrics = calculateMetrics(currentTransactions);
+  //   const previousMetrics = calculateMetrics(previousTransactions);
+
+  //   // Calculate percentage changes
+  //   const getPercentageChange = (current: number, previous: number) => {
+  //     if (previous === 0) return current > 0 ? 100 : 0;
+  //     return ((current - previous) / previous) * 100;
+  //   };
+
+  //   const formatMetric = (current: number, previous: number, title: string) => {
+  //     const percentage = getPercentageChange(current, previous);
+  //     return {
+  //       title,
+  //       value: current-previous,
+  //       percentage: Math.abs(percentage).toFixed(1),
+  //       trend: percentage >= 0 ? 'up' : 'down',
+  //       period: dateFilter
+  //     };
+  //   };
+
+  //   const metrics = { 
+  //     totalEarnings: formatMetric(currentMetrics.revenue, previousMetrics.revenue, 'Total Earnings'),
+  //     transactionVolume: formatMetric(currentMetrics.volume, previousMetrics.volume, 'Transaction Volume'),
+  //     successfulTransactions: formatMetric(currentMetrics.successful, previousMetrics.successful, 'Successful Transactions'),
+  //     pendingTransactions: formatMetric(currentMetrics.pending, previousMetrics.pending, 'Pending Transactions')
+  //   };
+  
+  //   return metrics;
+  // }
+
+  // async adminDashboardServiceCards(dateFilter: DateFilter = 'daily') {
+  //   // Helper function to get date range based on filter
+  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
+  //     const now = new Date();
+  //     const previous = new Date();
+      
+  //     switch(filter) {
+  //       case 'daily':
+  //         previous.setDate(previous.getDate() - 1);
+  //         break;
+  //       case 'weekly': 
+  //         previous.setDate(previous.getDate() - 7);
+  //         break;
+  //       case 'monthly':
+  //         previous.setMonth(previous.getMonth() - 1);
+  //         break;
+  //     }
+      
+  //     return { current: now, previous };
+  //   };
+
+  //   const { current, previous } = getDateRange(dateFilter);
+
+  //   // Get current and previous period vendor counts
+  //   const currentVendors = await Vendor.countDocuments({ 
+  //     vendorType: VendorType.MARKET_SELLER,
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousVendors = await Vendor.countDocuments({
+  //     vendorType: VendorType.MARKET_SELLER, 
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Get current and previous period earnings
+  //   const currentEarnings = await Transaction.aggregate([
+  //     {
+  //       $match: {
+  //         success: true,
+  //         createdAt: { $lte: current }
+  //       }
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         total: { $sum: "$amount" }
+  //       }
+  //     }
+  //   ]).then(result => result[0]?.total || 0);
+
+  //   const previousEarnings = await Transaction.aggregate([
+  //     {
+  //       $match: {
+  //         success: true,
+  //         createdAt: { $lte: previous }
+  //       }
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         total: { $sum: "$amount" }
+  //       }
+  //     }
+  //   ]).then(result => result[0]?.total || 0);
+
+  //   // Get current and previous period user counts
+  //   const currentUsers = await this._userService().count({
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousUsers = await this._userService().count({
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Get current and previous period service provider counts
+  //   const currentProviders = await Vendor.countDocuments({
+  //     vendorType: VendorType.SERVICE_PROVIDER,
+  //     createdAt: { $lte: current }
+  //   });
+  //   const previousProviders = await Vendor.countDocuments({
+  //     vendorType: VendorType.SERVICE_PROVIDER,
+  //     createdAt: { $lte: previous }
+  //   });
+
+  //   // Calculate percentages and trends
+  //   const calculateMetrics = (current: number, previous: number) => {
+  //     const difference = current - previous;
+  //     const percentage = previous === 0 ? 100 : (difference / previous) * 100;
+  //     return {
+  //       percentage: Math.abs(Math.round(percentage)),
+  //       trend: difference >= 0 ? 'up' : 'down',
+  //       period: dateFilter,
+  //       value: difference
+  //     };
+  //   };
+
+  //   const metrics = {
+  //     totalEarnings: {
+  //       ...calculateMetrics(currentEarnings, previousEarnings),
+  //       title: 'Total Earnings'
+  //     },
+  //     totalVendors: {
+  //       ...calculateMetrics(currentVendors, previousVendors),
+  //       title: 'Total Vendors'
+  //     },
+  //     totalUsers: {
+  //       ...calculateMetrics(currentUsers, previousUsers),
+  //       title: 'Total Users'
+  //     },
+  //     totalServiceProviders: {
+  //       ...calculateMetrics(currentProviders, previousProviders),
+  //       title: 'Total Service Providers'
+  //     }
+  //   };
+
+  //   return metrics;
+ 
+  // }
+
+  // async getTransactionMetrics(dateFilter: DateFilter = 'daily') {
   //   const { current, previous } = getDateRange(dateFilter);
   //   const { previousStart, previousEnd } = getPreviousPeriodRange(current, previous);
   
@@ -489,8 +682,15 @@ export default class AnalyticsService {
   //   return metrics;
   // }
 
-  async adminDashboardCards(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async adminDashboardCards(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get all metrics in parallel
     const [
@@ -565,8 +765,15 @@ export default class AnalyticsService {
     };
   }
 
-  async getTransactionMetrics(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getTransactionMetrics(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -611,8 +818,15 @@ export default class AnalyticsService {
 
   
 
-  async adminDashboardServiceCards(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async adminDashboardServiceCards(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     const [
       currentVendors,

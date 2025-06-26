@@ -75,105 +75,15 @@ class AdminService extends UserService {
     return { start, end: now };
   };
 
-
-  // async getProductStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly') => {
-  //     const now = new Date();
-  //     const start = new Date();
-      
-  //     switch(filter) {
-  //       case 'daily':
-  //         start.setDate(now.getDate() - 1);
-  //         break;
-  //       case 'weekly': 
-  //         start.setDate(now.getDate() - 7);
-  //         break;
-  //       case 'monthly':
-  //         start.setMonth(now.getMonth() - 1);
-  //         break;
-  //     }
-  //     return { start, end: now };
-  //   };
-
-  //   const { start, end } = getDateRange(dateFilter);
-
-  //   // Get current period products
-  //   const currentProducts = await Product.find({
-  //     createdAt: { $gte: start, $lte: end }
-  //   });
-
-  //   // Get previous period products for comparison
-  //   const prevStart = new Date(start);
-  //   const prevEnd = new Date(end);
-  //   switch(dateFilter) {
-  //     case 'daily':
-  //       prevStart.setDate(prevStart.getDate() - 1);
-  //       prevEnd.setDate(prevEnd.getDate() - 1);
-  //       break;
-  //     case 'weekly':
-  //       prevStart.setDate(prevStart.getDate() - 7);
-  //       prevEnd.setDate(prevEnd.getDate() - 7);
-  //       break;
-  //     case 'monthly':
-  //       prevStart.setMonth(prevStart.getMonth() - 1);
-  //       prevEnd.setMonth(prevEnd.getMonth() - 1);
-  //       break;
-  //   }
-
-  //   const previousProducts = await Product.find({
-  //     createdAt: { $gte: prevStart, $lte: prevEnd }
-  //   });
-
-  //   const calculateStats = (products: any[]) => {
-  //     const stats = {
-  //       total: products.length,
-  //       inStock: 0,
-  //       lowStock: 0,
-  //       outOfStock: 0
-  //     };
-
-  //     products.forEach(product => {
-  //       if (product.quantity === 0) {
-  //         stats.outOfStock++;
-  //       } else if (product.quantity <= 10) {
-  //         stats.lowStock++;
-  //       } else {
-  //         stats.inStock++;
-  //       }
-  //     });
-
-  //     return stats;
-  //   };
-
-  //   const currentStats = calculateStats(currentProducts);
-  //   const previousStats = calculateStats(previousProducts);
-
-  //   const calculatePercentageChange = (current: number, previous: number) => {
-  //     if (previous === 0) return 0;
-  //     return ((current - previous) / previous) * 100;
-  //   };
-
-  //   const formatStat = (title: string, current: number, previous: number) => {
-  //     const percentageChange = calculatePercentageChange(current, previous);
-  //     return {
-  //       title,
-  //       value: current,
-  //       percentage: Math.abs(percentageChange).toFixed(1),
-  //       trend: percentageChange >= 0 ? 'up' : 'down',
-  //       period: dateFilter
-  //     };
-  //   };
-
-  //   return {
-  //     totalProducts: formatStat('Total Products', currentStats.total, previousStats.total),
-  //     inStock: formatStat('In Stock', currentStats.inStock, previousStats.inStock),
-  //     lowStock: formatStat('Low Stock', currentStats.lowStock, previousStats.lowStock),
-  //     outOfStock: formatStat('Out of Stock', currentStats.outOfStock, previousStats.outOfStock)
-  //   };
-  // }
-
-  async getProductStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getProductStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -214,8 +124,15 @@ class AdminService extends UserService {
     };
   }
 
-  async getOrderStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getOrderStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -256,49 +173,15 @@ class AdminService extends UserService {
     };
   }
 
-  // async getOrderStats() {
-  //   const orders = await Order.find();
-    
-  //   const stats = {
-  //     totalOrders: 0,
-  //     allTimeOrders: 0,
-  //     returnedOrders: 0,
-  //     pendingOrders: 0,
-  //     shippedOrders: 0,
-  //     deliveredOrders: 0,
-  //     canceledOrders: 0,
-  //     allTimeFulfilledOrders: 0
-  //   };
-
-  //   stats.totalOrders = orders.length;
-  //   stats.allTimeOrders = orders.length;
-
-  //   orders.forEach(order => {
-  //     switch(order.deliveryStatus) {
-  //       case DeliveryStatus.CANCELED:
-  //         stats.canceledOrders++;
-  //         break;
-  //       case DeliveryStatus.DELIVERED:
-  //         stats.deliveredOrders++;
-  //         stats.allTimeFulfilledOrders++;
-  //         break;
-  //       case DeliveryStatus.PENDING:
-  //         stats.pendingOrders++;
-  //         break;
-  //       case DeliveryStatus.SHIPPED:
-  //         stats.shippedOrders++;
-  //         break;
-  //       case DeliveryStatus.RETURNED:
-  //         stats.returnedOrders++;
-  //         break;
-  //     }
-  //   });
-
-  //   return stats;
-  // }
-
-  async getCustomerStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getCustomerStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -356,8 +239,15 @@ class AdminService extends UserService {
     };
   }
 
-  async getVendorStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getVendorStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -422,60 +312,15 @@ class AdminService extends UserService {
     };
   }
 
-  
-
-  // async getServiceProviderStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    
-  //   const providers = await Vendor.find({ vendorType: VendorType.SERVICE_PROVIDER });
-  //   const bookings = await Booking.find();
-
-  //   const now = new Date();
-  //   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  //   const stats = {
-  //     totalServiceProviders: 0,
-  //     newProvidersThisMonth: 0,
-  //     returningProviders: 0,
-  //     activeProvidersLast30Days: 0
-  //   };
-
-  //   // Total service providers
-  //   stats.totalServiceProviders = providers.length;
-
-  //   // New providers this month
-  //   stats.newProvidersThisMonth = providers.filter(provider => {
-  //     const createdAt = new Date(provider.createdAt);
-  //     return createdAt >= firstDayOfMonth;
-  //   }).length;
-
-  //   // Get unique provider IDs who have received bookings
-  //   const providerBookings = new Map();
-  //   bookings.forEach(booking => {
-  //     const providerId = booking.providerId ? booking.providerId.toString() : '';
-  //     if (!providerBookings.has(providerId)) {
-  //       providerBookings.set(providerId, []);
-  //     }
-  //     providerBookings.get(providerId).push(booking);
-  //   });
-
-  //   // Returning providers (received more than 1 booking)
-  //   stats.returningProviders = Array.from(providerBookings.values())
-  //     .filter(providerBookingList => providerBookingList.length > 1).length;
-
-  //   // Active providers in last 30 days
-  //   const thirtyDaysAgo = new Date();
-  //   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-  //   stats.activeProvidersLast30Days = Array.from(providerBookings.values())
-  //     .filter(providerBookingList => 
-  //       providerBookingList.some(booking => new Date(booking.createdAt) >= thirtyDaysAgo)
-  //     ).length;
-
-  //   return stats;
-  // }
-
-  async getServiceProviderStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getServiceProviderStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -681,122 +526,15 @@ class AdminService extends UserService {
     };
   }
 
-  //   async getKYCStats(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-  //   const getDateRange = (filter: 'daily' | 'weekly' | 'monthly' = 'daily') => {
-  //     const now = new Date();
-  //     let previous;
-      
-  //     switch(filter) {
-  //       case 'daily':
-  //         previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  //         break;
-  //       case 'weekly':
-  //         previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-  //         break;
-  //       case 'monthly':
-  //         previous = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  //         break;
-  //     }
-      
-  //     return { current: now, previous };
-  //   };
-      
-  //   const { current, previous } = getDateRange(dateFilter);
-
-  //   const [
-  //     businessInfos,
-  //     businessDetails,
-  //     customerCares,
-  //     shippingAddresses, 
-  //     paymentInfos,
-  //     additionalInfos,
-  //     legalInfos,
-  //     identifications,
-  //     storefronts
-  //   ] = await Promise.all([
-  //     BusinessInfo.find({createdAt: { $gte: previous, $lte: current }}),
-  //     BusinessDetail.find({createdAt: { $gte: previous, $lte: current }}),
-  //     CustomerCareDetail.find({createdAt: { $gte: previous, $lte: current }}),
-  //     ShippingInfo.find({createdAt: { $gte: previous, $lte: current }}),
-  //     PaymentInfo.find({createdAt: { $gte: previous, $lte: current }}),
-  //     AdditionalInfo.find({createdAt: { $gte: previous, $lte: current }}),
-  //     LegalRep.find({createdAt: { $gte: previous, $lte: current }}),
-  //     MeansIdentification.find({createdAt: { $gte: previous, $lte: current }}),
-  //     StoreFront.find({createdAt: { $gte: previous, $lte: current }})
-  //   ]);
-
-  //   const allSubmissions = [
-  //     ...businessInfos,
-  //     ...businessDetails,
-  //     ...customerCares,
-  //     ...shippingAddresses,
-  //     ...paymentInfos,
-  //     ...additionalInfos,
-  //     ...legalInfos,
-  //     ...identifications,
-  //     ...storefronts
-  //   ];
-
-  //   // Get previous period counts for comparison
-  //   const previousSubmissions = await Promise.all([
-  //     BusinessInfo.find({createdAt: { $lt: previous }}),
-  //     BusinessDetail.find({createdAt: { $lt: previous }}), 
-  //     CustomerCareDetail.find({createdAt: { $lt: previous }}),
-  //     ShippingInfo.find({createdAt: { $lt: previous }}),
-  //     PaymentInfo.find({createdAt: { $lt: previous }}),
-  //     AdditionalInfo.find({createdAt: { $lt: previous }}),
-  //     LegalRep.find({createdAt: { $lt: previous }}),
-  //     MeansIdentification.find({createdAt: { $lt: previous }}),
-  //     StoreFront.find({createdAt: { $lt: previous }})
-  //   ]);
-
-  //   const allPreviousSubmissions = previousSubmissions.flat();
-
-  //   // Calculate current period metrics
-  //   const totalSubmitted = allSubmissions.length;
-  //   const pendingKYC = allSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
-  //   const approvedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
-  //   const rejectedKYC = allSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
-
-  //   // Calculate previous period metrics
-  //   const previousTotal = allPreviousSubmissions.length;
-  //   const previousPending = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.PENDING).length;
-  //   const previousApproved = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.APPROVED).length;
-  //   const previousRejected = allPreviousSubmissions.filter(submission => submission.status === KYCStatus.REJECTED).length;
-
-  //   // Calculate percentages and trends
-  //   const calculateMetrics = (current: number, previous: number) => {
-  //     const percentage = previous === 0 ? 100 : ((current - previous) / previous) * 100;
-  //     return {
-  //       value: current,
-  //       percentage: Math.abs(Math.round(percentage * 10) / 10),
-  //       trend: current >= previous ? 'up' : 'down',
-  //       period: dateFilter
-  //     };
-  //   };
-
-  //   return {
-  //     totalSubmitted: {
-  //       ...calculateMetrics(totalSubmitted, previousTotal),
-  //       title: 'Total Submitted'
-  //     },
-  //     pendingKYC: {
-  //       ...calculateMetrics(pendingKYC, previousPending),
-  //       title: 'Pending KYC'
-  //     },
-  //     approvedKYC: {
-  //       ...calculateMetrics(approvedKYC, previousApproved),
-  //       title: 'Approved KYC'
-  //     },
-  //     rejectedKYC: {
-  //       ...calculateMetrics(rejectedKYC, previousRejected),
-  //       title: 'Rejected KYC'
-  //     }
-  //   };
-  // }
-
-  async getKYCStats(dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getKYCStats(date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
   
     // Get current and previous period metrics in parallel
     const [
@@ -906,17 +644,6 @@ class AdminService extends UserService {
       ]).then(results => results.reduce((a, b) => a + b, 0))
     ]);
   
-    // const calculateMetrics = (current: number, previous: number) => {
-    //   const difference = current - previous;
-    //   const percentage = previous === 0 ? 100 : (difference / previous) * 100;
-    //   return {
-    //     percentage: Math.abs(Math.round(percentage * 10) / 10),
-    //     trend: difference >= 0 ? 'up' : 'down',
-    //     period: dateFilter,
-    //     value: current
-    //   };
-    // };
-  
     return {
       totalSubmitted: {
         ...calculateMetrics(currentSubmissions, previousSubmissions, dateFilter),
@@ -959,18 +686,6 @@ class AdminService extends UserService {
       MeansIdentification.find().populate('vendorId'),
       StoreFront.find().populate('vendorId')
     ]);
-
-    // const allSubmissions = [
-    //   ...businessInfos.map(info => ({ ...info.toObject(), type: 'businessInfo', typeText: 'Business Information' })),
-    //   ...businessDetails.map(detail => ({ ...detail.toObject(), type: 'businessDetail', typeText: 'Business Details' })),
-    //   ...customerCares.map(care => ({ ...care.toObject(), type: 'customerCare', typeText: 'Customer Care' })),
-    //   ...shippingAddresses.map(address => ({ ...address.toObject(), type: 'shippingAddress', typeText: 'Shipping Address' })),
-    //   ...paymentInfos.map(payment => ({ ...payment.toObject(), type: 'paymentInfo', typeText: 'Payment Information' })),
-    //   ...additionalInfos.map(info => ({ ...info.toObject(), type: 'additionalInfo', typeText: 'Additional Information' })),
-    //   ...legalInfos.map(legal => ({ ...legal.toObject(), type: 'legalInfo', typeText: 'Legal Information' })),
-    //   ...identifications.map(id => ({ ...id.toObject(), type: 'identification', typeText: 'Identification' })),
-    //   ...storefronts.map(front => ({ ...front.toObject(), type: 'storefront', typeText: 'Storefront' }))
-    // ];
 
     const allSubmissions = [
       ...businessInfos.map(info => ({ ...info.toObject(), type: 'businessInfo', typeText: 'Business Information' })),
@@ -1309,16 +1024,37 @@ class AdminService extends UserService {
     return this._analytics.revenueOrderTable(time);
   }
 
-  adminDashboardCards(dateFilter: 'daily' | 'weekly' | 'monthly' = 'daily') {
-    return this._analytics.adminDashboardCards(dateFilter);
+  async adminDashboardCards(date?: string, dateFilter: DateFilter = 'daily') {
+    // let current: Date, previous: Date;
+    // if (date) {
+    //   current = new Date(date);
+    //   previous = new Date(date);
+    // } else {
+    //   ({ current, previous } = getDateRange(dateFilter));
+    // }
+    return this._analytics.adminDashboardCards(date, dateFilter);
   }
 
-  adminDashboardServiceCards(dateFilter: 'daily' | 'weekly' | 'monthly') {
-    return this._analytics.adminDashboardServiceCards(dateFilter);
+  async adminDashboardServiceCards(date?: string, dateFilter: DateFilter = 'daily') {
+    // let current: Date, previous: Date;
+    // if (date) {
+    //   current = new Date(date);
+    //   previous = new Date(date);
+    // } else {
+    //   ({ current, previous } = getDateRange(dateFilter));
+    // }
+    return this._analytics.adminDashboardServiceCards(date,dateFilter);
   }
 
-  adminTransactionMetrics(dateFilter: 'daily' | 'weekly' | 'monthly') {
-    return this._analytics.getTransactionMetrics(dateFilter);
+  async adminTransactionMetrics(date?: string, dateFilter: DateFilter = 'daily') {
+    // let current: Date, previous: Date;
+    // if (date) {
+    //   current = new Date(date);
+    //   previous = new Date(date);
+    // } else {
+    //   ({ current, previous } = getDateRange(dateFilter));
+    // }
+    return this._analytics.getTransactionMetrics(date, dateFilter);
   }
 
   async getAllTransactions(type: string) {
@@ -1511,9 +1247,15 @@ class AdminService extends UserService {
     return deletedTag;
   };
 
-  async getCustomerDashboardData(customerId: string, dateFilter: DateFilter = 'daily') {
-    console.log(dateFilter)
-    const { current, previous } = getDateRange(dateFilter);
+  async getCustomerDashboardData(customerId: string, date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
 
     // Get current and previous period metrics in parallel
     const [
@@ -1567,8 +1309,15 @@ class AdminService extends UserService {
     };
   }
 
-  async getVendorDashboardData(vendorId: string, dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getVendorDashboardData(vendorId: string, date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
 
     // Get current and previous period metrics in parallel
     const [
@@ -1622,8 +1371,15 @@ class AdminService extends UserService {
   }
 
 
-  async getServiceProviderDashboardData(providerId: string, dateFilter: DateFilter = 'daily') {
-    const { current, previous } = getDateRange(dateFilter);
+  async getServiceProviderDashboardData(providerId: string, date?: string, dateFilter: DateFilter = 'daily') {
+    let current: Date, previous: Date;
+    if (date) {
+      const d = new Date(date);
+      previous = new Date(d.setHours(0, 0, 0, 0));
+      current = new Date(d.setHours(23, 59, 59, 999));
+    } else {
+      ({ current, previous } = getDateRange(dateFilter));
+    }
 
     // Get current and previous period metrics in parallel
     const [
