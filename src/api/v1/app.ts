@@ -155,7 +155,7 @@ class App {
 
   private initMiddlewares() {
     this.app.set('trust proxy', 1);
-    this.app.use(
+    // this.app.use(
     //   cors({
     //     origin: ['http://localhost:3000', 'https://www.afruna.com', 'https://afruna.com', 'http://localhost:3001', 'https://vendor-service-portal.vercel.app', 'https://vendor.afruna.com'
     //       , 'https://auth.afruna.com', "https://admin.afruna.com",
