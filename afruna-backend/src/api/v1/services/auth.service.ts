@@ -472,6 +472,7 @@ class AuthService extends Service<AuthSessionInterface, AuthSessionRepository> {
   };
 
   comparePasswords = async (password: string, user: UserInterface) => {
+    if (!user.password) return false;
     const [hashPassword, salt] = user.password.split('.');
     const buf = <Buffer>await promisify(scrypt)(password, salt, 64);
     return buf.toString('hex') === hashPassword;
