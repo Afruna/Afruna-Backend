@@ -158,7 +158,7 @@ class App {
     this.app.use(
       cors({
         origin: ['http://localhost:3000', 'https://www.afruna.com', 'https://afruna.com', 'http://localhost:3001', 'https://vendor-service-portal.vercel.app', 'https://vendor.afruna.com'
-          , 'https://auth.afruna.com', "https://admin.afruna.com",
+          , 'https://auth.afruna.com', "https://admin.afruna.com", 'https://staging.afruna.com', 'https://staging.vendor.afruna.com', 'https://staging.admin.afruna.com'
         ],
         credentials: true,
         exposedHeaders: ['set-cookie'],
