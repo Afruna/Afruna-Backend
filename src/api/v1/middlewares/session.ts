@@ -6,7 +6,11 @@ import { logger } from '@utils/logger';
 
 // Middleware for managing cart sessions
 export const cartSessionMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.session.cartId) {
+  // Prefer sessionId from request headers if present, else use req.sessionID
+  const headerSessionId = req.headers['sessionId'] as string | undefined;
+  if (headerSessionId) {
+    req.session.cartId = headerSessionId;
+  } else if (!req.session.cartId) {
     req.session.cartId = req.sessionID;
   }
 
