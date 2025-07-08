@@ -112,7 +112,7 @@ export const SendEmail = (toName, toEmail, message, emailType = EMAIL_TYPE.VERIF
         if (error) {
             return console.log('Error sending email:', error);
         }
-        console.log('Email sent successfully:', info.response);
+        console.log('Email sent successfully mm:', info.response);
     });
 }
 
