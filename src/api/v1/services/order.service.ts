@@ -438,7 +438,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
           return {
             name: product.name,
             description: product.desc,
-            unit_weight: product.weight.toString(),
+            unit_weight: product.weight === 0 ? 0.1 : product.weight.toString(),
             unit_amount: (product.price + product.price * 0.075).toString(),
             quantity: cartItem.quantity.toString()
           };
