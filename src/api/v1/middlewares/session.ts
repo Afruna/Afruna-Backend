@@ -12,8 +12,7 @@ export const cartSessionMiddleware = async (req: Request, res: Response, next: N
     req.session.cartId = headerSessionId;
   } else if (!req.session.cartId) {
     req.session.cartId = req.sessionID;
-  }
-
+  };
   next();
 };
 

@@ -17,6 +17,25 @@ class Category2Service extends Service<CategoryInterface, CategoryRepository> {
     }
     return Category2Service._instance;
   }
+
+  // Fetch all parent categories (categories with no parent)
+  async getAllParentCategories() {
+    return this.repository.find({ parent: null });
+  }
+
+  // Fetch all subcategories for a given parent category
+  async getSubcategories(parentCategoryId: string) {
+    return this.repository.find({ parent: parentCategoryId });
+  }
+
+  // Add a subcategory to a parent category
+  async addSubcategory(parentCategoryId: string, subcategoryData: Partial<CategoryInterface>) {
+    // Create the subcategory with parent reference
+    const subcategory = await this.repository.create({ ...subcategoryData, parent: parentCategoryId });
+    // Optionally, update parent's children array (if you want to maintain it)
+    await Category.findByIdAndUpdate(parentCategoryId, { $addToSet: { children: subcategory._id } });
+    return subcategory;
+  }
 };
 
 export default Category2Service;
