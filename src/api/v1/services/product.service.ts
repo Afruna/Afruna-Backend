@@ -239,7 +239,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
     const result = await this.paginatedFind(query, { totalScore: -1 }, [
       {
         path: 'categoryId',
-        model: 'Category',
+        model: 'Category2',
       },
 
       {
@@ -247,6 +247,11 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
         model: 'Vendor',
         select: 'firstName lastName',
       },
+      {
+        path: 'mainCategoryId',
+        model: 'Category2',
+        
+      }
     ]);
 
     if (userId) {
@@ -267,13 +272,19 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
       multiPopulate: [
         {
           path: 'categoryId',
-          model: 'Category',
+          model: 'Category2',
+        },
+  
+        {
+          path: 'vendorId',
+          model: 'Vendor',
+          select: 'firstName lastName',
         },
         {
-          path: 'vendor',
-          model: 'Vendor',
-          select: 'firstname lastname city country',
-        },
+          path: 'mainCategoryId',
+          model: 'Category2',
+          
+        }
       ],
     });
   }
