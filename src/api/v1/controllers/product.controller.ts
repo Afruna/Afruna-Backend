@@ -242,6 +242,25 @@ class ProductController extends Controller<ProductInterface> {
     return this.service.report(req.user?._id);
   });
 
+  getClearanceProducts = this.control(async (req: Request) => {
+    const query = this.safeQuery(req);
+    query.clearance = true;
+    query.status = ProductStatus.ACTIVE;
+    
+    let userId = req.user?._id;
+    return this.service.paginatedFindWithWishlist(query, userId);
+  });
+
+  getProductsBySpecialOffer = this.control(async (req: Request) => {
+    const { specialOfferId } = req.params;
+    const query = this.safeQuery(req);
+    query.specialOffer = specialOfferId;
+    query.status = ProductStatus.ACTIVE;
+    
+    let userId = req.user?._id;
+    return this.service.paginatedFindWithWishlist(query, userId);
+  });
+
   // update = this.control(async (req: Request) => {
   //   const data = req.body;
   //   return this.service.update(data);

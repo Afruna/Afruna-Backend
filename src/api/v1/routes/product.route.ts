@@ -38,6 +38,8 @@ class ProductRoute extends Route<ProductInterface> {
     this.router.route('/frequent').get(this.controller.getFrequentlyBought);
     this.router.route('/recently-viewed').get(this.controller.getRecentlyViewed);
     this.router.route('/category/:categoryId').get(this.controller.getSubCategoryProducts);
+    this.router.route('/clearance').get(this.controller.getClearanceProducts);
+    this.router.route('/special-offer/:specialOfferId').get(this.validator(this.dto.specialOfferId), this.controller.getProductsBySpecialOffer);
     this.router.route('/:vendorId/vendor').get(this.controller.getVendorProducts);
     this.router.get('/cards', this.authorize(), this.controller.getVendorCards);
     this.router.get(
