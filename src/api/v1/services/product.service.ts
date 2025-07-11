@@ -11,10 +11,11 @@ import Product from "../models/Product"
 import OrderRepository from '@repositories/Order.repo';
 import MainCategoryService from './mainCategory.service';
 import SearchHistoryRepository from '@repositories/SearchHistory.repo';
+import Category2Service from './category2.service';
 
 class ProductService extends Service<ProductInterface, ProductRepository> {
   protected repository = new ProductRepository();
-  protected _categoryService = new CategoryService();
+  protected _categoryService = new Category2Service();
   protected _mainCategoryService = new MainCategoryService();
   protected _analyticsService = new AnalyticsService();
   protected _wishlistService = WishlistService.instance;

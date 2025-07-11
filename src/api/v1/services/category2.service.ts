@@ -5,6 +5,9 @@ import { KYCStatus } from "@interfaces/Vendor.Interface";
 import VendorService from "./vendor.service";
 import Category, { CategoryInterface } from '@models/Category';
 import CategoryRepository from "../repositories/CategoryRepository";
+import HttpError from "@helpers/HttpError";
+import Product from "@models/Product";
+
 
 class Category2Service extends Service<CategoryInterface, CategoryRepository> {
   private static _instance: Category2Service;
@@ -35,6 +38,23 @@ class Category2Service extends Service<CategoryInterface, CategoryRepository> {
     // Optionally, update parent's children array (if you want to maintain it)
     await Category.findByIdAndUpdate(parentCategoryId, { $addToSet: { children: subcategory._id } });
     return subcategory;
+  }
+
+  // Get all products in nested categories
+  async getAllProductsInNestedCategories(categoryId: string) {
+    const category = await Category.findById(categoryId);
+    if (!category) throw new HttpError('Category not found', 404);
+    
+    let products = [];
+    let categories = await this.repository.find({ parent: categoryId });
+
+    // Recursively collect products from all child categories
+    for (const childCategory of categories) {
+      const childCategoryProducts = await Product.find({ categoryId: childCategory._id });
+      products = [...products, ...childCategoryProducts];
+    }
+
+    return products;
   }
 };
 
