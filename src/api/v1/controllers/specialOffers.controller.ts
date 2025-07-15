@@ -1,11 +1,19 @@
 import { Request } from 'express';
 import Controller from '@controllers/controller';
 import { SpecialOffersInterface } from '@models/SpecialOffers';
+import Service from '@services/service';
+import SpecialOffers from '@models/SpecialOffers';
+import SpecialOffersRepository from '@repositories/SpecialOffers.repo';
 import SpecialOffersService from '@services/specialOffers.service';
 import { SpecialOffersResponseDTO } from '@dtos/specialOffers.dto';
 
+// Concrete service for SpecialOffers
+class ConcreteSpecialOffersService extends Service<SpecialOffersInterface, SpecialOffersRepository> {
+  protected repository = new SpecialOffersRepository();
+}
+
 class SpecialOffersController extends Controller<SpecialOffersInterface> {
-  service = SpecialOffersService.instance();
+  service = new ConcreteSpecialOffersService();
   responseDTO = SpecialOffersResponseDTO.SpecialOffer;
 
   // Get all special offers with pagination and filtering
@@ -144,9 +152,22 @@ class SpecialOffersController extends Controller<SpecialOffersInterface> {
   });
 
   // Get special offers statistics
-  getStats = this.control(async (req: Request) => {
-    const stats = await this.service.getStats();
-    return stats;
+  // getStats = this.control(async (req: Request) => {
+  //   const stats = await this.service.getStats();
+  //   return stats;
+  // });
+
+  // Get all special offers grouped by tag
+  getGroupedByTag = this.control(async (req: Request) => {
+    const result = await SpecialOffersService.instance().getOffersGroupedByTag();
+    return result;
+  });
+
+  // Get all special offers for a given tag
+  getOffersByTag = this.control(async (req: Request) => {
+    const { tagId } = req.params;
+    const result = await SpecialOffersService.instance().getOffersByTag(tagId);
+    return result;
   });
 }
 

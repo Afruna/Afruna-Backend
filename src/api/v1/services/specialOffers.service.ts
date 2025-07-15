@@ -1,95 +1,48 @@
-import { StoreFrontInterface } from '@interfaces/Store.Front.Interface';
-import SpecialOffersRepository from '@repositories/SpecialOffers.repo';
-import { SpecialOffersInterface } from '@models/SpecialOffers';
-import StoreFrontRepository from '@repositories/StoreFront.repo';
-import Service from '@services/service';
-import { DocType, OptionsParser } from '@interfaces/Mongoose';
+import SpecialOffers from '@models/SpecialOffers';
+import Tags from '@models/Tags';
+import Product from '@models/Product';
+import { Types } from 'mongoose';
 
-class SpecialOffersService extends Service<SpecialOffersInterface, SpecialOffersRepository> {
-  private static _instance: SpecialOffersService;
-  protected repository = new SpecialOffersRepository();
-
-  async getByProductId(productId: string) {
-    return this.findOne({ product: productId });
-  }
-
-  find(
-    query?:
-      | Partial<
-          DocType<SpecialOffersInterface> & {
-            page?: string | number | undefined;
-            limit?: string | number | undefined;
-          }
-        >
-      | undefined,
-    options?: OptionsParser<SpecialOffersInterface>,
-  ): Promise<DocType<SpecialOffersInterface>[]> {
-    return this.repository.find(query, {
-      ...options,
-      multiPopulate: [
-        {
-          path: 'product',
-          model: 'Product',
-          select: 'name price images'
-        },
-        {
-          path: 'tag',
-          model: 'Tags',
-          select: 'name'
-        }
-      ],
-    });
-  }
-
-  findOne(
-    query: string | Partial<SpecialOffersInterface>,
-    options?: Omit<OptionsParser<SpecialOffersInterface>, 'sort' | 'limit' | 'skip'> | undefined,
-  ) {
-    return this.repository.findOne(query, {
-      ...options,
-      multiPopulate: [
-        {
-          path: 'product',
-          model: 'Product',
-          select: 'name price images'
-        },
-        {
-          path: 'tag',
-          model: 'Tags',
-          select: 'name'
-        }
-      ],
-    });
-  }
-
-  async getStats() {
-    const totalOffers = await this.repository.count({});
-    const activeOffers = await this.repository.count({ status: true });
-    const inactiveOffers = await this.repository.count({ status: false });
-    
-    // Get offers expiring soon (within next 7 days)
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    
-    const expiringSoon = await this.repository.count({
-      endDate: { $lte: sevenDaysFromNow, $gte: new Date() } as any,
-      status: true
-    });
-
-    return {
-      totalOffers,
-      activeOffers,
-      inactiveOffers,
-      expiringSoon,
-      activePercentage: totalOffers > 0 ? (activeOffers / totalOffers) * 100 : 0
-    };
-  }
-
+class SpecialOffersService {
   static instance() {
-    if (!SpecialOffersService._instance) {
-      SpecialOffersService._instance = new SpecialOffersService();
+    if (!this._instance) this._instance = new SpecialOffersService();
+    return this._instance;
+  }
+  private static _instance: SpecialOffersService;
+
+  /**
+   * Returns all special offers grouped by tag, with tag details and an array of populated product details for each tag.
+   */
+  async getOffersGroupedByTag() {
+    // Step 1: Get all special offers, populating tag and product
+    const offers = await SpecialOffers.find({})
+      .populate('tag')
+      .populate({ path: 'product', model: Product });
+
+    // Step 2: Group offers by tag
+    const tagMap = new Map<string, { tag: any; products: any[] }>();
+    for (const offer of offers) {
+      if (!offer.tag) continue; // skip offers without a tag
+      const tagId = offer.tag._id.toString();
+      if (!tagMap.has(tagId)) {
+        tagMap.set(tagId, { tag: offer.tag, products: [] });
+      }
+      // Add the product (with offer details) to the group
+      tagMap.get(tagId)!.products.push({ ...offer.product?._doc });
     }
-    return SpecialOffersService._instance;
+    // Step 3: Return as array
+    return Array.from(tagMap.values());
+  }
+
+  /**
+   * Returns all special offers for a given tag, with populated product details.
+   */
+  async getOffersByTag(tagId: string) {
+    const offers = await SpecialOffers.find({ tag: tagId })
+      .populate('tag')
+      .populate({ path: 'product', model: Product });
+    // Return just the products, each with specialOffer details
+    return offers.map(offer => ({ ...offer.product?._doc, specialOffer: offer }));
   }
 }
 
