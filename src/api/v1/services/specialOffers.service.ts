@@ -41,8 +41,8 @@ class SpecialOffersService {
     const offers = await SpecialOffers.find({ tag: tagId })
       .populate('tag')
       .populate({ path: 'product', model: Product });
-    // Return just the products, each with specialOffer details
-    return offers.map(offer => ({ ...offer.product?._doc, specialOffer: offer }));
+    // Return the full special offer object with populated product and tag
+    return offers;
   }
 }
 

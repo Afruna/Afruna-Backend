@@ -6,6 +6,7 @@ import SpecialOffers from '@models/SpecialOffers';
 import SpecialOffersRepository from '@repositories/SpecialOffers.repo';
 import SpecialOffersService from '@services/specialOffers.service';
 import { SpecialOffersResponseDTO } from '@dtos/specialOffers.dto';
+import Tags from '@models/Tags';
 
 // Concrete service for SpecialOffers
 class ConcreteSpecialOffersService extends Service<SpecialOffersInterface, SpecialOffersRepository> {
@@ -168,6 +169,12 @@ class SpecialOffersController extends Controller<SpecialOffersInterface> {
     const { tagId } = req.params;
     const result = await SpecialOffersService.instance().getOffersByTag(tagId);
     return result;
+  });
+
+  // Get all tags
+  getAllTags = this.control(async (req: Request) => {
+    const tags = await Tags.find({});
+    return tags;
   });
 }
 

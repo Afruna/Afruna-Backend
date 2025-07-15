@@ -32,6 +32,9 @@ class SpecialOffersRoute extends Route<SpecialOffersInterface> {
     this.router.route('/by-tag/:tagId')
       .get(this.controller.getOffersByTag);
 
+    this.router.route('/tags')
+      .get(this.controller.getAllTags);
+
     this.router.route('/:id')
       .get(this.validator(this.dto.id), this.controller.getOne);
 
