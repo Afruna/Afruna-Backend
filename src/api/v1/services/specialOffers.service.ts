@@ -46,6 +46,20 @@ class SpecialOffersService {
       .map(offer => offer.product)
       .filter(product => !!product);
   }
+
+  /**
+   * Returns the current active seasonal tag and all special offers (with products) under it.
+   */
+  async getActiveSeasonalTagAndOffers() {
+    // Find the active seasonal tag
+    const activeSeasonalTag = await Tags.findOne({ type: 'seasonal', status: 'active' });
+    if (!activeSeasonalTag) return { tag: null, offers: [] };
+    // Find all special offers under this tag, with populated product
+    const offers = await SpecialOffers.find({ tag: activeSeasonalTag._id })
+      .populate('tag')
+      .populate({ path: 'product', model: Product });
+    return { tag: activeSeasonalTag, offers };
+  }
 }
 
 export default SpecialOffersService;

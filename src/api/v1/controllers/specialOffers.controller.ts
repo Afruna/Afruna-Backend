@@ -61,6 +61,28 @@ class SpecialOffersController extends Controller<SpecialOffersInterface> {
       }
     }
 
+    // Enforce only one active seasonal offer at a time
+    if (data.tag) {
+      const tag = await Tags.findById(data.tag);
+      if (tag && tag.type === 'seasonal' && data.status !== false) {
+        const existingSeasonalOffer = await SpecialOffers.findOne({
+          tag: tag._id,
+          status: true
+        });
+        if (existingSeasonalOffer) {
+          throw new this.HttpError('A seasonal offer is already active for this tag.', 400);
+        }
+        // Also check for any other active seasonal offer (with any tag of type seasonal)
+        const otherActiveSeasonal = await SpecialOffers.findOne({
+          status: true,
+          tag: { $ne: tag._id }
+        }).populate({ path: 'tag', match: { type: 'seasonal' } });
+        if (otherActiveSeasonal && otherActiveSeasonal.tag) {
+          throw new this.HttpError('Another seasonal offer is already active.', 400);
+        }
+      }
+    }
+
     return this.service.create(data);
   });
 
@@ -74,6 +96,30 @@ class SpecialOffersController extends Controller<SpecialOffersInterface> {
       const endDate = new Date(data.endDate);
       if (startDate >= endDate) {
         throw new this.HttpError('Start date must be before end date', 400);
+      }
+    }
+
+    // Enforce only one active seasonal offer at a time
+    if (data.tag) {
+      const tag = await Tags.findById(data.tag);
+      if (tag && tag.type === 'seasonal' && data.status !== false) {
+        const existingSeasonalOffer = await SpecialOffers.findOne({
+          tag: tag._id,
+          status: true,
+          _id: { $ne: req.params.id }
+        });
+        if (existingSeasonalOffer) {
+          throw new this.HttpError('A seasonal offer is already active for this tag.', 400);
+        }
+        // Also check for any other active seasonal offer (with any tag of type seasonal)
+        const otherActiveSeasonal = await SpecialOffers.findOne({
+          status: true,
+          tag: { $ne: tag._id },
+          _id: { $ne: req.params.id }
+        }).populate({ path: 'tag', match: { type: 'seasonal' } });
+        if (otherActiveSeasonal && otherActiveSeasonal.tag) {
+          throw new this.HttpError('Another seasonal offer is already active.', 400);
+        }
       }
     }
 
@@ -175,6 +221,12 @@ class SpecialOffersController extends Controller<SpecialOffersInterface> {
   getAllTags = this.control(async (req: Request) => {
     const tags = await Tags.find({});
     return tags;
+  });
+
+  // Get the current active seasonal tag and all special offers under it
+  getActiveSeasonalTagAndOffers = this.control(async (req: Request) => {
+    const result = await SpecialOffersService.instance().getActiveSeasonalTagAndOffers();
+    return result;
   });
 }
 

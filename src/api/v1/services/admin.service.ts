@@ -396,6 +396,8 @@ class AdminService extends UserService {
       populate: {
         path: "vendor"
       }
+    }).populate({
+      path: "tag",
     });
     const specialOffers = response.map(offer => {
       const { product, ...rest } = offer.toObject();
@@ -1233,11 +1235,25 @@ class AdminService extends UserService {
     return await Tags.find();
   }
   async createTag(tag: ITags) {
+    // Enforce only one active seasonal tag at a time
+    if (tag.type === 'seasonal' && tag.status === 'active') {
+      const existingActiveSeasonal = await Tags.findOne({ type: 'seasonal', status: 'active' });
+      if (existingActiveSeasonal) {
+        throw new Error('Another seasonal tag is already active. Only one seasonal tag can be active at a time.');
+      }
+    }
     let createdTag = await new Tags(tag).save();
     return createdTag;
   }
 
   async updateTag(tagId: string, tag: ITags) {
+    // Enforce only one active seasonal tag at a time
+    if (tag.type === 'seasonal' && tag.status === 'active') {
+      const existingActiveSeasonal = await Tags.findOne({ type: 'seasonal', status: 'active', _id: { $ne: tagId } });
+      if (existingActiveSeasonal) {
+        throw new Error('Another seasonal tag is already active. Only one seasonal tag can be active at a time.');
+      }
+    }
     let updatedTag = await Tags.findByIdAndUpdate(tagId, tag, { new: true });
     return updatedTag;
   }

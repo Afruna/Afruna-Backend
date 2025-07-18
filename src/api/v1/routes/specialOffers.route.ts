@@ -17,6 +17,9 @@ class SpecialOffersRoute extends Route<SpecialOffersInterface> {
     this.router.route('/active')
       .get(this.controller.getActive);
 
+    this.router.route('/active-seasonal')
+      .get(this.controller.getActiveSeasonalTagAndOffers);
+
     // this.router.route('/stats')
     //   .get(this.controller.getStats);
 
