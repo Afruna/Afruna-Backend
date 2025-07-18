@@ -268,25 +268,30 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
   }
 
   findOne(query: string | Partial<ProductInterface>) {
-    return this.repository.findOne(query, {
-      multiPopulate: [
-        {
-          path: 'categoryId',
-          model: 'Category2',
-        },
-  
-        {
-          path: 'vendorId',
-          model: 'Vendor',
-          select: 'firstName lastName',
-        },
-        {
-          path: 'mainCategoryId',
-          model: 'Category2',
-          
-        }
-      ],
-    });
+    try {
+      return this.repository.findOne(query, {
+        multiPopulate: [
+          {
+            path: 'categoryId',
+            model: 'Category2',
+          },
+    
+          {
+            path: 'vendorId',
+            model: 'Vendor',
+            select: 'firstName lastName',
+          },
+          {
+            path: 'mainCategoryId',
+            model: 'Category2',
+            
+          }
+        ],
+      });
+    } catch (error) {
+      console.error('Error in ProductService.findOne:', error);
+      throw new HttpError('Failed to find product', 400);
+    }
   }
 
   findByName(query: string) {
