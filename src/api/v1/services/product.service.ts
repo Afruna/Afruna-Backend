@@ -89,7 +89,12 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
     return inCart
   }
 
-  async getProductsBySubCategory(mainCategoryId: string) {
+  async getProductsBySubCategory(categoryId: string) {
+    return this.find({ categoryId, status : ProductStatus.ACTIVE })
+    //return this._categoryService.getAllProductsInNestedCategories(categoryId);
+  }
+
+  async getProductsByMainCategory(mainCategoryId: string) {
     return this.find({ mainCategoryId, status : ProductStatus.ACTIVE })
     //return this._categoryService.getAllProductsInNestedCategories(categoryId);
   }

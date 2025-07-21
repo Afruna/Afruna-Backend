@@ -165,6 +165,13 @@ class ProductController extends Controller<ProductInterface> {
     return result;
   });
 
+  getMainCategoryProducts = this.control(async (req: Request) => {
+    // const params = req.params[this.resourceId] || req.user?._id!;
+    const result = await this.service.getProductsByMainCategory(req.params.categoryId);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
   limitedStockDeals = this.control(async (req: Request) => {
     // const params = req.params[this.resourceId] || req.user?._id!;
     const result = await this.service.limitedStockDeals(<any>this.safeQuery(req));
