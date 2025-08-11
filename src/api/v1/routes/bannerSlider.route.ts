@@ -11,6 +11,11 @@ class BannerSliderRoute extends Route<BannerSliderInterface> {
       .get(this.controller.get)
       .post(this.controller.create);
 
+    // v2 - grouped result
+    this.router.get('/v2', this.controller.getV2);
+
+    this.router.get('/type/:type', this.controller.getByType);
+
     this.router
       .route('/:id')
       .put(this.controller.update)
