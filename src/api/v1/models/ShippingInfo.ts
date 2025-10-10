@@ -13,7 +13,8 @@ const ShippingAddressSchema = new Schema<ShippingAddressInterface>({
     city: String,
     state: String,
     country: String,
-    postalCode: String
+    postalCode: String,
+    proofOfAddress: String
 },
 { timestamps: true }
 );
@@ -24,7 +25,8 @@ const ReturnAddressSchema = new Schema<ReturnAddressInterface>({
     city: String,
     state: String,
     country: String,
-    postalCode: String
+    postalCode: String,
+    proofOfAddress: String
 },
 { timestamps: true }
 );
