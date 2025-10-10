@@ -165,7 +165,7 @@ export const SendEmail = async (
       content,
       branding
     };
-    const response = await axios.post('https://email-server-z0fz.onrender.com/send-email', payload);
+    const response = await axios.post('http://152.53.249.30:5000/send-email', payload);
     console.log('Email API response:', response.data);
   } catch (error) {
     console.error('Error sending email via API:', error?.response?.data || error.message || error);
