@@ -7,7 +7,10 @@ const CategorySchema = new Schema<CategoryInterface>(
       type: String,
       required: true,
     },
-    mainCategory: { type: Schema.Types.ObjectId, ref: 'MainCategory' },
+    isMainCategory: {
+      type: Boolean,
+      default: false,
+    },
     parent: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
@@ -42,6 +45,10 @@ CategorySchema.pre('save', async function (next) {
     const parentCategory = await ProductCategory.findById(category.parent);
     parentCategory!.children.push(category._id);
     await parentCategory!.save();
+  }
+  else {
+    category.isMainCategory = true;
+    await category.save();
   }
   next();
 });

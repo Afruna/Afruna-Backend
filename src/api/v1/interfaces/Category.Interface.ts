@@ -2,8 +2,8 @@ import { Types } from 'mongoose';
 
 export interface CategoryInterface {
   name: string;
+  isMainCategory: boolean;
   parent: string | Types.ObjectId;
-  mainCategory: string | Types.ObjectId;
   icon: string;
   children: Array<string | Types.ObjectId>;
   products?: any;
