@@ -66,7 +66,10 @@ class ProvideController extends Controller<ProvideInterface> {
   });
 
   getWithProviderId = this.control(async (req: Request) => {
-    return this.service.find({ vendorId: req.vendor._id });
+    return await Provide.find({ vendorId: req.vendor._id }).populate({
+      path: 'categoryId',
+      model: 'Category2',
+    });
   });
 
   getByProviderId = this.control(async (req: Request) => {

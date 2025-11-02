@@ -165,6 +165,13 @@ class ProductController extends Controller<ProductInterface> {
     return result;
   });
 
+  getMainCategoryProducts = this.control(async (req: Request) => {
+    // const params = req.params[this.resourceId] || req.user?._id!;
+    const result = await this.service.getProductsByMainCategory(req.params.categoryId);
+    if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
+    return result;
+  });
+
   limitedStockDeals = this.control(async (req: Request) => {
     // const params = req.params[this.resourceId] || req.user?._id!;
     const result = await this.service.limitedStockDeals(<any>this.safeQuery(req));
@@ -240,6 +247,25 @@ class ProductController extends Controller<ProductInterface> {
 
   report = this.control(async (req: Request) => {
     return this.service.report(req.user?._id);
+  });
+
+  getClearanceProducts = this.control(async (req: Request) => {
+    const query = this.safeQuery(req);
+    query.clearance = true;
+    query.status = ProductStatus.ACTIVE;
+    
+    let userId = req.user?._id;
+    return this.service.paginatedFindWithWishlist(query, userId);
+  });
+
+  getProductsBySpecialOffer = this.control(async (req: Request) => {
+    const { specialOfferId } = req.params;
+    const query = this.safeQuery(req);
+    query.specialOffer = specialOfferId;
+    query.status = ProductStatus.ACTIVE;
+    
+    let userId = req.user?._id;
+    return this.service.paginatedFindWithWishlist(query, userId);
   });
 
   // update = this.control(async (req: Request) => {

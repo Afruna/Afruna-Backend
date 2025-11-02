@@ -5,6 +5,7 @@ import { body, check, param, query } from 'express-validator';
 export const productRequestDTO = {
   id: [param('productId').exists()],
   interval: [param('interval').exists().isIn(['daily', 'weekly', 'monthly', 'yearly'])],
+  specialOfferId: [param('specialOfferId').exists().isMongoId().withMessage('Valid special offer ID is required')],
   create: [
     body('name').exists().withMessage('name is required'),
     body('desc').exists().withMessage('desc is required'),

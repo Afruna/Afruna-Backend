@@ -33,7 +33,9 @@ export interface ProductInterface {
   viewed: Date;
   inCart?: boolean;
   status?: ProductStatus;
-  rejectionReason?: String
+  rejectionReason?: String;
+  clearance?: boolean;
+  specialOffer?: Types.ObjectId;
 }
 
 

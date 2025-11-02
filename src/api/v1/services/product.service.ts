@@ -11,10 +11,11 @@ import Product from "../models/Product"
 import OrderRepository from '@repositories/Order.repo';
 import MainCategoryService from './mainCategory.service';
 import SearchHistoryRepository from '@repositories/SearchHistory.repo';
+import Category2Service from './category2.service';
 
 class ProductService extends Service<ProductInterface, ProductRepository> {
   protected repository = new ProductRepository();
-  protected _categoryService = new CategoryService();
+  protected _categoryService = new Category2Service();
   protected _mainCategoryService = new MainCategoryService();
   protected _analyticsService = new AnalyticsService();
   protected _wishlistService = WishlistService.instance;
@@ -88,7 +89,12 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
     return inCart
   }
 
-  async getProductsBySubCategory(mainCategoryId: string) {
+  async getProductsBySubCategory(categoryId: string) {
+    return this.find({ categoryId, status : ProductStatus.ACTIVE })
+    //return this._categoryService.getAllProductsInNestedCategories(categoryId);
+  }
+
+  async getProductsByMainCategory(mainCategoryId: string) {
     return this.find({ mainCategoryId, status : ProductStatus.ACTIVE })
     //return this._categoryService.getAllProductsInNestedCategories(categoryId);
   }
@@ -238,7 +244,7 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
     const result = await this.paginatedFind(query, { totalScore: -1 }, [
       {
         path: 'categoryId',
-        model: 'Category',
+        model: 'Category2',
       },
 
       {
@@ -246,6 +252,11 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
         model: 'Vendor',
         select: 'firstName lastName',
       },
+      {
+        path: 'mainCategoryId',
+        model: 'Category2',
+        
+      }
     ]);
 
     if (userId) {
@@ -262,19 +273,30 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
   }
 
   findOne(query: string | Partial<ProductInterface>) {
-    return this.repository.findOne(query, {
-      multiPopulate: [
-        {
-          path: 'categoryId',
-          model: 'Category',
-        },
-        {
-          path: 'vendor',
-          model: 'Vendor',
-          select: 'firstname lastname city country',
-        },
-      ],
-    });
+    try {
+      return this.repository.findOne(query, {
+        multiPopulate: [
+          {
+            path: 'categoryId',
+            model: 'Category2',
+          },
+    
+          {
+            path: 'vendorId',
+            model: 'Vendor',
+            select: 'firstName lastName',
+          },
+          {
+            path: 'mainCategoryId',
+            model: 'Category2',
+            
+          }
+        ],
+      });
+    } catch (error) {
+      console.error('Error in ProductService.findOne:', error);
+      throw new HttpError('Failed to find product', 400);
+    }
   }
 
   findByName(query: string) {

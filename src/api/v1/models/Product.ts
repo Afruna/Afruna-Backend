@@ -49,6 +49,11 @@ const ProductSchema = new Schema<ProductInterface>(
     },
     status: { type: String, enum: Object.values(ProductStatus), default: ProductStatus.DRAFT },  
     rejectionReason: String,
+    clearance: { type: Boolean, default: false },
+    specialOffer: {
+      type: Schema.Types.ObjectId,
+      ref: 'SpecialOffers',
+    },
   },
   { timestamps: true },
 );
