@@ -3,7 +3,7 @@ import path from 'path';
 import { config as dotenvConfig } from 'dotenv';
 
 // Load environment based on NODE_ENV similar to src/config/index.ts
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const NODE_ENV = "production";
 dotenvConfig({ path: path.resolve(process.cwd(), `.env.${NODE_ENV}`) });
 
 // Import Admin model without TS path aliases to avoid runtime resolver needs
