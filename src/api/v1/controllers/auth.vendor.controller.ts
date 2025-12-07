@@ -23,15 +23,16 @@ class AuthVendorController extends Controller<AuthVendorSessionInterface> {
     return this.service.createVendor(req.body);
   }, AuthVendorResponseDTO.signUp);
 
-  verificationToken = this.control(async (req: Request) => {
-    await this.service.getVerificationToken(req.body.email);
-    return { _message: 'Email Sent' };
-  }, undefined);
+  // OTP verification temporarily disabled for vendor signup
+  // verificationToken = this.control(async (req: Request) => {
+  //   await this.service.getVerificationToken(req.body.email);
+  //   return { _message: 'Email Sent' };
+  // }, undefined);
 
-  verifyEmail = this.control(async (req: Request) => {
-    const result = await this.service.verifyEmail(req.body);
-    return result;
-  }, AuthVendorResponseDTO.Vendor);
+  // verifyEmail = this.control(async (req: Request) => {
+  //   const result = await this.service.verifyEmail(req.body);
+  //   return result;
+  // }, AuthVendorResponseDTO.Vendor);
 
   forgotPassword = this.control(async (req: Request) => {
     await this.service.getResetToken(req.body.email);

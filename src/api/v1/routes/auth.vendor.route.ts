@@ -14,8 +14,9 @@ class AuthVendorRoute extends Route<AuthVendorSessionInterface> {
   initRoutes() {
     this.router.post('/login', this.validator(this.dto.login), this.controller.login);
     this.router.route('/signup').post(this.validator(this.dto.register), this.controller.registration);
-    this.router.route('/verification-token').post(this.validator(this.dto.email), this.controller.verificationToken);
-    this.router.route('/verify-email').post(this.validator(this.dto.token), this.controller.verifyEmail);
+    // OTP verification temporarily disabled for vendor signup
+    // this.router.route('/verification-token').post(this.validator(this.dto.email), this.controller.verificationToken);
+    // this.router.route('/verify-email').post(this.validator(this.dto.token), this.controller.verifyEmail);
 
     this.router.route('/forgot-password').post(this.validator(this.dto.email), this.controller.forgotPassword);
     this.router
