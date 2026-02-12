@@ -31,7 +31,7 @@ class VendorRoute extends Route<VendorInterface> {
       .route('/:vendorId')
       .get(this.validator(this.dto.id), this.controller.getOne)
       .patch(
-        this.authorizeVendor(),
+        // this.authorize(),
         // this.accessControl(['product'], 'update'),
         // this.fileProcessor.uploadField<ProductInterface>([
         //   { name: 'coverPhoto', maxCount: 1 },
