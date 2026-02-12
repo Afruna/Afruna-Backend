@@ -69,7 +69,7 @@ class VendorController extends Controller<VendorInterface> {
   });
 
   update = this.control(async (req: Request) => {
-    this.processFile(req);
+    // this.processFile(req);
     const params = req.params[this.resourceId];
     const data = <VendorInterface>req.body;
     const result = await this.service.update(params, data);
