@@ -49,11 +49,12 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
   }
 
     async getVendors(){
-      return await this.repository.find({status: VendorStatus.ACTIVE, vendorType: VendorType.MARKET_SELLER});
+      return await this.repository.find({ vendorType: VendorType.MARKET_SELLER});
     }
 
     async getServiceProvider(){
-      return await this.repository.find({status: VendorStatus.ACTIVE, vendorType: VendorType.SERVICE_PROVIDER});
+      //removed active status
+      return await this.repository.find({ vendorType: VendorType.SERVICE_PROVIDER});
     }
 
   async block(vendorId: string) {
