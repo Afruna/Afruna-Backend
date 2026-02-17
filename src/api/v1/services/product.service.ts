@@ -190,6 +190,11 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
         path: 'categoryId',
         model: 'Category'
       },
+      {
+        path: 'vendor',
+        model: 'Vendor',
+        select: 'shopName firstname lastname',
+      },
     ]);
   }
 
@@ -240,11 +245,15 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
         path: 'categoryId',
         model: 'Category',
       },
-
       {
         path: 'vendorId',
         model: 'Vendor',
         select: 'firstName lastName',
+      },
+      {
+        path: 'vendor',
+        model: 'Vendor',
+        select: 'shopName firstname lastname',
       },
     ]);
 

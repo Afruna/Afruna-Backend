@@ -59,19 +59,24 @@ class ProductController extends Controller<ProductInterface> {
   });
 
   getHype = this.control(async (req: Request) => {
-    // TODO:
-
     return this.service.find(
       { hype: true },
       {
-        populate: {
-          path: 'categoryId',
-          model: 'Category',
-          populate: {
-            path: 'parent',
+        multiPopulate: [
+          {
+            path: 'categoryId',
             model: 'Category',
+            populate: {
+              path: 'parent',
+              model: 'Category',
+            },
           },
-        },
+          {
+            path: 'vendor',
+            model: 'Vendor',
+            select: 'shopName firstname lastname',
+          },
+        ],
       },
     );
   });
@@ -124,18 +129,24 @@ class ProductController extends Controller<ProductInterface> {
   });
 
   getTrending = this.control(async (req: Request) => {
-    // TODO:
     const result = await this.service.find(
       {status: ProductStatus.ACTIVE},
       {
-        populate: {
-          path: 'categoryId',
-          model: 'Category',
-          populate: {
-            path: 'parent',
+        multiPopulate: [
+          {
+            path: 'categoryId',
             model: 'Category',
+            populate: {
+              path: 'parent',
+              model: 'Category',
+            },
           },
-        },
+          {
+            path: 'vendor',
+            model: 'Vendor',
+            select: 'shopName firstname lastname',
+          },
+        ],
       },
     );
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);

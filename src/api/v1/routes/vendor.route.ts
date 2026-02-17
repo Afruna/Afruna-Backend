@@ -23,6 +23,7 @@ class VendorRoute extends Route<VendorInterface> {
 
     this.router.get('/profile', this.authorizeVendor(), this.controller.getProfile);
     this.router.get('/profile/:vendorId', this.controller.getProfileByVendorId);
+    this.router.get('/store/:vendorId', this.controller.getStorePage);
 
     this.router.get('/market-seller', this.controller.getVendors);
     this.router.get('/service-provider', this.controller.getServiceProvider);

@@ -30,6 +30,7 @@ import ShippingInfo from '@models/ShippingInfo';
 import { BookingStatus } from '@interfaces/Booking.Interface';
 import Transaction from '@models/Transaction';
 import Wallet from '@models/Wallet';
+import Product from '@models/Product';
 
 class VendorService extends Service<VendorInterface, VendorRepository> {
   protected repository = new VendorRepository();
@@ -335,6 +336,35 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
         reviews: vendorReviews,
         profilePicture: vendor?.profilePicture || null,
         location: shippingInfo?.shippingAddress || null
+      };
+    }
+
+    async getStorePageData(vendorId: string) {
+      const vendor = await Vendor.findOne({ _id: vendorId })
+        .select('shopName firstname lastname ratings ratedBy followers visits storeFront')
+        .populate({ path: 'storeFront', model: 'StoreFront', select: 'name logo link' })
+        .lean();
+
+      if (!vendor) throw new HttpError('Vendor not found', 404);
+
+      const products = await Product.find({ vendor: vendorId, status: 'ACTIVE' })
+        .populate({ path: 'categoryId', model: 'Category' })
+        .populate({ path: 'vendor', model: 'Vendor', select: 'shopName firstname lastname' })
+        .lean();
+
+      return {
+        vendor: {
+          _id: vendor._id,
+          shopName: vendor.shopName,
+          firstname: vendor.firstname,
+          lastname: vendor.lastname,
+          ratings: vendor.ratings || 0,
+          ratedBy: vendor.ratedBy || 0,
+          followersCount: vendor.followers?.length || 0,
+          visits: vendor.visits || 0,
+          storeFront: vendor.storeFront || null,
+        },
+        products,
       };
     }
 
