@@ -342,16 +342,21 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
 
     async getStorePageData(vendorId: string) {
       const vendor = await Vendor.findOne({ _id: vendorId })
-        .select('shopName firstname lastname ratings ratedBy followers visits storeFront')
+        .select('shopName firstname lastname emailAddress phoneNumber ratings ratedBy visits storeFront businessAddress businessDetail createdAt')
         .populate({ path: 'storeFront', model: 'StoreFront', select: 'name logo link' })
+        .populate({ path: 'businessAddress', model: 'BusinessAddress', select: 'addressLine1 addressLine2 city state country postalCode' })
+        .populate({ path: 'businessDetail', model: 'BusinessDetail', select: 'name country' })
         .lean();
 
       if (!vendor) throw new HttpError('Vendor not found', 404);
 
-      const products = await Product.find({ vendor: vendorId, status: 'ACTIVE' })
-        .populate({ path: 'categoryId', model: 'Category' })
-        .populate({ path: 'vendor', model: 'Vendor', select: 'shopName firstname lastname' })
-        .lean();
+      const [products, shippingInfo] = await Promise.all([
+        Product.find({ vendor: vendorId, status: 'ACTIVE' })
+          .populate({ path: 'categoryId', model: 'Category' })
+          .populate({ path: 'vendor', model: 'Vendor', select: 'shopName firstname lastname' })
+          .lean(),
+        ShippingInfo.findOne({ vendorId }).select('shippingAddress').lean(),
+      ]);
 
       return {
         vendor: {
@@ -359,11 +364,16 @@ class VendorService extends Service<VendorInterface, VendorRepository> {
           shopName: vendor.shopName,
           firstname: vendor.firstname,
           lastname: vendor.lastname,
+          emailAddress: vendor.emailAddress,
+          phoneNumber: vendor.phoneNumber,
           ratings: vendor.ratings || 0,
           ratedBy: vendor.ratedBy || 0,
-          followersCount: vendor.followers?.length || 0,
           visits: vendor.visits || 0,
           storeFront: vendor.storeFront || null,
+          businessAddress: vendor.businessAddress || null,
+          businessDetail: vendor.businessDetail || null,
+          shippingAddress: shippingInfo?.shippingAddress || null,
+          memberSince: vendor.createdAt,
         },
         products,
       };
