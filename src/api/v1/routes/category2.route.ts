@@ -36,6 +36,13 @@ class Category2Route extends Route<CategoryInterface> {
       this.controller.create,
     );
 
+    // Parent categories route
+    this.router.get('/parents', this.controller.getParentCategories);
+
+    // Subcategories routes
+    this.router.get('/:categoryId/subcategories', this.controller.getSubcategories);
+    this.router.post('/:categoryId/subcategories', this.controller.addSubcategory);
+
     this.router
       .route('/:category2Id')
       // .get(this.validator(this.dto.id), this.controller.getOne)

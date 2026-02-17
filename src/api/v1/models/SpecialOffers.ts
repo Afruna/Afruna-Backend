@@ -1,24 +1,27 @@
 import { Schema, model, Types } from 'mongoose';
 
 export interface SpecialOffersInterface {
-    product: Types.ObjectId | string;
-    discount: number;
-    startDate?: Date;
-    endDate?: Date;
-    status?: boolean;
-    tag: Types.ObjectId | string;
+    product?: Types.ObjectId | string;
+    discount?: number;
+    tag?: Types.ObjectId | string;
     discountId?: string;
-
+    vendorId?: Types.ObjectId | string;
+    status?: boolean;
+    adminApproved?: boolean;
+    adminApprovedAt?: Date;
+    rejectionReason?: string;
 }
 
 const SpecialOffersSchema = new Schema({
     product: {type: Schema.Types.ObjectId, ref: 'Product'},
     discount: {type: Number, required: true},
-    startDate: {type: Date},
-    endDate: {type: Date},
-    status: {type: Boolean, default: true},
     tag:  {type: Schema.Types.ObjectId, ref: 'Tags'},
-    discountId: {type: String}
+    discountId: {type: String},
+    vendorId: {type: Schema.Types.ObjectId, ref: 'Vendor'},
+    status: {type: Boolean, default: true},
+    adminApproved: {type: Boolean, default: false},
+    adminApprovedAt: {type: Date},
+    rejectionReason: {type: String},
 }, {timestamps: true});
 
 

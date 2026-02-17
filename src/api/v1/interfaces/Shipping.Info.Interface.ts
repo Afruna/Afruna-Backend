@@ -17,6 +17,7 @@ export interface ReturnAddressInterface {
     state: string;
     country: string;
     postalCode: string;
+    proofOfAddress: string;
 }
 
 export interface ShippingAddressInterface {
@@ -26,4 +27,5 @@ export interface ShippingAddressInterface {
     state: string;
     country: string;
     postalCode: string;
+    proofOfAddress: string;
 }

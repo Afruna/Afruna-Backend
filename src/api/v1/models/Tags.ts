@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 import { model, Schema } from "mongoose";
 
 export type TagStatus = 'active' | 'inactive' | 'expired';
+export type TagType = 'seasonal' | 'normal';
 
 export interface ITags extends Document {
     title: string;
@@ -12,6 +13,8 @@ export interface ITags extends Document {
     endDate: Date;
     cover: string;
     status?: TagStatus;
+    seasonalImages?: string[];
+    type?: TagType; // Added type field
 }
 
 const TagSchema = new Schema<ITags>({
@@ -23,6 +26,8 @@ const TagSchema = new Schema<ITags>({
     endDate: { type: Date, required: true },
     cover: { type: String, required: true },
     status: { type: String, enum: ['active', 'inactive', 'expired'], default: 'inactive' },
+    seasonalImages: { type: [String], required: false },
+    type: { type: String, enum: ['seasonal', 'normal'], default: 'normal' }, // Added type field
 }, {
     timestamps: true,
 })

@@ -83,39 +83,39 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
 
       
 
-      // create email verification token
-      const code = generateToken();
-      const token = await this._tokenService().create({
-        code,
-        expiresAt: dayjs().add(30, 'minute').toDate(),
-        vendor: vendor._id,
-        type: TokenTypeEnum.VERIFY_EMAIL,
-      });
+      // OTP verification temporarily disabled for vendor signup
+      // const code = generateToken();
+      // const token = await this._tokenService().create({
+      //   code,
+      //   expiresAt: dayjs().add(30, 'minute').toDate(),
+      //   vendor: vendor._id,
+      //   type: TokenTypeEnum.VERIFY_EMAIL,
+      // });
 
+      // axios
+      //   .post('https://email-server-z0fz.onrender.com/send-email', {
+      //     subject: 'Vendor Account Created',
+      //     content: `<p>Your account has been created successfully. Please copy your code below to verify your email</p>
+      //     <p>
+      //       <a href="${process.env.FRONTEND_URL}/verify-email?emailAddress=${vendor.emailAddress}"></a>
+      //       <p>${code}</p>
+      //     </p>`,
+      //     to: vendor.emailAddress,
+      //   })
+      //   .then(response => {
+      //     console.log('Email sent successfully');
+      //   });
 
-      axios
-      .post("https://email-server-z0fz.onrender.com/send-email", {
-        subject: "Vendor Account Created",
-        content: `<p>Your account has been created successfully. Please copy your code below to verify your email</p>
-        <p>
-          <a href="${process.env.FRONTEND_URL}/verify-email?emailAddress=${vendor.emailAddress}"></a>
-          <p>${code}</p>
-        </p>`,
-        to: vendor.emailAddress,
-      })
-      .then(response => {
-        console.log('Email sent successfully');
-      })
-
-      this._emailing
-        ? this._emailing.verifyEmail(<DocType<VendorTokenInterface & { vendor: DocType<VendorInterface> }>>token)
-        : logger.info(['email not enabled']);
+      // this._emailing
+      //   ? this._emailing.verifyEmail(<DocType<VendorTokenInterface & { vendor: DocType<VendorInterface> }>>token)
+      //   : logger.info(['email not enabled']);
       return vendor;
     } catch (error) {
       throw error;
     }
   }
 
+  /* OTP verification temporarily disabled for vendor signup
   async getVerificationToken(emailAddress: string) {
     try {
       let token;
@@ -169,6 +169,7 @@ class AuthVendorService extends Service<AuthVendorSessionInterface, AuthVendorSe
       throw error;
     }
   }
+  */
 
   async getResetToken(emailAddress: string) {
     try {

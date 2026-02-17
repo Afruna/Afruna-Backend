@@ -165,7 +165,7 @@ export const SendEmail = async (
       content,
       branding
     };
-    const response = await axios.post('https://email-server-z0fz.onrender.com/send-email', payload);
+    const response = await axios.post('http://127.0.0.1:5000/send-email', payload);
     console.log('Email API response:', response.data);
   } catch (error) {
     console.error('Error sending email via API:', error?.response?.data || error.message || error);
@@ -176,4 +176,3 @@ export enum EMAIL_TYPE {
     VERIFY_EMAIL = "VERIFY_EMAIL",
     RESET_PASSWORD = "RESET_PASSWORD"
 }
-

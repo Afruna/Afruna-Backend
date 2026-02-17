@@ -1,9 +1,11 @@
-import { Document, Schema, model } from "mongoose";
+import { Document, Schema, model, Types } from "mongoose";
 
 export interface CategoryInterface extends Document {
     name: string;
     cover: string;
     type: "product" | "service" | "other";
+    parent?: Types.ObjectId;
+    children?: Types.ObjectId[];
 }
 
 const schema = new Schema<CategoryInterface>({
@@ -13,7 +15,18 @@ const schema = new Schema<CategoryInterface>({
         type: String,
         enum: ["product", "service", "other"],
         default: "product",
-    }
+    },
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: 'Category2',
+        default: null,
+    },
+    children: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Category2',
+        }
+    ],
 }, { timestamps: true }
 );
 

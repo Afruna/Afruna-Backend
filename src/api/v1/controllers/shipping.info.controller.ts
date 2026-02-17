@@ -25,7 +25,6 @@ class ShippingInfoController extends Controller<ShippingInfoInterface> {
   getByVendorId = this.control((req: Request) => {
     return this.service.getByVendorId(req.vendor?._id.toString());
   });
-
   
 }
 
