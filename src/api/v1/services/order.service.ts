@@ -558,7 +558,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       let cartSession = await this._cartService().session.findOne({ userId });
       if (!cartSession) throw new HttpError('Cart not found', 404);
 
-      let cartItems = await this._cartService().find({ sessionId: cartSession._id });
+      let cartItems = await this._cartService().find({ sessionId: cartSession._id.toString() });
       if (!cartItems || cartItems.length === 0) throw new HttpError('Cart items not found', 404);
 
       // Transform cart items into shipping format
@@ -605,7 +605,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       let cartSession = await this._cartService().session.findOne({ sessionId });
       if (!cartSession) throw new HttpError('Cart not found', 404);
 
-      let cartItems = await this._cartService().find({ sessionId: cartSession._id });
+      let cartItems = await this._cartService().find({ sessionId: cartSession._id.toString() });
       if (!cartItems || cartItems.length === 0) throw new HttpError('Cart items not found', 404);
 
       // Transform cart items into shipping format
