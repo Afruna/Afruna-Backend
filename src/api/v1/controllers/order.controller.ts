@@ -404,6 +404,13 @@ class OrderController extends Controller<OrderInterface> {
     const addressCode = await this.service.getAddressCode(req.params.addressId);
     return addressCode;
   });
+
+  getGuestShippingRates = this.control(async (req: Request) => {
+    const sessionId = req.session?.cartId || req.headers['sessionid'] as string;
+    if (!sessionId) throw new this.HttpError('Session ID is required', 400);
+    const shippingRates = await this.service.getGuestShippingRates(sessionId);
+    return shippingRates;
+  });
 }
 
 export default OrderController;

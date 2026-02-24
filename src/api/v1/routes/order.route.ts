@@ -21,6 +21,7 @@ class OrderRoute extends Route<OrderInterface> {
     this.router.get('/:ref', getUserIfExist(), this.controller.getOne);
 
     this.router.get('/shipping/rates/:addressId', this.authorize(), this.controller.getShippingRates);
+    this.router.get('/shipping/guest-rates', cartSessionMiddleware, this.controller.getGuestShippingRates);
 
     this.router.get('/address/:addressId', this.controller.getAddressCode);
 

@@ -600,6 +600,52 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
     }
   }
 
+  async getGuestShippingRates(sessionId: string) {
+    try {
+      let cartSession = await this._cartService().session.findOne({ sessionId });
+      if (!cartSession) throw new HttpError('Cart not found', 404);
+
+      let cartItems = await this._cartService().find({ sessionId: cartSession._id });
+      if (!cartItems || cartItems.length === 0) throw new HttpError('Cart items not found', 404);
+
+      // Transform cart items into shipping format
+      const shippingItems = await Promise.all(
+        cartItems.map(async (cartItem) => {
+          const product = await this._productService().findOne(cartItem.productId.toString());
+          if (!product) throw new HttpError(`Product not found for cart item`, 404);
+
+          return {
+            name: product.name,
+            description: product.desc,
+            unit_weight: product.weight === 0 ? 0.1 : product.weight.toString(),
+            unit_amount: (product.price + product.price * 0.075).toString(),
+            quantity: cartItem.quantity.toString()
+          };
+        })
+      );
+
+      // Calculate approximate package dimensions
+      const packageDimensions = this.calculatePackageDimensions(cartItems, shippingItems);
+
+      let data = {
+        sender_address_code: 51378738,
+        reciever_address_code: 66761979,
+        pickup_date: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+        package_items: shippingItems,
+        package_dimension: packageDimensions,
+        category_id: 20754594,
+      }
+
+      let rates = await shipbubbleAxios.post('/shipping/fetch_rates', data);
+
+      return rates.data.data;
+    }
+    catch (err) {
+      console.log(err);
+      throw new HttpError('Failed to get shipping rates', 400);
+    }
+  }
+
   private calculatePackageDimensions(cartItems: any[], shippingItems: any[]) {
     // Calculate total weight and number of items
     const totalWeight = shippingItems.reduce((sum, item) => {
