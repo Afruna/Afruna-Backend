@@ -53,9 +53,9 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
       type: 'product',
     };
 
-    
 
-    const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef});
+
+    const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef });
     if (!orderSession) throw new HttpError('order not found', 404);
 
     const amount = (orderSession.total + deliveryFee + orderSession.vat);
@@ -63,7 +63,25 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId })
 
     const user = await this._userService().findOne(orderSession.userId.toString());
-    const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat +   deliveryFee)}`, user!, data, PAYSTACK_REDIRECT, payment._id);
+    const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat + deliveryFee)}`, user!, data, PAYSTACK_REDIRECT, payment._id);
+    return result;
+  }
+
+  async initializeGuestPayment(orderSessionRef: string, orderId: string, guestEmail: string, deliveryFee: number = 0) {
+    const data = {
+      orderSessionRef,
+      orderId,
+      type: 'product',
+    };
+
+    const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef });
+    if (!orderSession) throw new HttpError('order not found', 404);
+
+    const amount = orderSession.total + (deliveryFee || 0) + (orderSession.vat || 0);
+
+    const payment = await this.paymentRepository.create({ userId: null, amount, referenceId: orderId });
+
+    const result = await this._paystack.initialize(`${amount}`, guestEmail, data, PAYSTACK_REDIRECT, payment._id);
     return result;
   }
 
@@ -105,25 +123,25 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
 
         if (referenceExists) return;
 
-        let payment = await this.paymentRepository.findOne({_id: reference})
+        let payment = await this.paymentRepository.findOne({ _id: reference })
 
-        payment = await this.paymentRepository.update({_id: payment._id}, { status: PAYMENT_STATUS.SUCCESSFUL})
+        payment = await this.paymentRepository.update({ _id: payment._id }, { status: PAYMENT_STATUS.SUCCESSFUL })
 
         const card = this._cardService().findOne({ userId: payment.userId, bin: data.data.authorization.bin, last4: data.data.authorization.last4 })
 
-        if(!card)
-        await this._cardService().create({
-          userId: payment.userId,
-          authorization_code: data.data.authorization.authorization_code,
-          bin:  data.data.authorization.bin,
-          last4: data.data.authorization.last4,
-          exp_month: data.data.authorization.exp_month,
-          exp_year: data.data.authorization.exp_year,
-          channel: data.data.authorization.channel,
-          card_type: data.data.authorization.card_type,
-          bank: data.data.authorization.bank,
-          country_code: data.data.authorization.country_code
-        })
+        if (!card)
+          await this._cardService().create({
+            userId: payment.userId,
+            authorization_code: data.data.authorization.authorization_code,
+            bin: data.data.authorization.bin,
+            last4: data.data.authorization.last4,
+            exp_month: data.data.authorization.exp_month,
+            exp_year: data.data.authorization.exp_year,
+            channel: data.data.authorization.channel,
+            card_type: data.data.authorization.card_type,
+            bank: data.data.authorization.bank,
+            country_code: data.data.authorization.country_code
+          })
 
         const type = data.data.metadata.type;
         if (type === 'service') {
@@ -159,7 +177,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
             description: 'payment for ' + booking,
             reference,
           });
-        } 
+        }
         else if (type === 'product') {
 
           const userId = payment.userId;
@@ -225,13 +243,13 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
             }
           }
 
-          
+
         }
         else if (type === 'wallet') {
           const user_Id = payment.userId;
           const depositId = payment.referenceId;
 
-         const  deposit = await this.depositRepository.update({_id: depositId}, { status: DEPOSIT_STATUS.SUCCESSFUL});
+          const deposit = await this.depositRepository.update({ _id: depositId }, { status: DEPOSIT_STATUS.SUCCESSFUL });
 
           await this.create({
             success: true,
@@ -278,7 +296,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
   }
 
   async callbackHandler(reference: string) {
-    
+
   }
 
   async verifyPayment(reference: string) {
@@ -290,141 +308,140 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
   }
 
   async walletHandler(userId: string, reference: string, amount: number, metadata: any = {}, paymentMethod: PaymentMethod = PaymentMethod.WALLET) {
-    try 
-    {
+    try {
 
-        const referenceExists = !!(await this.findOne({ reference }));
+      const referenceExists = !!(await this.findOne({ reference }));
 
-        const type = metadata.type;
+      const type = metadata.type;
 
-        if (referenceExists) return;
+      if (referenceExists) return;
 
-        
 
-        await this._walletService().debitWallet(userId, amount);
 
-        const orderNumber = reference;
-        
+      await this._walletService().debitWallet(userId, amount);
 
-        if (type === 'service') {
-          const bookingId = metadata.bookingId;
-          await this.create({
-            success: true,
-            userId,
-            event: TransactionEvent.PAYMENT,
-            amount: +amount,
-            date: new Date(),
-            description: 'payment for ' + bookingId,
-            reference,
-            paymentMethod
+      const orderNumber = reference;
+
+
+      if (type === 'service') {
+        const bookingId = metadata.bookingId;
+        await this.create({
+          success: true,
+          userId,
+          event: TransactionEvent.PAYMENT,
+          amount: +amount,
+          date: new Date(),
+          description: 'payment for ' + bookingId,
+          reference,
+          paymentMethod
+        });
+
+        const booking = await this._bookingService().findOne(bookingId);
+
+        const providerId = booking?.providerId;
+        await this._bookingService().update(bookingId, { isPaid: true });
+        const walletId =
+          (await this._walletService().findOne({ userId: providerId })) ||
+          (await this._walletService().create(<any>{ userId: providerId }));
+        await this._walletService().update(walletId._id, {
+          increment: { key: 'balance', value: +amount },
+        });
+        await this.create({
+          success: true,
+          event: TransactionEvent.CREDITED,
+          userId: providerId!.toString(),
+          amount: +booking!.amount,
+          date: new Date(),
+          description: 'payment for ' + booking,
+          reference,
+          paymentMethod
+        });
+      } else if (type === 'product') {
+
+        const orderSessionRef = metadata.orderSessionRef;
+
+        await this.create({
+          success: true,
+          userId,
+          event: TransactionEvent.PAYMENT,
+          amount: +amount,
+          date: new Date(),
+          description: 'payment for ' + reference + ' ' + 'order-Id',
+          reference,
+          paymentMethod
+        });
+
+        for await (const order of await this._orderService().find({ _id: reference },
+          {
+
+          }
+        )) {
+
+          await this._orderSessionService().update({ _id: order.sessionId }, { orderStatus: OrderStatus.PAID });
+
+          await this._orderService().update(reference, { isPaid: true, orderStatus: OrderStatus.PAID });
+          //send notifiqation to vendor
+          await this._notificationService().create({
+            vendorId: order.vendor,
+            subject: 'New Paid Order',
+            message: `A vendor just paid for an Order - ${order.customId}`,
+            sent_at: new Date(),
+            is_read: false,
           });
 
-          const booking = await this._bookingService().findOne(bookingId);
+          // const walletId =
+          //   (await this._walletService().findOne({ userId: vendorId })) ||
+          //   (await this._walletService().create(<any>{ userId: vendorId }));
 
-          const providerId = booking?.providerId;
-          await this._bookingService().update(bookingId, { isPaid: true });
-          const walletId =
-            (await this._walletService().findOne({ userId: providerId })) ||
-            (await this._walletService().create(<any>{ userId: providerId }));
-          await this._walletService().update(walletId._id, {
-            increment: { key: 'balance', value: +amount },
-          });
-          await this.create({
-            success: true,
-            event: TransactionEvent.CREDITED,
-            userId: providerId!.toString(),
-            amount: +booking!.amount,
-            date: new Date(),
-            description: 'payment for ' + booking,
-            reference,
-            paymentMethod
-          });
-        } else if (type === 'product') {
+          // await this._walletService().update(walletId._id, {
+          //   increment: { key: 'balance', value: +data.data.amount / 100 },
+          // });
 
-          const orderSessionRef = metadata.orderSessionRef;
 
-          await this.create({
-            success: true,
-            userId,
-            event: TransactionEvent.PAYMENT,
-            amount: +amount,
-            date: new Date(),
-            description: 'payment for ' + reference + ' ' + 'order-Id',
-            reference,
-            paymentMethod
-          });
 
-          for await (const order of await this._orderService().find({ _id: reference }, 
-            {
-              
-            }
-          )) {
 
-            await this._orderSessionService().update({_id: order.sessionId }, { orderStatus: OrderStatus.PAID });
+          for await (const orderItem of order.items) {
+            const product = await this._productService().findOne(<string>orderItem.productId);
 
-            await this._orderService().update(reference, { isPaid: true, orderStatus: OrderStatus.PAID });
-            //send notifiqation to vendor
-            await this._notificationService().create({
-              vendorId: order.vendor,
-              subject: 'New Paid Order',
-              message: `A vendor just paid for an Order - ${order.customId}`,
-              sent_at: new Date(),
-              is_read: false,
-            });
+            if (!product) return;
 
-            // const walletId =
-            //   (await this._walletService().findOne({ userId: vendorId })) ||
-            //   (await this._walletService().create(<any>{ userId: vendorId }));
-
-            // await this._walletService().update(walletId._id, {
-            //   increment: { key: 'balance', value: +data.data.amount / 100 },
+            //TODO
+            // await this.create({
+            //   success: true,
+            //   event: TransactionEvent.CREDITED,
+            //   userId: <string>product.vendorId,
+            //   amount: +orderItem.amount,
+            //   date: new Date(),
+            //   description: 'payment for ' + order.customId + ' ' + 'order',
+            //   reference,
+            //   paymentMethod
             // });
 
-            
-            
+            const isOutOfStock = product.sold + orderItem.quantity >= product.quantity;
+            const options = [...product.options];
 
-            for await (const orderItem of order.items) {
-              const product = await this._productService().findOne(<string>orderItem.productId);
-
-              if (!product) return;
-
-              //TODO
-              // await this.create({
-              //   success: true,
-              //   event: TransactionEvent.CREDITED,
-              //   userId: <string>product.vendorId,
-              //   amount: +orderItem.amount,
-              //   date: new Date(),
-              //   description: 'payment for ' + order.customId + ' ' + 'order',
-              //   reference,
-              //   paymentMethod
-              // });
-
-              const isOutOfStock = product.sold + orderItem.quantity >= product.quantity;
-              const options = [...product.options];
-
-              if (order.options && order.options.length > 0) {
-                for (const opts of order.options) {
-                  const productOptionIdx = options.findIndex((v) => v._id.toString() === opts._id.toString());
-                  if (productOptionIdx !== -1) {
-                    options[productOptionIdx].availableQuantity -= 1;
-                  }
+            if (order.options && order.options.length > 0) {
+              for (const opts of order.options) {
+                const productOptionIdx = options.findIndex((v) => v._id.toString() === opts._id.toString());
+                if (productOptionIdx !== -1) {
+                  options[productOptionIdx].availableQuantity -= 1;
                 }
               }
-
-              await this._productService()
-                .custom()
-                .findByIdAndUpdate(<string>orderItem.productId, {
-                  $inc: { frequency: 1, sold: orderItem.quantity },
-                  // isOutOfStock,
-                  options,
-                });
             }
+
+            await this._productService()
+              .custom()
+              .findByIdAndUpdate(<string>orderItem.productId, {
+                $inc: { frequency: 1, sold: orderItem.quantity },
+                // isOutOfStock,
+                options,
+              });
           }
         }
+      }
 
-        return { message: "Payment Done", status: true}
-     
+      return { message: "Payment Done", status: true }
+
     } catch (error) {
       logger.error(error);
       throw error;
@@ -436,51 +453,51 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
   }
 
   async handleQuotePayment(
-  userId: string, 
-  quoteId: string, 
-  amount: number, 
-  reference: string,
-  vendorId: string,
-  paymentMethod: PaymentMethod = PaymentMethod.WALLET
-) {
-  try {
-    // Check if transaction already exists
-    const referenceExists = await this.findOne({ reference });
-    if (referenceExists) return;
+    userId: string,
+    quoteId: string,
+    amount: number,
+    reference: string,
+    vendorId: string,
+    paymentMethod: PaymentMethod = PaymentMethod.WALLET
+  ) {
+    try {
+      // Check if transaction already exists
+      const referenceExists = await this.findOne({ reference });
+      if (referenceExists) return;
 
-    // Create transaction record for customer payment
-    await this.create({
-      success: true,
-      userId,
-      event: TransactionEvent.PAYMENT,
-      amount,
-      date: new Date(),
-      description: `Payment for quote ${quoteId}`,
-      reference,
-      paymentMethod,
-      source: 'service'
-    });
+      // Create transaction record for customer payment
+      await this.create({
+        success: true,
+        userId,
+        event: TransactionEvent.PAYMENT,
+        amount,
+        date: new Date(),
+        description: `Payment for quote ${quoteId}`,
+        reference,
+        paymentMethod,
+        source: 'service'
+      });
 
-    // Create transaction record for vendor credit
-    await this.create({
-      success: true,
-      userId: vendorId,
-      event: TransactionEvent.CREDITED,
-      amount,
-      date: new Date(),
-      description: `Credit for quote ${quoteId}`,
-      reference,
-      paymentMethod,
-      source: 'service'
-    });
+      // Create transaction record for vendor credit
+      await this.create({
+        success: true,
+        userId: vendorId,
+        event: TransactionEvent.CREDITED,
+        amount,
+        date: new Date(),
+        description: `Credit for quote ${quoteId}`,
+        reference,
+        paymentMethod,
+        source: 'service'
+      });
 
-    return { success: true, message: "Quote payment processed successfully" };
+      return { success: true, message: "Quote payment processed successfully" };
 
-  } catch (error) {
-    logger.error('Error processing quote payment:', error);
-    throw new HttpError('Failed to process quote payment', 500);
+    } catch (error) {
+      logger.error('Error processing quote payment:', error);
+      throw new HttpError('Failed to process quote payment', 500);
+    }
   }
-}
 
   static instance() {
     if (!TransactionService._instance) {

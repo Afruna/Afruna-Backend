@@ -11,7 +11,7 @@ export interface OrderItemInterface {
 
 export interface OrderInterface {
   _id?: string | Types.ObjectId;
-  userId: string | Types.ObjectId;
+  userId?: string | Types.ObjectId;
   vendor: string | Types.ObjectId;
   vendorId: string | Types.ObjectId;
   items: OrderItemInterface[];
@@ -34,6 +34,9 @@ export interface OrderInterface {
   service_code?: string;
   sb_order_id?: string;
   tracking_url?: string;
+  guestEmail?: string;
+  guestName?: string;
+  guestPhone?: string;
 }
 
 export enum DeliveryStatus {
@@ -63,10 +66,10 @@ export enum PaymentMethod {
 
 export interface OrderSessionInterface {
   _id?: string | Types.ObjectId;
-  userId: string | Types.ObjectId;
+  userId?: string | Types.ObjectId;
   total: number;
   orders: OrderInterface[];
-  addressId: string | Types.ObjectId;
+  addressId?: string | Types.ObjectId;
   txn_reference: string;
   customId?: string;
   orderNumber?: string;
@@ -75,5 +78,7 @@ export interface OrderSessionInterface {
   paymentMethod?: PaymentMethod;
   orderStatus?: OrderStatus;
   deliveryStatus: DeliveryStatus;
-
+  guestEmail?: string;
+  guestName?: string;
+  guestPhone?: string;
 }

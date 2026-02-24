@@ -75,11 +75,11 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       });
 
       // if(request_token && service_code && courier_id){
-        let createdShipment = await shipbubbleAxios.post('/shipping/labels', {
-          request_token,
-          service_code,
-          courier_id,
-        });
+      let createdShipment = await shipbubbleAxios.post('/shipping/labels', {
+        request_token,
+        service_code,
+        courier_id,
+      });
       // }
       createdShipment = createdShipment.data.data;
 
@@ -163,7 +163,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
           break;
       }
 
-      
+
 
       await this._notificationService().create({
         userId,
@@ -180,6 +180,139 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       return { order, payment, paymentMethod };
     } catch (err) {
       //console.log(err);
+      throw new HttpError(err.message, 400);
+    }
+  }
+
+  async createGuestOrder(
+    sessionId: string,
+    guestInfo: { guestEmail: string; guestName: string; guestPhone: string },
+    addressData: { address: string; city: string; state: string; country?: string; phoneNumber: string; name?: string },
+    paymentMethod: PaymentMethod = PaymentMethod.CARD,
+    request_token?: string,
+    service_code?: string,
+    courier_id?: string,
+    deliveryFee: number = 0
+  ) {
+    try {
+      // Find cart by sessionId (guest cart)
+      const cartSession = await this._cartService().session.findOne({ sessionId });
+      if (!cartSession) throw new HttpError('Cart not found. Please add items to your cart first.', 404);
+      if (!cartSession.total || cartSession.total < 1) throw new HttpError('Cart is empty', 400);
+      await this.validateOutOfStock(cartSession._id);
+
+      // Create an address record for the guest
+      const deliveryAddress = await this._addressService().create({
+        address: addressData.address,
+        city: addressData.city,
+        state: addressData.state,
+        country: addressData.country || 'Nigeria',
+        phoneNumber: addressData.phoneNumber,
+        name: addressData.name || guestInfo.guestName,
+      });
+
+      if (!deliveryAddress) throw new HttpError('Failed to create delivery address', 400);
+
+      const orderNumber = generateOrderNumber(addressData.state);
+
+      const orderSession = await this._orderSession.create({
+        total: cartSession.total,
+        orderNumber,
+        paymentMethod,
+        deliveryFee,
+        vat: await computeVAT(cartSession.total),
+        guestEmail: guestInfo.guestEmail,
+        guestName: guestInfo.guestName,
+        guestPhone: guestInfo.guestPhone,
+        addressId: deliveryAddress._id,
+      });
+
+      // Create shipment if courier data is provided
+      let createdShipment: any = {};
+      if (request_token && service_code && courier_id) {
+        let shipmentResult = await shipbubbleAxios.post('/shipping/labels', {
+          request_token,
+          service_code,
+          courier_id,
+        });
+        createdShipment = shipmentResult.data.data;
+      }
+
+      let orders: DocType<OrderInterface>[] = [];
+      let order: any = {};
+
+      for await (const cartItem of await this._cartService().find({ sessionId: cartSession._id.toString() })) {
+        if (await this.findOne({ sessionId: orderSession._id })) {
+          order = await this.update(
+            { sessionId: orderSession._id },
+            {
+              load: {
+                key: 'items',
+                value: { productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total, deliveryFee },
+              },
+              increment: { key: 'total', value: +cartItem.total },
+            },
+          );
+        } else {
+          order = await this.create({
+            sb_order_id: createdShipment.order_id || null,
+            tracking_url: createdShipment.tracking_url || null,
+            vendorId: cartItem.vendorId,
+            vendor: cartItem.vendor,
+            items: [{ productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total }],
+            options: cartItem.options,
+            isPaid: false,
+            total: cartItem.total,
+            sessionId: orderSession._id,
+            orderNumber,
+            addressId: deliveryAddress._id,
+            deliveryStatus: DeliveryStatus.PENDING,
+            deliveryFee,
+            paymentMethod,
+            guestEmail: guestInfo.guestEmail,
+            guestName: guestInfo.guestName,
+            guestPhone: guestInfo.guestPhone,
+          });
+
+          orders.push(order);
+        }
+
+        await this._cartService().delete(cartItem._id);
+      }
+
+      await this._orderSession
+        .custom()
+        .findByIdAndUpdate({ _id: orderSession._id }, { $addToSet: { orders: { $each: orders } } });
+
+      await this._cartService().session.delete(cartSession._id);
+
+      await this.update(
+        { sessionId: orderSession._id },
+        { vat: orderSession.vat, deliveryFee: orderSession.deliveryFee },
+      );
+
+      // Initialize payment via Paystack using guest email
+      let payment = null;
+      if (paymentMethod === PaymentMethod.CARD) {
+        payment = await this._transactionService().initializeGuestPayment(
+          <string>orderSession._id,
+          order._id,
+          guestInfo.guestEmail,
+          deliveryFee
+        );
+      }
+
+      // Notify vendor(s)
+      if (order.vendorId) {
+        await this._notificationService().create({
+          vendorId: order.vendorId,
+          subject: `New Guest Order: ${orderNumber}`,
+          message: `You have a new guest order: ${orderNumber}. Customer: ${guestInfo.guestName} (${guestInfo.guestEmail})`,
+        });
+      }
+
+      return { order, orderSession, payment, paymentMethod, trackingId: orderNumber };
+    } catch (err) {
       throw new HttpError(err.message, 400);
     }
   }
@@ -421,12 +554,12 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
   }
 
   async getShippingRates(userId: string, addressId: string) {
-    try{
-      let cartSession = await this._cartService().session.findOne({userId});
-      if(!cartSession) throw new HttpError('Cart not found', 404);
+    try {
+      let cartSession = await this._cartService().session.findOne({ userId });
+      if (!cartSession) throw new HttpError('Cart not found', 404);
 
-      let cartItems = await this._cartService().find({sessionId: cartSession._id});
-      if(!cartItems || cartItems.length === 0) throw new HttpError('Cart items not found', 404);
+      let cartItems = await this._cartService().find({ sessionId: cartSession._id });
+      if (!cartItems || cartItems.length === 0) throw new HttpError('Cart items not found', 404);
 
       // Transform cart items into shipping format
       const shippingItems = await Promise.all(
@@ -461,7 +594,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       return rates.data.data;
     }
-    catch(err){
+    catch (err) {
       console.log(err);
       throw new HttpError('Failed to get shipping rates', 400);
     }

@@ -35,13 +35,15 @@ class Paystack {
     this.paystackService = new ServiceAdapter('https://api.paystack.co').baseService;
   }
 
-  initialize(amount: string, user: Request['user'], metaData?: object, url: string | null = null, reference: string | null = null) {
+  initialize(amount: string, user: Request['user'] | string, metaData?: object, url: string | null = null, reference: string | null = null) {
     if (!this.usePaystack) {
       logger.error(MESSAGES.PAYSTACK_NOT_INITIALIZED);
       return null;
     }
+    // Support both a user object and a plain email string (for guest checkout)
+    const email = typeof user === 'string' ? user : user?.email;
     // eslint-disable-next-line object-curly-newline
-    const data = { email: user?.email, amount: +amount * 100, metadata: metaData };
+    const data = { email, amount: +amount * 100, metadata: metaData };
 
     if (url) {
       Object.assign(data, { callback_url: url });

@@ -114,7 +114,7 @@ class OrderController extends Controller<OrderInterface> {
         { path: 'addressId', model: 'Address' },
         { path: 'items.productId', model: 'Product' },
       ]);
-    } 
+    }
     // else if (role === UserRole.VENDOR) {
     //   result = await this.service.paginatedFind({ vendorId: req.user?._id });
     // } else if (role === UserRole.ADMIN) {
@@ -175,7 +175,7 @@ class OrderController extends Controller<OrderInterface> {
   });
 
   getUserOrder = this.control(async (req: Request) => {
-    
+
     const findQuery = { userId: req.user?._id };
 
     const orders = await this.service.getUserOrder(req.user?._id);
@@ -236,15 +236,48 @@ class OrderController extends Controller<OrderInterface> {
 
   trackOrder = this.control(async (req: Request) => {
 
-   const result = await this.service.trackOrder(req.params.ref);
+    const result = await this.service.trackOrder(req.params.ref);
 
-   console.log(result)
+    console.log(result)
 
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
     return result;
   });
 
-  addAddress = this.control(async (req: Request) => {});
+  addAddress = this.control(async (req: Request) => { });
+
+  guestCheckout = this.control(async (req: Request) => {
+    const {
+      guestEmail,
+      guestName,
+      guestPhone,
+      address,
+      city,
+      state,
+      country,
+      phoneNumber,
+      paymentMethod,
+      request_token,
+      service_code,
+      courier_id,
+      deliveryFee,
+    } = req.body;
+
+    // Get sessionId from the cart session middleware
+    const sessionId = req.session?.cartId || req.headers['sessionid'] as string;
+    if (!sessionId) throw new this.HttpError('Session ID is required for guest checkout', 400);
+
+    return this.service.createGuestOrder(
+      sessionId,
+      { guestEmail, guestName, guestPhone },
+      { address, city, state, country, phoneNumber, name: guestName },
+      paymentMethod || 'CARD',
+      request_token,
+      service_code,
+      courier_id,
+      deliveryFee || 0
+    );
+  });
 
   // getShippingRates = this.control(async (req: Request) => {
   //   try {
@@ -297,7 +330,7 @@ class OrderController extends Controller<OrderInterface> {
   //       }
 
   //       const rates = response.data.data;
-        
+
   //       // Map and validate each rate
   //       return rates.map((rate: any) => {
   //         if (!rate.id || !rate.name || !rate.price || !rate.carrier) {
