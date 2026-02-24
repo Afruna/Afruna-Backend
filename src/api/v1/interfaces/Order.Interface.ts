@@ -34,9 +34,6 @@ export interface OrderInterface {
   service_code?: string;
   sb_order_id?: string;
   tracking_url?: string;
-  guestEmail?: string;
-  guestName?: string;
-  guestPhone?: string;
 }
 
 export enum DeliveryStatus {

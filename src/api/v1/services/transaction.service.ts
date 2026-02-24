@@ -67,23 +67,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     return result;
   }
 
-  async initializeGuestPayment(orderSessionRef: string, orderId: string, guestEmail: string, deliveryFee: number = 0) {
-    const data = {
-      orderSessionRef,
-      orderId,
-      type: 'product',
-    };
 
-    const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef });
-    if (!orderSession) throw new HttpError('order not found', 404);
-
-    const amount = orderSession.total + (deliveryFee || 0) + (orderSession.vat || 0);
-
-    const payment = await this.paymentRepository.create({ userId: null, amount, referenceId: orderId });
-
-    const result = await this._paystack.initialize(`${amount}`, guestEmail, data, PAYSTACK_REDIRECT, payment._id);
-    return result;
-  }
 
   async initializeServicePayment(bookingId: string, userId: string, url: string | null = null) {
     const data = {

@@ -15,13 +15,11 @@ class OrderRoute extends Route<OrderInterface> {
     this.router.get('/vendor', this.authorizeVendor(), this.controller.getVendorOrder);
     this.router.get('/addresses', this.authorize(), this.controller.getAddresses);
     this.router.post('/checkout', this.authorize(), this.validator(this.dto.create), this.controller.create);
-    this.router.post('/guest-checkout', cartSessionMiddleware, this.validator(this.dto.guestCheckout), this.controller.guestCheckout);
     this.router.get('/session/:sessionRef', this.authorize(), this.controller.getSession);
-    this.router.get('/track/:ref', this.controller.trackOrder);
-    this.router.get('/:ref', getUserIfExist(), this.controller.getOne);
+    this.router.get('/track/:ref', this.authorize(), this.controller.trackOrder);
+    this.router.get('/:ref', this.authorize(), this.controller.getOne);
 
-    this.router.get('/shipping/rates/:addressId', this.authorize(), this.controller.getShippingRates);
-    this.router.get('/shipping/guest-rates', cartSessionMiddleware, this.controller.getGuestShippingRates);
+    this.router.get('/shipping/rates/:addressId', cartSessionMiddleware, this.authorize(), this.controller.getShippingRates);
 
     this.router.get('/address/:addressId', this.controller.getAddressCode);
 

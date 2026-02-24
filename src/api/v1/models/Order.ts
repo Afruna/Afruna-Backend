@@ -64,10 +64,6 @@ const OrderSchema = new Schema<OrderInterface>(
     courier_id: { type: String, default: null },
     service_code: { type: String, default: null },
     sb_order_id: { type: String, default: null },
-    tracking_url: { type: String, default: null },
-    guestEmail: { type: String, default: null },
-    guestName: { type: String, default: null },
-    guestPhone: { type: String, default: null },
   },
   { timestamps: true },
 );

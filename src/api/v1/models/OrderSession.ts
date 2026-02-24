@@ -31,10 +31,6 @@ const OrderSessionSchema = new Schema<OrderSessionInterface>(
     },
     txn_reference: String,
     customId: String,
-    orderNumber: String,
-    guestEmail: { type: String, default: null },
-    guestName: { type: String, default: null },
-    guestPhone: { type: String, default: null },
   },
   { timestamps: true },
 );

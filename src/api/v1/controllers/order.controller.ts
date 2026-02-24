@@ -265,38 +265,7 @@ class OrderController extends Controller<OrderInterface> {
 
   addAddress = this.control(async (req: Request) => { });
 
-  guestCheckout = this.control(async (req: Request) => {
-    const {
-      guestEmail,
-      guestName,
-      guestPhone,
-      address,
-      city,
-      state,
-      country,
-      phoneNumber,
-      paymentMethod,
-      request_token,
-      service_code,
-      courier_id,
-      deliveryFee,
-    } = req.body;
 
-    // Get sessionId from the cart session middleware
-    const sessionId = req.session?.cartId || req.headers['sessionid'] as string;
-    if (!sessionId) throw new this.HttpError('Session ID is required for guest checkout', 400);
-
-    return this.service.createGuestOrder(
-      sessionId,
-      { guestEmail, guestName, guestPhone },
-      { address, city, state, country, phoneNumber, name: guestName },
-      paymentMethod || 'CARD',
-      request_token,
-      service_code,
-      courier_id,
-      deliveryFee || 0
-    );
-  });
 
   // getShippingRates = this.control(async (req: Request) => {
   //   try {
@@ -396,7 +365,8 @@ class OrderController extends Controller<OrderInterface> {
   // });
 
   getShippingRates = this.control(async (req: Request) => {
-    const shippingRates = await this.service.getShippingRates(req.user?._id, req.params.addressId as string);
+    const sessionId = req.session?.cartId || req.headers['sessionid'] as string;
+    const shippingRates = await this.service.getShippingRates(req.user?._id, req.params.addressId as string, sessionId);
     return shippingRates;
   });
 
@@ -405,12 +375,7 @@ class OrderController extends Controller<OrderInterface> {
     return addressCode;
   });
 
-  getGuestShippingRates = this.control(async (req: Request) => {
-    const sessionId = req.session?.cartId || req.headers['sessionid'] as string;
-    if (!sessionId) throw new this.HttpError('Session ID is required', 400);
-    const shippingRates = await this.service.getGuestShippingRates(sessionId);
-    return shippingRates;
-  });
+
 }
 
 export default OrderController;
