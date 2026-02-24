@@ -96,6 +96,25 @@ class OrderController extends Controller<OrderInterface> {
           },
         ],
       });
+    } else if (!role) {
+      // Guest / unauthenticated user — lookup by ref only
+      if (Types.ObjectId.isValid(req.params.ref)) {
+        findQuery = { _id: req.params.ref };
+      } else {
+        findQuery = { customId: `#${req.params.ref}` };
+      }
+      result = await this.service.findOne(findQuery, {
+        multiPopulate: [
+          {
+            path: 'addressId',
+            model: 'Address',
+          },
+          {
+            path: 'items.productId',
+            model: 'Product',
+          },
+        ],
+      });
     } else throw new this.HttpError('invalid user type');
 
     if (!result) throw new this.HttpError(`${this.resource} not found`, 404);
