@@ -387,10 +387,12 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       if (!address || !address.userId || typeof address.userId === 'string') {
         throw new HttpError('Invalid address or user not found', 400);
       }
+
+      console.log(address)
       let verifiedAddress = await shipbubbleAxios.post('/shipping/address/validate', {
-        name: address.userId.firstName + ' ' + address.userId.lastName,
-        email: address.userId.email,
-        phone: address.phoneNumber,
+        name: address.name,
+        email: address.userId?.email || "",
+        phone: address.phoneNumber || "0915766479",
         address: `${address.address}, ${address.city}, ${address.state}, Nigeria`,
       });
       console.log(verifiedAddress.data.data.address_code);
