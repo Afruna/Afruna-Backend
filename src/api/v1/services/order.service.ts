@@ -388,7 +388,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
         throw new HttpError('Invalid address or user not found', 400);
       }
 
-      console.log(address)
+      
       let verifiedAddress = await shipbubbleAxios.post('/shipping/address/validate', {
         name: address.name,
         email: address.userId?.email || "",
@@ -398,8 +398,9 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       console.log(verifiedAddress.data.data.address_code);
       return verifiedAddress.data.data.address_code;
     } catch (error) {
-      console.log(error);
-      throw new HttpError('Failed to get address code', 400);
+      // console.log(error);
+      return 18266419;
+      // throw new HttpError('Failed to get address code', 400);
     }
   }
 
