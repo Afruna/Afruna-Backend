@@ -399,7 +399,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       return verifiedAddress.data.data.address_code;
     } catch (error) {
       // console.log(error);
-      return 18266419;
+      return 66761979;
       // throw new HttpError('Failed to get address code', 400);
     }
   }
