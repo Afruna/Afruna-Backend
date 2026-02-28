@@ -17,7 +17,7 @@ import { use } from 'passport';
 import { verifyPaystack } from '@utils/paystack';
 import { PAYSTACK_REDIRECT } from '@config';
 import PaymentRepository from '@repositories/Payment.repo';
-import { PAYMENT_STATUS } from '@interfaces/Payment.Interface';
+import { PAYMENT_STATUS, PAYMENT_TYPE } from '@interfaces/Payment.Interface';
 import DepositRepository from '@repositories/Deposit.repo';
 import { DEPOSIT_STATUS } from '@interfaces/Deposit.Interface';
 import { OrderStatus } from '@interfaces/Order.Interface';
@@ -60,7 +60,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
 
     const amount = (orderSession.total + deliveryFee + orderSession.vat);
 
-    const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId })
+    const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId, type: PAYMENT_TYPE.PRODUCT })
 
     const user = await this._userService().findOne(orderSession.userId.toString());
     const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat + deliveryFee)}`, user!, data, PAYSTACK_REDIRECT, payment._id);
@@ -78,8 +78,15 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     const booking = await this._bookingService().custom().findById(bookingId);
     if (!booking) throw new HttpError('order not found', 404);
 
+    const payment = await this.paymentRepository.create({
+      userId,
+      amount: booking.amount,
+      referenceId: bookingId,
+      type: PAYMENT_TYPE.SERVICE,
+    });
+
     const user = await this._userService().findOne(booking.userId.toString());
-    const result = await this._paystack.initialize(`${booking.amount}`, user!, data, url);
+    const result = await this._paystack.initialize(`${booking.amount}`, user!, data, url, payment._id);
     return result;
   }
 
@@ -91,7 +98,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
       type: 'wallet',
     };
 
-    const payment = await this.paymentRepository.create({ userId, amount, referenceId: depositId })
+    const payment = await this.paymentRepository.create({ userId, amount, referenceId: depositId, type: PAYMENT_TYPE.WALLET })
 
     const user = await this._userService().findOne(userId.toString());
     const result = await this._paystack.initialize(`${amount}`, user!, data, url, payment._id);
@@ -107,28 +114,40 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
 
         if (referenceExists) return;
 
-        let payment = await this.paymentRepository.findOne({ _id: reference })
+        // The reference is the payment _id set during initialization
+        let payment = await this.paymentRepository.findOne({ _id: reference });
 
-        payment = await this.paymentRepository.update({ _id: payment._id }, { status: PAYMENT_STATUS.SUCCESSFUL })
+        if (!payment) {
+          console.log(`No payment record found for reference: ${reference}`);
+          return;
+        }
 
-        const card = this._cardService().findOne({ userId: payment.userId, bin: data.data.authorization.bin, last4: data.data.authorization.last4 })
+        payment = await this.paymentRepository.update({ _id: payment._id }, { status: PAYMENT_STATUS.SUCCESSFUL });
 
-        if (!card)
-          await this._cardService().create({
-            userId: payment.userId,
-            authorization_code: data.data.authorization.authorization_code,
-            bin: data.data.authorization.bin,
-            last4: data.data.authorization.last4,
-            exp_month: data.data.authorization.exp_month,
-            exp_year: data.data.authorization.exp_year,
-            channel: data.data.authorization.channel,
-            card_type: data.data.authorization.card_type,
-            bank: data.data.authorization.bank,
-            country_code: data.data.authorization.country_code
-          })
+        // Save card details if not already stored
+        if (data.data.authorization?.bin) {
+          const card = await this._cardService().findOne({ userId: payment.userId, bin: data.data.authorization.bin, last4: data.data.authorization.last4 });
 
-        const type = data.data.metadata.type;
-        if (type === 'service') {
+          if (!card)
+            await this._cardService().create({
+              userId: payment.userId,
+              authorization_code: data.data.authorization.authorization_code,
+              bin: data.data.authorization.bin,
+              last4: data.data.authorization.last4,
+              exp_month: data.data.authorization.exp_month,
+              exp_year: data.data.authorization.exp_year,
+              channel: data.data.authorization.channel,
+              card_type: data.data.authorization.card_type,
+              bank: data.data.authorization.bank,
+              country_code: data.data.authorization.country_code
+            });
+        }
+
+        // Determine payment type from our stored payment record (not Paystack metadata)
+        const type = payment.type;
+        console.log(`Processing webhook for payment type: ${type}, reference: ${reference}`);
+
+        if (type === PAYMENT_TYPE.SERVICE) {
 
           const userId = payment.userId;
           const bookingId = <string>payment.referenceId;
@@ -162,7 +181,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
             reference,
           });
         }
-        else if (type === 'product') {
+        else if (type === PAYMENT_TYPE.PRODUCT) {
 
           const userId = payment.userId;
           const orderId = payment.referenceId;
@@ -229,7 +248,7 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
 
 
         }
-        else if (type === 'wallet') {
+        else if (type === PAYMENT_TYPE.WALLET) {
           const user_Id = payment.userId;
           const depositId = payment.referenceId;
 

@@ -58,6 +58,7 @@ class TransactionController extends Controller<TransactionInterface> {
   webhook = this.control(async (req: Request) => {
     console.log("Webhook Data", req.body);
     await this.service.webhookHandler(req.body);
+    return [];
   });
 
   // callbackHandler = this.control(async (req: Request) => {

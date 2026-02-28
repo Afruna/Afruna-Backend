@@ -36,6 +36,10 @@ export class PaystackController {
             case "wallet":
                 res.status(301).redirect(`${WALLET_REDIRECT}?userId=${response.metadata.userId}`)
             break;
+
+            case "card":
+                res.status(301).redirect(`${WALLET_REDIRECT}?userId=${response.metadata.userId}`)
+            break;
         }
 
         // if (response.status !== 'success') {
