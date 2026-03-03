@@ -87,6 +87,8 @@ export const {
   ORDER_REDIRECT,
   WALLET_REDIRECT,
   PAYSTACK_BASE_URL,
+  SHIPBUBBLE_API_KEY,
+  SHIPBUBBLE_BASE_URL,
   MULTER_STORAGE_PATH,
   NODE_ENV,
   REDIS_URI,
@@ -224,6 +226,10 @@ export function optionsValidation() {
     if (!PAYSTACK_SECRET) {
       throw Error('missing env config options: PAYSTACK_SECRET');
     }
+  }
+
+  if (!SHIPBUBBLE_API_KEY) {
+    throw Error('missing env config options: SHIPBUBBLE_API_KEY');
   }
 
   if (OPTIONS.USE_MULTER_DISK_STORAGE) {

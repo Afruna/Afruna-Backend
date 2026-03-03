@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { SHIPBUBBLE_API_KEY, SHIPBUBBLE_BASE_URL } from '@config';
 
 const shipbubbleAxios = axios.create({
-  baseURL: 'https://api.shipbubble.com/v1',
+  baseURL: SHIPBUBBLE_BASE_URL || 'https://api.shipbubble.com/v1',
   headers: {
-    Authorization: `Bearer sb_sandbox_ef9ef17ea9df253cab3e0715e90d74126a56d4667d2b3ef2aaad41a2cffd10f2`,
+    Authorization: `Bearer ${SHIPBUBBLE_API_KEY}`,
     'Content-Type': 'application/json'
   }
 });
