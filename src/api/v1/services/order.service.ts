@@ -179,8 +179,10 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       return { order, payment, paymentMethod };
     } catch (err) {
-      //console.log(err);
-      throw new HttpError(err.message, 400);
+      console.error('Order creation error:', err);
+      const message = err?.message || err?.data?.message || 'Order creation failed';
+      const statusCode = err?.statusCode || 400;
+      throw new HttpError(message, statusCode);
     }
   }
 
