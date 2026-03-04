@@ -36,7 +36,14 @@ class Paystack {
   }
 
   initialize(amount: string, user: Request['user'], metaData?: object, url: string | null = null, reference: string | null = null) {
-    console.log('Paystack initialize called:', { usePaystack: this.usePaystack, hasSecret: !!PAYSTACK_SECRET, email: (user as any)?.email });
+    // Debug: Show key prefix (safely)
+    const keyPrefix = PAYSTACK_SECRET ? PAYSTACK_SECRET.substring(0, 12) + '***' : 'NOT_SET';
+    console.log('Paystack initialize:', { 
+      usePaystack: this.usePaystack, 
+      keyPrefix,
+      keyLength: PAYSTACK_SECRET?.length || 0,
+      email: (user as any)?.email 
+    });
     
     if (!this.usePaystack) {
       logger.error(MESSAGES.PAYSTACK_NOT_INITIALIZED);
@@ -47,6 +54,12 @@ class Paystack {
     if (!PAYSTACK_SECRET) {
       logger.error('PAYSTACK_SECRET is not set!');
       console.log('Paystack error: PAYSTACK_SECRET is empty');
+      return null;
+    }
+    
+    // Validate key format
+    if (!PAYSTACK_SECRET.startsWith('sk_live_') && !PAYSTACK_SECRET.startsWith('sk_test_')) {
+      console.log('Paystack error: Invalid key format. Must start with sk_live_ or sk_test_');
       return null;
     }
     
