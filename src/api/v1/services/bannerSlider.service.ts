@@ -1,4 +1,4 @@
-import { BannerSliderInterface, BannerSliderType } from '@interfaces/BannerSlider.Interface';
+import { BannerSliderInterface, BannerSliderType, BannerSliderStatus } from '@interfaces/BannerSlider.Interface';
 import BannerSliderRepository from '@repositories/BannerSlider.repo';
 import Service from '@services/service';
 import HttpError from '@helpers/HttpError';
@@ -9,9 +9,12 @@ class BannerSliderService extends Service<BannerSliderInterface, BannerSliderRep
 
   async create(data: Partial<BannerSliderInterface>) {
     if (data.type === BannerSliderType.BANNER) {
-      const existingBannerTypeCount = await this.repository.count({ type: BannerSliderType.BANNER });
+      const existingBannerTypeCount = await this.repository.count({ 
+        type: BannerSliderType.BANNER,
+        status: BannerSliderStatus.ACTIVE 
+      });
       if (existingBannerTypeCount >= 4) {
-        throw new HttpError('Maximum of 4 grid banners allowed', 400);
+        throw new HttpError('Maximum of 4 active grid banners allowed. Please deactivate or delete an existing banner first.', 400);
       };
     };
     return this.repository.create(data);
