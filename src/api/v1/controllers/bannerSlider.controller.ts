@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import BannerSliderService from '@services/bannerSlider.service';
-import { BannerSliderInterface, BannerSliderType } from '@interfaces/BannerSlider.Interface';
+import { BannerSliderInterface, BannerSliderType, BannerSliderStatus } from '@interfaces/BannerSlider.Interface';
 import Controller from '@controllers/controller';
 
 class BannerSliderController extends Controller<BannerSliderInterface> {
@@ -8,7 +8,7 @@ class BannerSliderController extends Controller<BannerSliderInterface> {
   responseDTO = undefined;
 
   get = this.control(async (req: Request) => {
-    return this.service.find();
+    return this.service.find({ status: BannerSliderStatus.ACTIVE });
   });
 
   create = this.control(async (req: Request) => {
@@ -19,14 +19,14 @@ class BannerSliderController extends Controller<BannerSliderInterface> {
 
   getByType = this.control(async (req: Request) => {
     const type = req.params.type as BannerSliderType;
-    return this.service.find({ type });
+    return this.service.find({ type, status: BannerSliderStatus.ACTIVE });
   });
 
   // v2 - grouped by type
   getV2 = this.control(async (_req: Request) => {
     const [grid, carousel] = await Promise.all([
-      this.service.find({ type: BannerSliderType.BANNER }),
-      this.service.find({ type: BannerSliderType.CAROUSEL }),
+      this.service.find({ type: BannerSliderType.BANNER, status: BannerSliderStatus.ACTIVE }),
+      this.service.find({ type: BannerSliderType.CAROUSEL, status: BannerSliderStatus.ACTIVE }),
     ]);
     return { grid, carousel };
   });
