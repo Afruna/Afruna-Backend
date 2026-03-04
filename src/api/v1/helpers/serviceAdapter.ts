@@ -50,7 +50,11 @@ class ServiceAdapter {
         } else err = <string>error.request.data;
       }
     } else err = error;
-    return { error: err, status: _status };
+    const errorMessage = err || 'Request failed';
+    const httpError = new Error(errorMessage);
+    (httpError as any).statusCode = _status;
+    (httpError as any).response = error?.response?.data;
+    throw httpError;
   };
 }
 export default ServiceAdapter;

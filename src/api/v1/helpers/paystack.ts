@@ -36,12 +36,28 @@ class Paystack {
   }
 
   initialize(amount: string, user: Request['user'], metaData?: object, url: string | null = null, reference: string | null = null) {
+    console.log('Paystack initialize called:', { usePaystack: this.usePaystack, hasSecret: !!PAYSTACK_SECRET, email: (user as any)?.email });
+    
     if (!this.usePaystack) {
       logger.error(MESSAGES.PAYSTACK_NOT_INITIALIZED);
+      console.log('Paystack not initialized - USE_PAYSTACK is false');
       return null;
     }
+    
+    if (!PAYSTACK_SECRET) {
+      logger.error('PAYSTACK_SECRET is not set!');
+      console.log('Paystack error: PAYSTACK_SECRET is empty');
+      return null;
+    }
+    
     // Support both a user object and a plain email string (for guest checkout)
     const email = (user as any)?.email;
+    
+    if (!email) {
+      console.log('Paystack error: User email is missing');
+      return null;
+    }
+    
     // eslint-disable-next-line object-curly-newline
     const data = { email, amount: +amount * 100, metadata: metaData };
 
@@ -53,7 +69,7 @@ class Paystack {
       Object.assign(data, { reference: reference });
     }
 
-    console.log("Meta Data", metaData)
+    console.log("Paystack init data:", { email, amount: data.amount, hasMetadata: !!metaData, reference });
 
     return <Promise<PaystackInitializeResponse>>(
       this.paystackService('post', '/transaction/initialize', data, this.options)
