@@ -458,13 +458,22 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       const reciever_address_code = await this.getAddressCode(addressId);
 
+      // Get sender address code from env or use vendor's address
+      const sender_address_code = process.env.SHIPBUBBLE_SENDER_ADDRESS_CODE 
+        ? parseInt(process.env.SHIPBUBBLE_SENDER_ADDRESS_CODE)
+        : await this.getVendorAddressCode(cartItems[0]?.vendorId);
+
+      if (!sender_address_code) {
+        throw new HttpError('Sender address not configured. Please contact support.', 500);
+      }
+
       let data = {
-        sender_address_code: 51378738,
+        sender_address_code,
         reciever_address_code: reciever_address_code,
         pickup_date: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
         package_items: shippingItems,
         package_dimension: packageDimensions,
-        category_id: 20754594,
+        category_id: parseInt(process.env.SHIPBUBBLE_CATEGORY_ID || '20754594'),
       }
 
       let rates = await shipbubbleAxios.post('/shipping/fetch_rates', data);

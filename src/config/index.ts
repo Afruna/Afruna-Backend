@@ -89,6 +89,8 @@ export const {
   PAYSTACK_BASE_URL,
   SHIPBUBBLE_API_KEY,
   SHIPBUBBLE_BASE_URL,
+  SHIPBUBBLE_SENDER_ADDRESS_CODE,
+  SHIPBUBBLE_CATEGORY_ID,
   MULTER_STORAGE_PATH,
   NODE_ENV,
   REDIS_URI,
@@ -230,6 +232,10 @@ export function optionsValidation() {
 
   if (!SHIPBUBBLE_API_KEY) {
     throw Error('missing env config options: SHIPBUBBLE_API_KEY');
+  }
+
+  if (process.env.NODE_ENV === 'production' && !SHIPBUBBLE_SENDER_ADDRESS_CODE) {
+    console.warn('⚠️  WARNING: SHIPBUBBLE_SENDER_ADDRESS_CODE not set. Shipping rates will fail. Get this from your Shipbubble dashboard after validating your business address.');
   }
 
   if (OPTIONS.USE_MULTER_DISK_STORAGE) {
