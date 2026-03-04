@@ -71,6 +71,9 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
       throw new HttpError('Payment initialization failed. Please check Paystack configuration.', 500);
     }
     
+    // Debug: Log the authorization URL to verify live/test mode
+    console.log('Paystack authorization URL:', result.authorization_url);
+    
     return result;
   }
 
