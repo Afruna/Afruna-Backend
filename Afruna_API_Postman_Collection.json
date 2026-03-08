@@ -1,0 +1,2264 @@
+{
+  "info": {
+    "_postman_id": "afruna-api-collection",
+    "name": "Afruna API",
+    "description": "Complete API collection for Afruna E-commerce Platform. Base URL: http://localhost:3000/api/v1 (development) or https://api.afruna.com/api/v1 (production). Authentication uses Bearer JWT tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vendorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏠 Health & Root",
+      "item": [
+        {
+          "name": "Welcome Message",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signin",
+              "host": ["{{baseUrl}}"],
+              "path": ["signin"]
+            },
+            "description": "Login as a regular user. Returns JWT token and refresh token."
+          }
+        },
+        {
+          "name": "User Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"country\": \"Nigeria\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["signup"]
+            }
+          }
+        },
+        {
+          "name": "Seller Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phoneNumber\": \"+2348012345679\",\n  \"country\": \"Nigeria\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signup/seller",
+              "host": ["{{baseUrl}}"],
+              "path": ["signup", "seller"]
+            }
+          }
+        },
+        {
+          "name": "Service Provider Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"provider@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Mike\",\n  \"lastName\": \"Johnson\",\n  \"phoneNumber\": \"+2348012345680\",\n  \"country\": \"Nigeria\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signup/provider",
+              "host": ["{{baseUrl}}"],
+              "path": ["signup", "provider"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reset-password/:token",
+              "host": ["{{baseUrl}}"],
+              "path": ["reset-password", ":token"],
+              "variable": [{ "key": "token", "value": "reset-token-here" }]
+            }
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"oldpassword123\",\n  \"password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["password"]
+            }
+          }
+        },
+        {
+          "name": "Request Verification Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verification-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["verification-token"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"verification-token-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify-email"]
+            }
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"token-to-validate\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validate-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["validate-token"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-refresh-token", "value": "{{refreshToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get OAuth URLs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/o-auth-urls?url=localhost",
+              "host": ["{{baseUrl}}"],
+              "path": ["o-auth-urls"],
+              "query": [{ "key": "url", "value": "localhost" }]
+            }
+          }
+        },
+        {
+          "name": "Google Login",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/google?code=auth-code&state=state-value",
+              "host": ["{{baseUrl}}"],
+              "path": ["google"],
+              "query": [
+                { "key": "code", "value": "auth-code" },
+                { "key": "state", "value": "state-value" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Current User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "multipart/form-data" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "firstName", "value": "Updated", "type": "text" },
+                { "key": "lastName", "value": "Name", "type": "text" },
+                { "key": "phoneNumber", "value": "+2348012345678", "type": "text" },
+                { "key": "country", "value": "Nigeria", "type": "text" },
+                { "key": "avatar", "type": "file", "src": "/path/to/avatar.jpg" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Account",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+2348012345678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/update-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "update-profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Address Book",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addresses\": [\n    {\n      \"street\": \"123 Main St\",\n      \"localGovernment\": \"Ikeja\",\n      \"state\": \"Lagos\",\n      \"country\": \"Nigeria\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/update-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "update-address"]
+            }
+          }
+        },
+        {
+          "name": "Get Following",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/following",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "following"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Follow",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "follow"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":userId"],
+              "variable": [{ "key": "userId", "value": "user-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Update User by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "multipart/form-data" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "userId", "value": "user-id-here", "type": "text" },
+                { "key": "firstName", "value": "John", "type": "text" },
+                { "key": "avatar", "type": "file", "src": "/path/to/avatar.jpg" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":userId"],
+              "variable": [{ "key": "userId", "value": "user-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Delete User by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":userId"],
+              "variable": [{ "key": "userId", "value": "user-id-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Vendors",
+      "item": [
+        {
+          "name": "Get All Vendors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors"]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Vendors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/featured",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "featured"]
+            }
+          }
+        },
+        {
+          "name": "Get Popular Service Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/popular-service-provider",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "popular-service-provider"]
+            }
+          }
+        },
+        {
+          "name": "Get Market Sellers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/market-seller",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "market-seller"]
+            }
+          }
+        },
+        {
+          "name": "Get Service Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/service-provider",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "service-provider"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Profile by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/profile/:vendorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "profile", ":vendorId"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Store Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/store/:vendorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "store", ":vendorId"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Market Seller Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/market-seller/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "market-seller", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Service Provider Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/service-provider/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "service-provider", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Dashboard Chart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/chart",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "chart"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/transactions/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "transactions", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/:vendorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", ":vendorId"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Update Vendor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"vendor-id-here\",\n  \"businessName\": \"Updated Business Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vendors/:vendorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", ":vendorId"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Vendor",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/:vendorId",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", ":vendorId"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Toggle Vendor Follow",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"vendor-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vendors/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendors", "follow"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Vendor Auth",
+      "item": [
+        {
+          "name": "Vendor Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "login"]
+            }
+          }
+        },
+        {
+          "name": "Vendor Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Vendor\",\n  \"lastName\": \"Name\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"country\": \"Nigeria\",\n  \"businessName\": \"My Business\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Vendor Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Vendor Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Vendor Update Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"oldpassword123\",\n  \"password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "password"]
+            }
+          }
+        },
+        {
+          "name": "Vendor Refresh Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-refresh-token", "value": "{{refreshToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/authVendor/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["authVendor", "refresh-token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Get All Products (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "all"]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Name\",\n  \"desc\": \"Product description\",\n  \"quantity\": 100,\n  \"categoryId\": \"category-id\",\n  \"mainCategoryId\": \"main-category-id\",\n  \"price\": 5000,\n  \"discount\": 10,\n  \"skuNumber\": \"SKU-001\",\n  \"weight\": 1.5,\n  \"images\": [\"image1.jpg\", \"image2.jpg\"],\n  \"coverPhoto\": [\"cover.jpg\"],\n  \"options\": [],\n  \"condition\": \"new\",\n  \"brand\": \"Brand Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "multipart/form-data" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Updated Product Name", "type": "text" },
+                { "key": "desc", "value": "Updated description", "type": "text" },
+                { "key": "price", "value": "6000", "type": "text" },
+                { "key": "coverPhoto", "type": "file", "src": "/path/to/cover.jpg" },
+                { "key": "images", "type": "file", "src": "/path/to/image1.jpg" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Set Product Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product-id-here\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/setProductStatus",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "setProductStatus"]
+            }
+          }
+        },
+        {
+          "name": "Get Products by Vendor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/getByVendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "getByVendor"]
+            }
+          }
+        },
+        {
+          "name": "Get My Vendor Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/vendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "vendor"]
+            }
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/search?name=product",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "search"],
+              "query": [{ "key": "name", "value": "product" }]
+            }
+          }
+        },
+        {
+          "name": "Search Products (Logged In)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/searchUser?name=product",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "searchUser"],
+              "query": [{ "key": "name", "value": "product" }]
+            }
+          }
+        },
+        {
+          "name": "Get Similar Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/similar-products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "similar-products", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Often Bought Together",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/often-bought",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "often-bought"]
+            }
+          }
+        },
+        {
+          "name": "Get Hype Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/hype",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "hype"]
+            }
+          }
+        },
+        {
+          "name": "Get Trending Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/trending",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "trending"]
+            }
+          }
+        },
+        {
+          "name": "Get Limited Stock Deals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/limited-stock-deals",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "limited-stock-deals"]
+            }
+          }
+        },
+        {
+          "name": "Get Frequently Bought",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/frequent",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "frequent"]
+            }
+          }
+        },
+        {
+          "name": "Get Recently Viewed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/recently-viewed",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "recently-viewed"]
+            }
+          }
+        },
+        {
+          "name": "Get Main Category Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/category/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "category", ":categoryId"],
+              "variable": [{ "key": "categoryId", "value": "category-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Subcategory Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/subcategory/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "subcategory", ":categoryId"],
+              "variable": [{ "key": "categoryId", "value": "category-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Clearance Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/clearance",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "clearance"]
+            }
+          }
+        },
+        {
+          "name": "Get Products by Special Offer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/special-offer/:specialOfferId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "special-offer", ":specialOfferId"],
+              "variable": [{ "key": "specialOfferId", "value": "special-offer-id" }]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/:vendorId/vendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":vendorId", "vendor"],
+              "variable": [{ "key": "vendorId", "value": "vendor-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Cards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "cards"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Table",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/table/:interval",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "table", ":interval"],
+              "variable": [{ "key": "interval", "value": "daily" }]
+            }
+          }
+        },
+        {
+          "name": "Get Product Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/products/report",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "report"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts"]
+            }
+          }
+        },
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/carts",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts"]
+            }
+          }
+        },
+        {
+          "name": "Remove from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Remove Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts/:productId/item",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":productId", "item"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/vendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "vendor"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "addresses"]
+            }
+          }
+        },
+        {
+          "name": "Checkout (Create Order)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"address-id-here\",\n  \"paymentMethod\": \"paystack\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "checkout"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Session",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/session/:sessionRef",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "session", ":sessionRef"],
+              "variable": [{ "key": "sessionRef", "value": "session-reference" }]
+            }
+          }
+        },
+        {
+          "name": "Track Order",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/track/:ref",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "track", ":ref"],
+              "variable": [{ "key": "ref", "value": "order-reference" }]
+            }
+          }
+        },
+        {
+          "name": "Get Order by Reference",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/:ref",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", ":ref"],
+              "variable": [{ "key": "ref", "value": "order-reference" }]
+            }
+          }
+        },
+        {
+          "name": "Get Shipping Rates",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders/shipping/rates/:addressId",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "shipping", "rates", ":addressId"],
+              "variable": [{ "key": "addressId", "value": "address-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Address Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/address/:addressId",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "address", ":addressId"],
+              "variable": [{ "key": "addressId", "value": "address-id-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Bookings",
+      "item": [
+        {
+          "name": "Get All Bookings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"vendor-id-here\",\n  \"serviceId\": \"service-id-here\",\n  \"address\": \"123 Main St, Lagos\",\n  \"description\": \"Need plumbing service\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/get/:bookingId",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "get", ":bookingId"],
+              "variable": [{ "key": "bookingId", "value": "booking-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Update Booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"booking-id-here\",\n  \"serviceId\": \"service-id-here\",\n  \"address\": \"Updated Address\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/get/:bookingId",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "get", ":bookingId"],
+              "variable": [{ "key": "bookingId", "value": "booking-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/get/:bookingId",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "get", ":bookingId"],
+              "variable": [{ "key": "bookingId", "value": "booking-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Bookings by Vendor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/getByVendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "getByVendor"]
+            }
+          }
+        },
+        {
+          "name": "Get Bookings by User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/getByUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "getByUser"]
+            }
+          }
+        },
+        {
+          "name": "Change Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"booking-id-here\",\n  \"status\": \"confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/:bookingId/changeStatus",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", ":bookingId", "changeStatus"],
+              "variable": [{ "key": "bookingId", "value": "booking-id-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Transactions",
+      "item": [
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            }
+          }
+        },
+        {
+          "name": "Initialize Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"order-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            }
+          }
+        },
+        {
+          "name": "Initialize Service Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"booking-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/service",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "service"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/:transactionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", ":transactionId"],
+              "variable": [{ "key": "transactionId", "value": "transaction-id" }]
+            }
+          }
+        },
+        {
+          "name": "Paystack Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/webhook/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "webhook", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Paystack Callback Handler",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/verify/callback",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "verify", "callback"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Wallet",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/wallets",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Wallet",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/wallets/vendor",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "vendor"]
+            }
+          }
+        },
+        {
+          "name": "Get Banks List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/wallets/bank",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "bank"]
+            }
+          }
+        },
+        {
+          "name": "Add Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountName\": \"John Doe\",\n  \"accountNumber\": \"0123456789\",\n  \"bankName\": \"Guaranty Trust Bank\",\n  \"bankCode\": \"058\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets/bank",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "bank"]
+            }
+          }
+        },
+        {
+          "name": "Remove Bank Account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/wallets/bank/:accountId",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "bank", ":accountId"],
+              "variable": [{ "key": "accountId", "value": "account-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Confirm Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"0123456789\",\n  \"bankCode\": \"058\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets/bank/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "bank", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "Withdraw Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"account-id-here\",\n  \"amount\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "withdraw"]
+            }
+          }
+        },
+        {
+          "name": "Deposit to Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "deposit"]
+            }
+          }
+        },
+        {
+          "name": "Verify Wallet Funding",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"paystack-reference\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets/deposit/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallets", "deposit", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⭐ Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/wishlists",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlists"]
+            }
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wishlists",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlists"]
+            }
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/wishlists/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["wishlists", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📁 Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics\",\n  \"description\": \"Electronic devices and accessories\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Main Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/maincategories",
+              "host": ["{{baseUrl}}"],
+              "path": ["maincategories"]
+            }
+          }
+        },
+        {
+          "name": "Get Service Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/serviceCategories",
+              "host": ["{{baseUrl}}"],
+              "path": ["serviceCategories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Chat & Messages",
+      "item": [
+        {
+          "name": "Get All Chats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/chats",
+              "host": ["{{baseUrl}}"],
+              "path": ["chats"]
+            }
+          }
+        },
+        {
+          "name": "Get Conversations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participants\": [\"user-id-1\", \"user-id-2\"],\n  \"type\": \"direct\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages"]
+            }
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"conversation-id\",\n  \"content\": \"Hello!\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Reviews",
+      "item": [
+        {
+          "name": "Get Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            }
+          }
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product-id\",\n  \"rating\": 5,\n  \"comment\": \"Great product!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:notificationId",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", ":notificationId"],
+              "variable": [{ "key": "notificationId", "value": "notification-id" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📍 Address",
+      "item": [
+        {
+          "name": "Get Addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["address"]
+            }
+          }
+        },
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"street\": \"123 Main Street\",\n  \"localGovernment\": \"Ikeja\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"isDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["address"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Business Info",
+      "item": [
+        {
+          "name": "Get Business Info",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/businessInfo",
+              "host": ["{{baseUrl}}"],
+              "path": ["businessInfo"]
+            }
+          }
+        },
+        {
+          "name": "Create/Update Business Info",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendorToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"My Business\",\n  \"businessType\": \"Retail\",\n  \"registrationNumber\": \"BN123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/businessInfo",
+              "host": ["{{baseUrl}}"],
+              "path": ["businessInfo"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👔 Admin",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@afruna.com\",\n  \"password\": \"adminpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Admin Dashboard Cards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cards/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "cards", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "customers"]
+            }
+          }
+        },
+        {
+          "name": "Get All Vendors (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors"]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Transactions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/block/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "block", ":userId"],
+              "variable": [{ "key": "userId", "value": "user-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Hype Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hype/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "hype", ":productId"],
+              "variable": [{ "key": "productId", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get KYC Submissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/submitted-kyc",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "submitted-kyc"]
+            }
+          }
+        },
+        {
+          "name": "Update KYC Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"vendor-id\",\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/submitted-kyc",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "submitted-kyc"]
+            }
+          }
+        },
+        {
+          "name": "Create Special Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer Sale\",\n  \"discount\": 20,\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-01-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/special-offers",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "special-offers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Special Offers",
+      "item": [
+        {
+          "name": "Get All Special Offers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/special-offers",
+              "host": ["{{baseUrl}}"],
+              "path": ["special-offers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🖼️ Banner Slider",
+      "item": [
+        {
+          "name": "Get Banner Sliders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bannerSlider",
+              "host": ["{{baseUrl}}"],
+              "path": ["bannerSlider"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Paystack",
+      "item": [
+        {
+          "name": "Paystack Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/paystack-callback?reference=ref&trxref=trxref",
+              "host": ["http://localhost:3000"],
+              "path": ["paystack-callback"],
+              "query": [
+                { "key": "reference", "value": "ref" },
+                { "key": "trxref", "value": "trxref" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Banks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/list-banks",
+              "host": ["http://localhost:3000"],
+              "path": ["list-banks"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

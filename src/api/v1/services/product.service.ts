@@ -91,12 +91,22 @@ class ProductService extends Service<ProductInterface, ProductRepository> {
 
   async getProductsBySubCategory(categoryId: string) {
     return this.find({ categoryId, status : ProductStatus.ACTIVE })
-    //return this._categoryService.getAllProductsInNestedCategories(categoryId);
   }
 
   async getProductsByMainCategory(mainCategoryId: string) {
-    return this.find({ mainCategoryId, status : ProductStatus.ACTIVE })
-    //return this._categoryService.getAllProductsInNestedCategories(categoryId);
+    const allCategoryIds = await this._getAllSubcategoryIds(mainCategoryId);
+    return this.find({ 
+      $or: [
+        { mainCategoryId },
+        { categoryId: { $in: allCategoryIds } }
+      ],
+      status: ProductStatus.ACTIVE 
+    });
+  }
+
+  private async _getAllSubcategoryIds(mainCategoryId: string): Promise<string[]> {
+    const categories = await this._categoryService.getSubcategories(mainCategoryId);
+    return categories.map(cat => cat._id.toString());
   }
 
   async getSimilarProductsToProduct(productId: string) {

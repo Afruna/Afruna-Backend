@@ -128,6 +128,13 @@ class TransactionController extends Controller<TransactionInterface> {
     if (!result) throw new this.HttpError(`booking not found`, 404);
     return result;
   });
+
+  verifyPayment = this.control(async (req: Request) => {
+    const { reference } = req.params;
+    const result = await this.service.verifyPayment(reference);
+    if (!result) throw new this.HttpError('Payment verification failed', 400);
+    return result;
+  });
 }
 
 export default TransactionController;

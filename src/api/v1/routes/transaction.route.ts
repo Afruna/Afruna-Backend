@@ -16,6 +16,7 @@ export default class TransactionRoute extends Route<TransactionInterface> {
     this.router.route('/:transactionId').get(this.authorize(), this.controller.getOne);
     this.router.route('/webhook/validate').post(this.controller.webhook);
     this.router.route('/verify/callback').get(this.controller.callbackHandler);
+    this.router.route('/verify/:reference').get(this.authorize(), this.controller.verifyPayment);
 
     return this.router;
   }
