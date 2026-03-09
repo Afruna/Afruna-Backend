@@ -18,6 +18,8 @@ export default abstract class Repository<T> {
         query = { _id: { $in: _query.map((val) => new Types.ObjectId(val)) } };
       } else {
         for (const [field, value] of Object.entries(query)) {
+          // Skip MongoDB operators like $or, $and, $nor - they are not field values to wrap in $in
+          if (field.startsWith('$')) continue;
           Array.isArray(value) ? (query[field] = { $in: value }) : false;
         }
       }
