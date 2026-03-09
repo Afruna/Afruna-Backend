@@ -46,15 +46,23 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
     return this._userService().getAllAddresses;
   }
 
-  async createOrder(userId: string, addressId: string, paymentMethod: PaymentMethod = PaymentMethod.CARD, request_token?: string, service_code?: string, courier_id?: string, deliveryFee?: number) {
+  async createOrder(userId: string, addressId: string, paymentMethod: PaymentMethod = PaymentMethod.CARD, request_token?: string, service_code?: string, courier_id?: string, deliveryFee?: number, sessionId?: string) {
     try {
       let user = await this._userService().findOne({ _id: userId });
 
       if (!user) throw new HttpError('User not found', 404);
 
-      const cartSession = await this._cartService().session.findOne({ userId });
-
-
+      let cartSession = await this._cartService().session.findOne({ userId });
+      
+      // If no cart by userId, try to find by sessionId (for guest carts)
+      if (!cartSession && sessionId) {
+        cartSession = await this._cartService().session.findOne({ sessionId });
+        // Link the session to the user if found
+        if (cartSession && !cartSession.userId) {
+          await this._cartService().session.update(cartSession._id, { userId });
+        }
+      }
+      
       if (!cartSession) throw new HttpError('invalid cart', 404);
       if (!cartSession.total || cartSession.total < 1) throw new HttpError('empty cart', 400);
       await this.validateOutOfStock(cartSession._id);
