@@ -391,10 +391,14 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       }
 
       
+      if (!address.phoneNumber) {
+        throw new HttpError('Delivery address phone number is required', 400);
+      }
+
       let verifiedAddress = await shipbubbleAxios.post('/shipping/address/validate', {
         name: address.name,
         email: address.userId?.email || "",
-        phone: address.phoneNumber || "0915766479",
+        phone: address.phoneNumber,
         address: `${address.address}, ${address.city}, ${address.state}, Nigeria`,
       });
       console.log(verifiedAddress.data.data.address_code);
@@ -413,10 +417,17 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
       if (!vendorAddress || !vendorAddress.vendorId || typeof vendorAddress.vendorId === 'string') {
         throw new HttpError('Invalid vendor address or vendor not found', 400);
       }
+      // Use warehouse phone if available, otherwise fall back to vendor's personal phone
+      const pickupPhone = vendorAddress.warehousePhone || vendorAddress.vendorId.phoneNumber;
+      
+      if (!pickupPhone) {
+        throw new HttpError('Warehouse phone number is required for pickup', 400);
+      }
+
       let verifiedAddress = await shipbubbleAxios.post('/shipping/address/validate', {
         name: vendorAddress.vendorId.firstname + ' ' + vendorAddress.vendorId.lastname,
         email: vendorAddress.vendorId.emailAddress,
-        phone: vendorAddress.vendorId.phoneNumber,
+        phone: pickupPhone,
         address: `${vendorAddress.addressLine1}, ${vendorAddress.city}, ${vendorAddress.state}, Nigeria`,
       });
       console.log(verifiedAddress.data.data.address_code);

@@ -6,6 +6,7 @@ export interface ShippingInfoInterface {
     vendorId?: string | Types.ObjectId;
     shippingAddress: ShippingAddressInterface;
     returnAddress: ReturnAddressInterface;
+    warehousePhone?: string;
     status: KYCStatus;
     rejectionMessage?: string;
 }

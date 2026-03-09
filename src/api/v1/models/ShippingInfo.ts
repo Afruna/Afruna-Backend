@@ -35,6 +35,7 @@ const ShippingInfoSchema = new Schema<ShippingInfoInterface>({
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor' },
     shippingAddress: ShippingAddressSchema,
     returnAddress: ReturnAddressSchema,
+    warehousePhone: { type: String, default: '' },
     status: { type: String, enum: Object.values(KYCStatus), default: KYCStatus.PENDING },
     rejectionMessage: String
 },
