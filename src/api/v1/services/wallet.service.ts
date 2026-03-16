@@ -12,6 +12,7 @@ import { PAYSTACK_REDIRECT } from '@config';
 import DepositRepository from '@repositories/Deposit.repo';
 import { generateDepositNumber } from '@utils/generateToken';
 import TransactionService from './transaction.service';
+import { TransactionEvent } from '@interfaces/Transaction.Interface';
 
 class WalletService extends Service<WalletInterface, WalletRepository> {
   protected repository = new WalletRepository();
@@ -169,15 +170,38 @@ class WalletService extends Service<WalletInterface, WalletRepository> {
     }
 
     //@ts-ignore
-    const { amount, customer } = response;
-    const email = customer.email;
-    //@ts-ignore
-    const wallet = await this.findOne({ 'user.email': email });
-    if (!wallet) {
-      throw new HttpError('Wallet not found', 404);
+    const { amount, metadata } = response;
+    
+    // Parse metadata - Paystack returns it as a JSON string
+    let parsedMetadata: { userId?: string } = {};
+    if (metadata) {
+      try {
+        parsedMetadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+      } catch (e) {
+        throw new HttpError('Invalid metadata format', 400);
+      }
     }
+    
+    // Extract userId from metadata
+    const userId = parsedMetadata?.userId;
+    if (!userId) {
+      throw new HttpError('User ID not found in transaction metadata', 400);
+    }
+    
+    const wallet = await this.getOrCreateWallet(userId);
     wallet.balance += amount / 100;
     await this.update(wallet._id, { balance: wallet.balance });
+
+    // Record the transaction
+    await this.transactionService.create({
+      userId,
+      amount: amount / 100,
+      event: TransactionEvent.WALLET_FUNDING,
+      description: 'Wallet funding via Paystack',
+      reference,
+      success: true,
+      date: new Date(),
+    });
 
     return wallet;
   }

@@ -10,7 +10,7 @@ import Service from '@services/service';
 
 class OrderSessionController extends Controller<OrderSessionInterface> {
   //service = new OrderSessionService();
-  service: = undefined;
+  service = undefined;
   responseDTO = undefined; // OrderResponseDTO.Order;
 
   

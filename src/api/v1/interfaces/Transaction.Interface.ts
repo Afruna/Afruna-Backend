@@ -5,6 +5,7 @@ export enum TransactionEvent {
   WITHDRAWAL = 'Withdrawal',
   LISTING_FEE = 'Listing Fee',
   PAYMENT = 'Payment',
+  WALLET_FUNDING = 'Wallet Funding',
 }
 
 export enum PaymentMethod {

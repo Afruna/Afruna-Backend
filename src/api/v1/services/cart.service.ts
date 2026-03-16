@@ -172,29 +172,79 @@ class CartService extends Service<CartInterface, CartRepository> {
     try {
       dbSession.startTransaction();
 
-      let session;
+      let userSession;
+      let guestSession;
+      let session: DocType<CartSessionInterface> | null = null;
 
+      // Find user's existing cart session
       if (userId) {
-        session = await this._cartSession.findOne({ userId });
+        userSession = await this._cartSession.findOne({ userId });
       }
 
-      if (!session) {
-        session = await this._cartSession.findOne({ sessionId });
+      // Find guest session by sessionId
+      if (sessionId) {
+        guestSession = await this._cartSession.findOne({ sessionId });
       }
 
-      // if no cart session found with cookie sessionID, create new cart session
-      if (!session) {
+      // If we have both a user session and a guest session, we need to merge them
+      if (userSession && guestSession && guestSession._id.toString() !== userSession._id.toString()) {
+        // Get items from guest session
+        const guestItems = await this.find({ sessionId: guestSession._id });
+        
+        // Merge guest items into user session
+        for (const guestItem of guestItems) {
+          const existingItem = await this.findOne({ 
+            sessionId: userSession._id, 
+            productId: guestItem.productId 
+          });
+          
+          if (existingItem) {
+            // Update quantity if item exists
+            await this.repository.update(
+              existingItem._id,
+              {
+                quantity: existingItem.quantity + guestItem.quantity,
+                total: existingItem.total + guestItem.total,
+              },
+              false,
+              false,
+              dbSession
+            );
+          } else {
+            // Move item to user session
+            await this.repository.update(
+              guestItem._id,
+              { sessionId: userSession._id },
+              false,
+              false,
+              dbSession
+            );
+          }
+        }
+        
+        // Update user session totals
+        userSession.numberOfItems += guestSession.numberOfItems;
+        userSession.total += guestSession.total;
+        await this._cartSession.update(userSession._id, userSession, false, false, dbSession);
+        
+        // Delete guest session
+        await this._cartSession.delete(guestSession._id);
+        
+        session = userSession;
+      } else if (userSession) {
+        session = userSession;
+      } else if (guestSession) {
+        session = guestSession;
+        // Link guest session to user if userId provided
+        if (userId && !session.userId) {
+          session.userId = userId;
+          await this._cartSession.update(session._id, session, false, false, dbSession);
+        }
+      } else {
+        // Create new session
         session = (<DocType<CartSessionInterface>[]>(
           (<unknown>await this._cartSession.create([{ sessionId, userId, total: 0, numberOfItems: 0 }], dbSession))
         ))[0];
-        // throw new HttpError('this cart is empty... add an item to begin', 404);
-      }
-
-      // if session doc exist without a userId and userId is not undefined
-      // update session doc with userId
-      if (!session.userId && userId) {
-        session.userId = userId;
-        this._cartSession.update(session._id, session, false, false, dbSession);
       }
 
       const data = await this.find(
@@ -203,7 +253,6 @@ class CartService extends Service<CartInterface, CartRepository> {
           populate: {
             path: 'productId',
             model: 'Product',
-            // select: 'name images brand isOutOfStock vendorId',
             populate: {
               path: 'vendor',
               model: 'Vendor',
