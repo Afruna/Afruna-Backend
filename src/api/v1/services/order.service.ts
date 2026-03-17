@@ -516,11 +516,14 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
           const product = await this._productService().findOne(cartItem.productId.toString());
           if (!product) throw new HttpError(`Product not found for cart item`, 404);
 
+          // Calculate unit amount with VAT and round to integer to avoid decimal issues
+          const unitAmountWithVat = Math.round(product.price + product.price * 0.075);
+          
           return {
             name: product.name,
             description: product.desc,
             unit_weight: product.weight === 0 ? 0.1 : product.weight.toString(),
-            unit_amount: (product.price + product.price * 0.075).toString(),
+            unit_amount: unitAmountWithVat.toString(),
             quantity: cartItem.quantity.toString()
           };
         })
