@@ -137,10 +137,24 @@ class WalletService extends Service<WalletInterface, WalletRepository> {
     // Ensure amount is an integer (Paystack requires amount in kobo, no decimals)
     const integerAmount = Math.round(amount);
     
-    const transaction = await this._paystack.initialize(integerAmount.toString(), user, {
+    // Generate a unique transaction reference
+    const transactionReference = `wallet_funding_${userId}_${Date.now()}`;
+    
+    // Metadata should only contain custom fields (not reference)
+    const metadata = {
       userId: userId,
-      reference: `wallet_funding_${userId}_${Date.now()}`,
-    }, PAYSTACK_REDIRECT, <string>user._id);
+      type: 'wallet_funding'
+    };
+    
+    console.log('Wallet funding - Amount:', integerAmount, 'Reference:', transactionReference, 'UserId:', userId);
+    
+    const transaction = await this._paystack.initialize(
+      integerAmount.toString(), 
+      user, 
+      metadata, 
+      PAYSTACK_REDIRECT, 
+      transactionReference
+    );
 
     return transaction;
   }
