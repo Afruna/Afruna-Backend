@@ -126,7 +126,13 @@ class CartService extends Service<CartInterface, CartRepository> {
     if (!product) throw new HttpError('invalid product', 404);
     if (!session) throw new HttpError('invalid session', 404);
 
-    const cart = await this.repository.delete(data);
+    // Build the correct query using session._id (the MongoDB ObjectId) not sessionId string
+    const deleteQuery = {
+      productId,
+      sessionId: session._id.toString(),
+    };
+
+    const cart = await this.repository.delete(deleteQuery);
     if (!cart) throw new HttpError('invalid cart', 404);
     session.numberOfItems = session.numberOfItems >= cart?.quantity ? session.numberOfItems - cart?.quantity : 0;
     session.total = session.total >= cart.total ? session.total - cart.total : 0;
@@ -152,7 +158,8 @@ class CartService extends Service<CartInterface, CartRepository> {
         : 0;
     session = await this._cartSession.update(session._id, session);
 
-    const cart = await this.findOne({ productId, sessionId: session!._id });
+    // Use session._id (ObjectId) for querying cart items, not sessionId string
+    const cart = await this.findOne({ productId, sessionId: session!._id.toString() });
     if (!cart) throw new HttpError('invalid cart', 404);
 
     if (cart.quantity > 1) {
