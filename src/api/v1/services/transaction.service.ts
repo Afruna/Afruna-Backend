@@ -58,14 +58,15 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
     const orderSession = await this._orderSessionService().findOne({ _id: orderSessionRef });
     if (!orderSession) throw new HttpError('order not found', 404);
 
-    const amount = (orderSession.total + deliveryFee + orderSession.vat);
+    // Ensure amount is an integer (Paystack requires amount in kobo, no decimals)
+    const totalAmount = Math.round(orderSession.total + (deliveryFee || 0) + orderSession.vat);
 
-    const payment = await this.paymentRepository.create({ userId, amount, referenceId: orderId, type: PAYMENT_TYPE.PRODUCT })
+    const payment = await this.paymentRepository.create({ userId, amount: totalAmount, referenceId: orderId, type: PAYMENT_TYPE.PRODUCT })
 
     const user = await this._userService().findOne(orderSession.userId.toString());
     if (!user) throw new HttpError('User not found', 404);
     
-    const result = await this._paystack.initialize(`${(orderSession.total + orderSession.vat + deliveryFee)}`, user, data, PAYSTACK_REDIRECT, payment._id);
+    const result = await this._paystack.initialize(`${totalAmount}`, user, data, PAYSTACK_REDIRECT, payment._id);
     
     if (!result) {
       throw new HttpError('Payment initialization failed. Please check Paystack configuration.', 500);

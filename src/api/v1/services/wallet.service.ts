@@ -134,7 +134,11 @@ class WalletService extends Service<WalletInterface, WalletRepository> {
       throw new HttpError('User or email not found', 404);
     }
 
-    const transaction = await this._paystack.initialize(amount.toString(), user, {
+    // Ensure amount is an integer (Paystack requires amount in kobo, no decimals)
+    const integerAmount = Math.round(amount);
+    
+    const transaction = await this._paystack.initialize(integerAmount.toString(), user, {
+      userId: userId,
       reference: `wallet_funding_${userId}_${Date.now()}`,
     }, PAYSTACK_REDIRECT, <string>user._id);
 
