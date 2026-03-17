@@ -73,14 +73,19 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       const orderNumber = generateOrderNumber(deliveryAddress.state);
 
+      // Calculate VAT and ensure all amounts are integers
+      const rawVat = await computeVAT(cartSession.total);
+      const vat = Math.round(rawVat);
+      const roundedDeliveryFee = Math.round(deliveryFee || 0);
+
       // Store shipping params in order session for later use after payment
       const orderSession = await this._orderSession.create({
         userId,
         total: cartSession.total,
         orderNumber,
         paymentMethod,
-        deliveryFee,
-        vat: await computeVAT(cartSession.total),
+        deliveryFee: roundedDeliveryFee,
+        vat,
         shippingParams: request_token && service_code && courier_id 
           ? { request_token, service_code, courier_id }
           : undefined,
@@ -96,7 +101,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             {
               load: {
                 key: 'items',
-                value: { productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total, deliveryFee: deliveryFee },
+                value: { productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total, deliveryFee: roundedDeliveryFee },
               },
               increment: { key: 'total', value: +cartItem.total },
             },
@@ -117,7 +122,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             orderNumber,
             addressId,
             deliveryStatus: DeliveryStatus.PENDING,
-            deliveryFee,
+            deliveryFee: roundedDeliveryFee,
             paymentMethod,
           });
 
@@ -154,10 +159,12 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
           break;
 
         case PaymentMethod.WALLET:
+          // Ensure amount is an integer to prevent Paystack validation errors
+          const walletPaymentAmount = Math.round(orderSession.total + orderSession.vat + (deliveryFee || 0));
           payment = await this._transactionService().walletHandler(
             userId,
             order._id,
-            orderSession.total + orderSession.vat + deliveryFee,
+            walletPaymentAmount,
             { type: 'product', orderSessionRef: orderSession._id, orderId: order._id },
           );
           break;
