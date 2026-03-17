@@ -393,6 +393,11 @@ class TransactionService extends Service<TransactionInterface, TransactionReposi
           await this._orderSessionService().update({ _id: order.sessionId }, { orderStatus: OrderStatus.PAID });
 
           await this._orderService().update(reference, { isPaid: true, orderStatus: OrderStatus.PAID });
+
+          // Create Shipbubble order only after successful payment
+          // Skip in non-production environments
+          await this._orderService().processShipbubbleAfterPayment(<string>order.sessionId);
+
           //send notifiqation to vendor
           await this._notificationService().create({
             vendorId: order.vendor,

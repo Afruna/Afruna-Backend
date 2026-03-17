@@ -73,6 +73,7 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
 
       const orderNumber = generateOrderNumber(deliveryAddress.state);
 
+      // Store shipping params in order session for later use after payment
       const orderSession = await this._orderSession.create({
         userId,
         total: cartSession.total,
@@ -80,16 +81,10 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
         paymentMethod,
         deliveryFee,
         vat: await computeVAT(cartSession.total),
+        shippingParams: request_token && service_code && courier_id 
+          ? { request_token, service_code, courier_id }
+          : undefined,
       });
-
-      // if(request_token && service_code && courier_id){
-      let createdShipment = await shipbubbleAxios.post('/shipping/labels', {
-        request_token,
-        service_code,
-        courier_id,
-      });
-      // }
-      createdShipment = createdShipment.data.data;
 
       let orders: DocType<OrderInterface>[] = [];
       let order: any = {};
@@ -107,10 +102,11 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
             },
           );
         } else {
+          // Create order without Shipbubble ID - will be added after payment
           order = await this.create({
             userId,
-            sb_order_id: createdShipment.order_id,
-            tracking_url: createdShipment.tracking_url,
+            sb_order_id: undefined, // Will be set after successful payment
+            tracking_url: undefined,
             vendorId: cartItem.vendorId,
             vendor: cartItem.vendor,
             items: [{ productId: cartItem.productId, quantity: cartItem.quantity, amount: +cartItem.total }],
@@ -194,7 +190,56 @@ export default class OrderService extends Service<OrderInterface, OrderRepositor
     }
   }
 
+  /**
+   * Process Shipbubble shipment after successful payment
+   * This should only be called after Paystack payment is verified
+   */
+  async processShipbubbleAfterPayment(orderSessionId: string) {
+    try {
+      // Skip Shipbubble in non-production environments (staging, test, development)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[${process.env.NODE_ENV}] Skipping Shipbubble order creation for order session: ${orderSessionId}`);
+        return { skipped: true, reason: 'Non-production environment' };
+      }
 
+      const orderSession = await this._orderSession.findOne({ _id: orderSessionId });
+      if (!orderSession) {
+        console.error('Order session not found for Shipbubble processing:', orderSessionId);
+        return null;
+      }
+
+      const shippingParams = (orderSession as any).shippingParams;
+      if (!shippingParams?.request_token || !shippingParams?.service_code || !shippingParams?.courier_id) {
+        console.error('Missing shipping params for Shipbubble:', orderSessionId);
+        return null;
+      }
+
+      // Create Shipbubble order now that payment is successful
+      const createdShipment = await shipbubbleAxios.post('/shipping/labels', {
+        request_token: shippingParams.request_token,
+        service_code: shippingParams.service_code,
+        courier_id: shippingParams.courier_id,
+      });
+
+      const shipmentData = createdShipment.data.data;
+
+      // Update all orders in this session with Shipbubble details
+      const orders = await this.find({ sessionId: orderSessionId });
+      for (const order of orders) {
+        await this.update(order._id, {
+          sb_order_id: shipmentData.order_id,
+          tracking_url: shipmentData.tracking_url,
+        });
+      }
+
+      console.log('Shipbubble order created successfully:', shipmentData.order_id);
+      return { success: true, sb_order_id: shipmentData.order_id };
+    } catch (error) {
+      console.error('Error creating Shipbubble order after payment:', error);
+      // Don't throw - we don't want to break the order flow if Shipbubble fails
+      return { success: false, error: error.message };
+    }
+  }
 
   // async createPackageOrder(userId: string, addressId: string, paymentMethod: PaymentMethod = PaymentMethod.CARD) {
   //   const cartSession = await this._cartService().session.findOne({ userId });
